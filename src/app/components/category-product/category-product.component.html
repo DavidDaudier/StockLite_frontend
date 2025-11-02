@@ -1,0 +1,46 @@
+<h3 class="mb-1 text-lg font-medium text-gray-900">Categories disponible</h3>
+<ul class="relative w-full flex flex-row space-x-2 mb-4 overflow-x-auto">
+    <!-- Catégorie "Tous" -->
+    <li>
+        <input
+            type="radio"
+            id="cat-all"
+            name="cat"
+            value="all"
+            class="hidden peer"
+            [checked]="selectedCategoryId() === null"
+            (change)="selectCategory(null)" />
+        <label
+            for="cat-all"
+            class="relative inline-flex items-center justify-between w-fit py-2 ps-2.5 pe-2 text-gray-500 bg-white rounded-full border border-gray-200 cursor-pointer peer-checked:border-green-500 peer-checked:text-green-500 peer-checked:bg-green-100 hover:text-green-500 hover:bg-gray-100 hover:border-green-300">
+            <div class="flex items-center justify-between space-x-1">
+                <div class="w-full font-semibold">Tous</div>
+                <div class="relative inline-flex items-center justify-center w-6 h-6 p-1 text-xs font-bold text-white bg-blue-500 rounded-full shadow">
+                    {{ getTotalProductCount() }}
+                </div>
+            </div>
+        </label>
+    </li>
+
+    <!-- Catégories depuis la base de données -->
+    <li *ngFor="let category of categories(); let i = index">
+        <input
+            type="radio"
+            [id]="'cat-' + category.id"
+            name="cat"
+            [value]="category.id"
+            class="hidden peer"
+            [checked]="selectedCategoryId() === category.id"
+            (change)="selectCategory(category.id)" />
+        <label
+            [for]="'cat-' + category.id"
+            class="relative inline-flex items-center justify-between w-fit py-2 ps-2.5 pe-2 text-gray-500 bg-white rounded-full border border-gray-200 cursor-pointer peer-checked:border-green-500 peer-checked:text-green-500 peer-checked:bg-green-100 hover:text-green-500 hover:bg-gray-100 hover:border-green-300">
+            <div class="flex items-center justify-between space-x-1">
+                <div class="w-full font-semibold">{{ category.name }}</div>
+                <div class="relative inline-flex items-center justify-center w-6 h-6 p-1 text-xs font-bold text-white bg-blue-500 rounded-full shadow">
+                    {{ getProductCountForCategory(category.id) }}
+                </div>
+            </div>
+        </label>
+    </li>
+</ul>

@@ -84,8 +84,12 @@ export const routes: Routes = [
       {
         path: 'settings',
         loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent)
+      },
+      {
+        path: 'users',
+        loadComponent: () => import('./pages/users/users.component').then(m => m.UsersComponent)
       }
-      // TODO: Ajouter categories, orders, users quand créés
+      // TODO: Ajouter categories, orders quand créés
     ]
   },
 

@@ -1,0 +1,180 @@
+<div class="flex h-screen bg-white">
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Header -->
+    <app-pos-header></app-pos-header>
+
+    <!-- Dashboard Content -->
+    <main class="flex-1 overflow-y-auto bg-gray-50">
+      <!-- Page Title -->
+      <div class="bg-white border-b border-gray-200 px-6 py-4">
+        <h1 class="text-2xl font-bold text-gray-900">Tableau de bord</h1>
+        <p class="text-sm text-gray-500">Vue d'ensemble de vos ventes du jour</p>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="flex items-center justify-center h-64">
+        <div class="text-center">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent"></div>
+          <p class="mt-4 text-gray-600">Chargement des statistiques...</p>
+        </div>
+      </div>
+
+      <!-- Dashboard Content -->
+      <div *ngIf="!loading" class="p-6 space-y-6">
+        <!-- Daily Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div *ngFor="let stat of dailyStats"
+               class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">{{ stat.label }}</p>
+                <p class="text-2xl font-bold text-gray-900 mt-2">{{ stat.value }}</p>
+                <div *ngIf="stat.change" class="flex items-center gap-1 mt-2">
+                  <span [ngClass]="stat.changeType === 'up' ? 'text-green-600' : 'text-red-600'"
+                        class="text-sm font-medium">
+                    {{ stat.change }}
+                  </span>
+                  <span class="text-xs text-gray-500">vs hier</span>
+                </div>
+              </div>
+              <div [ngClass]="stat.bgColor" class="p-3 rounded-full">
+                <ng-icon [name]="stat.icon" [ngClass]="stat.color" class="text-2xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts and Tables Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Sales Chart -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h2 class="text-lg font-bold text-gray-900">Ventes par heure</h2>
+                <p class="text-sm text-gray-500">Performance du jour</p>
+              </div>
+              <div class="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-sm font-medium">
+                Aujourd'hui
+              </div>
+            </div>
+
+            <!-- Bar Chart -->
+            <div class="h-64 flex items-end justify-between gap-2">
+              <div *ngFor="let sale of salesByHour" class="flex-1 flex flex-col items-center gap-2">
+                <div class="text-xs font-medium text-gray-900">
+                  {{ formatCurrency(sale.amount) }}
+                </div>
+                <div class="w-full bg-gradient-to-t from-teal-500 to-teal-400 rounded-t-lg transition-all hover:from-teal-600 hover:to-teal-500"
+                     [style.height.%]="getBarHeight(sale.amount)">
+                </div>
+                <div class="text-xs text-gray-600 font-medium">{{ sale.hour }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Products -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h2 class="text-lg font-bold text-gray-900">Produits les plus vendus</h2>
+                <p class="text-sm text-gray-500">Top 5 du jour</p>
+              </div>
+              <ng-icon name="hugeTradeUp" class="text-2xl text-teal-600" />
+            </div>
+
+            <div class="space-y-4">
+              <div *ngFor="let product of topProducts; let i = index"
+                   class="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="w-8 h-8 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center font-bold text-sm">
+                  {{ i + 1 }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold text-gray-900 truncate">{{ product.name }}</p>
+                  <p class="text-sm text-gray-500">{{ product.category }}</p>
+                </div>
+                <div class="text-right">
+                  <p class="font-bold text-gray-900">{{ formatCurrency(product.revenue) }}</p>
+                  <p class="text-sm text-gray-500">{{ product.quantity }} vendus</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Low Stock Alert -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-red-50 rounded-lg">
+                <ng-icon name="hugeAlertCircle" class="text-2xl text-red-600" />
+              </div>
+              <div>
+                <h2 class="text-lg font-bold text-gray-900">Produits en stock faible</h2>
+                <p class="text-sm text-gray-500">{{ lowStockProducts.length }} produits nécessitent votre attention</p>
+              </div>
+            </div>
+            <button class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition-colors">
+              Réapprovisionner
+            </button>
+          </div>
+
+          <!-- Low Stock Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produit</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catégorie</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock actuel</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock min.</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <tr *ngFor="let product of lowStockProducts" class="hover:bg-gray-50 transition-colors">
+                  <td class="px-4 py-3">
+                    <p class="font-semibold text-gray-900">{{ product.name }}</p>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                      {{ product.category }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <p class="font-semibold text-gray-900">{{ product.currentStock }}</p>
+                  </td>
+                  <td class="px-4 py-3">
+                    <p class="text-gray-600">{{ product.minStock }}</p>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span [ngClass]="getStockStatusClass(product)"
+                          class="px-2.5 py-1 text-xs font-medium rounded-full">
+                      {{ product.currentStock === 0 ? 'Rupture' : 'Stock faible' }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl shadow-lg p-6 text-white">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-bold mb-2">Prêt à vendre ?</h2>
+              <p class="text-teal-100">Accédez rapidement au point de vente</p>
+            </div>
+            <a routerLink="/seller/pos"
+               class="px-6 py-3 bg-white text-teal-600 hover:bg-teal-50 rounded-lg font-semibold transition-colors shadow-md">
+              Ouvrir le POS
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

@@ -1,0 +1,19 @@
+/* Animations */
+.transition-colors {
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.hover\:bg-gray-50:hover {
+  background-color: rgb(249 250 251);
+}
+
+/* Loading spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

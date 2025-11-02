@@ -1,0 +1,30 @@
+/* Animations pour les cartes */
+.hover\:shadow-md {
+  transition: box-shadow 0.3s ease;
+}
+
+/* Animation pour les barres du graphique */
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+/* Effet de survol sur les lignes du tableau */
+.hover\:bg-gray-50:hover {
+  background-color: rgb(249 250 251);
+}
+
+/* Style pour les badges */
+.rounded-full {
+  border-radius: 9999px;
+}
+
+/* Animation du spinner de chargement */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

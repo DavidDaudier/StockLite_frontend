@@ -1,0 +1,215 @@
+<div class="flex h-screen bg-gray-50">
+    <app-sidebar></app-sidebar>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto">
+        <!-- Top Bar -->
+        <div class="bg-white border-b border-gray-200 px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Dashboard Admin</h1>
+                    <p class="text-sm text-gray-500">Vue d'ensemble des statistiques</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <p class="text-sm font-medium text-gray-700">{{ currentTime | date:'HH:mm:ss' }}</p>
+                        <p class="text-xs text-gray-500">{{ currentTime | date:'dd/MM/yyyy' }}</p>
+                    </div>
+                    <button
+                        (click)="logout()"
+                        class="px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        Déconnexion
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex items-center justify-center h-64">
+            <div class="text-center">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+                <p class="mt-4 text-gray-600">Chargement des données...</p>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div *ngIf="!loading" class="p-6 space-y-6">
+            <!-- Stats Cards -->
+            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Revenue Today -->
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium opacity-90">Chiffre d'Affaires</h3>
+                        <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <p class="text-3xl font-bold mb-1">{{ formatCurrency(stats.todayRevenue) }}</p>
+                    <p class="text-xs opacity-75">Aujourd'hui</p>
+                </div>
+
+                <!-- Sales Count -->
+                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium opacity-90">Ventes</h3>
+                        <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                    </div>
+                    <p class="text-3xl font-bold mb-1">{{ stats.todaySales }}</p>
+                    <p class="text-xs opacity-75">Transactions aujourd'hui</p>
+                </div>
+
+                <!-- Total Products -->
+                <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium opacity-90">Produits</h3>
+                        <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </div>
+                    <p class="text-3xl font-bold mb-1">{{ stats.totalProducts }}</p>
+                    <p class="text-xs opacity-75">En stock</p>
+                </div>
+
+                <!-- Low Stock Alerts -->
+                <div class="bg-gradient-to-br from-orange-500 to-red-600 rounded-xl shadow-lg p-6 text-white cursor-pointer hover:shadow-xl transition-shadow" (click)="navigateToStocks()">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium opacity-90">Alertes Stock</h3>
+                        <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <p class="text-3xl font-bold mb-1">{{ stats.lowStockCount }}</p>
+                    <p class="text-xs opacity-75">Produits en rupture</p>
+                </div>
+            </section>
+
+            <!-- Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Recent Sales -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-lg">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-bold text-gray-800">Ventes Récentes</h2>
+                            <button
+                                (click)="navigateToReports()"
+                                class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                                Voir tout →
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div *ngIf="recentSales.length === 0" class="text-center py-12 text-gray-500">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            <p>Aucune vente aujourd'hui</p>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div *ngFor="let sale of recentSales"
+                                 class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-sm font-semibold text-gray-800">{{ formatCurrency(sale.total) }}</span>
+                                        <span class="px-2 py-0.5 text-xs rounded-full"
+                                              [ngClass]="{
+                                                'bg-green-100 text-green-700': sale.paymentMethod === 'cash',
+                                                'bg-blue-100 text-blue-700': sale.paymentMethod === 'card',
+                                                'bg-purple-100 text-purple-700': sale.paymentMethod === 'mobile_money',
+                                                'bg-gray-100 text-gray-700': sale.paymentMethod === 'bank_transfer'
+                                              }">
+                                            {{ getPaymentMethodLabel(sale.paymentMethod) }}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-gray-500">
+                                        {{ sale.items.length || 0 }} article(s) • {{ formatDate(sale.createdAt) }}
+                                    </p>
+                                    <p *ngIf="sale.customerName" class="text-xs text-gray-600 mt-1">
+                                        Client: {{ sale.customerName }}
+                                    </p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Payé
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Products & Alerts -->
+                <div class="space-y-6">
+                    <!-- Top Products -->
+                    <div class="bg-white rounded-xl shadow-lg">
+                        <div class="p-6 border-b border-gray-200">
+                            <h2 class="text-lg font-bold text-gray-800">Top Produits</h2>
+                        </div>
+                        <div class="p-6">
+                            <div *ngIf="topProducts.length === 0" class="text-center py-8 text-gray-500">
+                                <p class="text-sm">Aucune donnée disponible</p>
+                            </div>
+                            <div class="space-y-3">
+                                <div *ngFor="let product of topProducts; let i = index"
+                                     class="flex items-start gap-3">
+                                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
+                                         [ngClass]="{
+                                           'bg-yellow-100 text-yellow-700': i === 0,
+                                           'bg-gray-100 text-gray-700': i === 1,
+                                           'bg-orange-100 text-orange-700': i === 2,
+                                           'bg-blue-100 text-blue-700': i > 2
+                                         }">
+                                        {{ i + 1 }}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-800 truncate">{{ product.productName }}</p>
+                                        <p class="text-xs text-gray-500">{{ product.totalQuantitySold }} vendus</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm font-semibold text-gray-800">{{ formatCurrency(product.totalRevenue) }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Low Stock Alerts -->
+                    <div class="bg-white rounded-xl shadow-lg">
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <h2 class="text-lg font-bold text-gray-800">Alertes Stock Faible</h2>
+                                <button
+                                    (click)="navigateToStocks()"
+                                    class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                                    Gérer →
+                                </button>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div *ngIf="lowStockProducts.length === 0" class="text-center py-8 text-green-600">
+                                <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p class="text-sm">Tous les stocks sont OK</p>
+                            </div>
+                            <div class="space-y-3">
+                                <div *ngFor="let product of lowStockProducts"
+                                     class="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-100">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-800 truncate">{{ product.name }}</p>
+                                        <p class="text-xs text-red-600">Stock: {{ product.quantity }} / Min: {{ product.minStock }}</p>
+                                    </div>
+                                    <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>

@@ -1,0 +1,27 @@
+<div class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-100">
+      <!-- Left -->
+      <div class="flex items-center space-x-3">
+        <!-- Quantity badge -->
+        <span class="bg-sky-100 text-sky-800 text-xs font-semibold px-2 py-0.5 rounded-full">
+          {{ qty }}x
+        </span>
+        <!-- Name -->
+        <span class="text-sm text-slate-700 font-medium">{{ name }}</span>
+      </div>
+
+      <!-- Right -->
+      <div class="text-right">
+        <!-- Price -->
+        <p class="text-sm font-semibold text-slate-800">${{ price.toFixed(2) }}</p>
+        <!-- Time -->
+        <p class="text-xs text-slate-500">{{ time }}</p>
+        <!-- Status -->
+        <span
+          class="text-xs font-medium px-2 py-0.5 rounded-full"
+          [ngClass]="status === 'Ready'      ? 'text-green-700 bg-green-100'
+                  : status === 'In Kitchen' ? 'text-amber-700 bg-amber-100'
+                                            : 'text-slate-600 bg-slate-200'">
+          {{ status }}
+        </span>
+      </div>
+    </div>

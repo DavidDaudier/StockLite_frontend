@@ -1,0 +1,465 @@
+<div class="flex h-screen bg-white">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <main class="relative flex-1 flex flex-col overflow-hidden bg-white">
+    <!-- Header -->
+    <app-pos-header></app-pos-header>
+
+    <!-- Titre de la page -->
+    <div class="px-6 pt-4 pb-3 bg-white">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+            Suivi des Stocks
+          </h1>
+          <p class="text-sm text-gray-500 mt-1">Dashboard > Suivi des Stocks</p>
+        </div>
+        <!-- Boutons d'export -->
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            (click)="exportToPDF()"
+            [disabled]="loading()"
+            class="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 bg-amber-400 text-white text-sm font-medium rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed">
+            <ng-icon name="hugePdf01" size="18"></ng-icon>
+            <span class="hidden sm:inline">Export PDF</span>
+            <span class="sm:hidden">PDF</span>
+          </button>
+          <button
+            (click)="exportToExcel()"
+            [disabled]="loading()"
+            class="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed">
+            <ng-icon name="hugeXls01" size="18"></ng-icon>
+            <span class="hidden sm:inline">Export Excel</span>
+            <span class="sm:hidden">Excel</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Message -->
+    @if (successMessage()) {
+      <div class="mx-6 mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+        <ng-icon name="hugeCheckmarkCircle04" size="20" class="text-green-600"></ng-icon>
+        <span class="text-green-700">{{ successMessage() }}</span>
+      </div>
+    }
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="mx-6 mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+        <ng-icon name="hugeAlert01" size="20" class="text-red-600"></ng-icon>
+        <span class="text-red-700 text-sm">{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <!-- Statistiques -->
+    <div class="px-6 pb-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <!-- Total produits -->
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-blue-600 font-medium">Total Produits</p>
+              <p class="text-2xl font-bold text-blue-900 mt-1">{{ stats().total }}</p>
+            </div>
+            <div class="block p-3 bg-blue-500 rounded-lg text-white">
+              <ng-icon name="hugePackageSent" size="24" class="text-white"></ng-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stock disponible -->
+        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-green-600 font-medium">Stock Disponible</p>
+              <p class="text-2xl font-bold text-green-900 mt-1">{{ stats().available }}</p>
+            </div>
+            <div class="p-3 bg-green-500 rounded-lg text-white">
+              <ng-icon name="hugeDeliveryView01" size="24" class="text-white"></ng-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stock faible -->
+        <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-yellow-600 font-medium">Stock Faible</p>
+              <p class="text-2xl font-bold text-yellow-900 mt-1">{{ stats().low }}</p>
+            </div>
+            <div class="p-3 bg-yellow-500 rounded-lg text-white">
+              <ng-icon name="hugeChartDecrease" size="24" class="text-white"></ng-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rupture de stock -->
+        <div class="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-xl border border-red-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-red-600 font-medium">Rupture de Stock</p>
+              <p class="text-2xl font-bold text-red-900 mt-1">{{ stats().outOfStock }}</p>
+            </div>
+            <div class="p-3 bg-red-500 rounded-lg text-white">
+              <ng-icon name="hugeChartMinimum" size="24" class="text-white"></ng-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Produits inactifs -->
+        <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600 font-medium">Produits Inactifs</p>
+              <p class="text-2xl font-bold text-gray-900 mt-1">{{ stats().inactive }}</p>
+            </div>
+            <div class="p-3 bg-gray-500 rounded-lg text-white">
+              <ng-icon name="hugeViewOffSlash" size="24" class="text-white"></ng-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="flex-1 overflow-y-auto px-6 pb-6 bg-white">
+      <div class="bg-gray-100 rounded-[15px] p-4 border border-gray-300">
+        <!-- Barre de recherche et filtres -->
+        <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 mb-4">
+          <!-- Barre de recherche -->
+          <div class="flex-1">
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <ng-icon name="hugeSearch01" class="text-gray-400 text-lg" />
+              </div>
+              <input
+                type="text"
+                placeholder="Rechercher un produit (nom, SKU, catégorie)..."
+                (input)="onSearch($event)"
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-sm">
+            </div>
+          </div>
+
+          <!-- Filtres -->
+          <div class="flex flex-col sm:flex-row gap-3">
+            <!-- Filtre par catégorie -->
+            <div class="w-full sm:w-48 lg:w-48">
+              <select
+                (change)="onCategoryChange($event)"
+                class="w-full px-2 py-[11px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-sm cursor-pointer">
+                <option value="all">🔍 Toutes les catégories</option>
+                @for (category of categories(); track category.id) {
+                  <option [value]="category.name">{{ category.icon }} {{ category.name }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Filtre par statut de stock -->
+            <div class="w-full sm:w-48 lg:w-40">
+              <select
+                (change)="onStockStatusChange($event)"
+                class="w-full px-2 py-[11px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-sm cursor-pointer">
+                <option value="all">📊 Tous les statuts</option>
+                <option value="available">✅ Stock disponible</option>
+                <option value="low">⚠️ Stock faible</option>
+                <option value="outOfStock">❌ Rupture de stock</option>
+                <option value="inactive">👁️‍🗨️ Produits Inactifs</option>
+              </select>
+            </div>
+
+            <!-- Entrées par page -->
+            <div class="w-full sm:w-48 lg:w-40">
+              <select
+                (change)="onItemsPerPageChange($event)"
+                [value]="itemsPerPage()"
+                class="w-full px-2 py-[11px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-sm cursor-pointer">
+                <option value="10">📄 10 par page</option>
+                <option value="20">📄 20 par page</option>
+                <option value="30">📄 30 par page</option>
+                <option value="40">📄 40 par page</option>
+                <option value="50">📄 50 par page</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        @if (loading()) {
+          <div class="flex items-center justify-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent"></div>
+          </div>
+        }
+
+        <!-- Empty State -->
+        @else if (filteredProducts().length === 0) {
+          <div class="flex flex-col items-center justify-center py-12 text-gray-500">
+            <ng-icon name="hugePackageSent" size="54" class="text-gray-300 mb-4"></ng-icon>
+            <p class="text-gray-500 text-center mb-2">Aucun produit trouvé</p>
+          </div>
+        }
+
+        <!-- Tableau des produits -->
+        @else {
+          <div class="bg-white rounded-lg border border-gray-200 overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 table-fixed">
+              <thead class="bg-teal-600 text-white sticky top-0 z-10">
+                <tr>
+                  <th scope="col" class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">
+                    Produit
+                  </th>
+                  <th scope="col" class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">
+                    Catégorie
+                  </th>
+                  <th scope="col" class="px-3 md:px-6 py-4 text-center text-xs font-medium uppercase tracking-wider whitespace-nowrap">
+                    Stock Actuel
+                  </th>
+                  <th scope="col" class="px-3 md:px-6 py-4 text-center text-xs font-medium uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">
+                    Stock Min
+                  </th>
+                  <th scope="col" class="px-3 md:px-6 py-4 text-center text-xs font-medium uppercase tracking-wider whitespace-nowrap hidden md:table-cell">
+                    Statut Stock
+                  </th>
+                  <th scope="col" class="px-3 md:px-6 py-4 text-center text-xs font-medium uppercase tracking-wider whitespace-nowrap hidden xl:table-cell">
+                    Valeur Stock
+                  </th>
+                  <th scope="col" class="px-3 md:px-6 py-4 text-center text-xs font-medium uppercase tracking-wider whitespace-nowrap">
+                    Statut Produit
+                  </th>
+                  <th scope="col" class="px-3 md:px-6 py-4 text-center text-xs font-medium uppercase tracking-wider whitespace-nowrap">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                @for (product of paginatedProducts(); track product.id) {
+                  <tr class="hover:bg-gray-50 transition-colors odd:bg-white even:bg-gray-50">
+                    <td  class="px-3 md:px-6 py-3 whitespace-nowrap">
+                      <div>
+                        <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
+                        <div class="text-xs text-gray-500">SKU: {{ product.sku }}</div>
+                        <!-- Mobile: Show category on small screens -->
+                        <div class="text-xs text-gray-500 sm:hidden mt-1">{{ product.category || '-' }}</div>
+                      </div>
+                    </td>
+                    <td class="px-3 md:px-6 py-3 whitespace-nowrap hidden sm:table-cell">
+                      <div class="text-sm text-gray-900">{{ product.category || '-' }}</div>
+                    </td>
+                    <td class="px-3 md:px-6 py-3 whitespace-nowrap text-center">
+                      <div class="text-sm font-semibold" [class]="product.quantity === 0 ? 'text-red-600' : product.quantity <= product.minStock ? 'text-yellow-600' : 'text-green-600'">
+                        {{ product.quantity }}
+                      </div>
+                      <!-- Mobile: Show badge on small screens -->
+                      <span class="md:hidden mt-1 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full" [class]="getStockClass(product.quantity, product.minStock)">
+                        {{ getStockStatus(product.quantity, product.minStock) }}
+                      </span>
+                    </td>
+                    <td class="px-3 md:px-6 py-3 whitespace-nowrap text-center hidden lg:table-cell">
+                      <div class="text-sm text-gray-900">{{ product.minStock }}</div>
+                    </td>
+                    <td class="px-3 md:px-6 py-3 whitespace-nowrap text-center hidden md:table-cell">
+                      <span [class]="'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getStockClass(product.quantity, product.minStock)">
+                        {{ getStockStatus(product.quantity, product.minStock) }}
+                      </span>
+                    </td>
+                    <td class="px-3 md:px-6 py-3 whitespace-nowrap text-center hidden xl:table-cell">
+                      <div class="text-sm font-medium text-gray-900">
+                        {{ formatCurrency(product.price * product.quantity) }}
+                      </div>
+                    </td>
+                    <td class="px-3 md:px-6 py-3 whitespace-nowrap text-center">
+                      <label [class]="'inline-flex items-center ' + (isProductUpdating(product.id) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer')">
+                        <input
+                          type="checkbox"
+                          [checked]="product.isActive"
+                          [disabled]="isProductUpdating(product.id)"
+                          (change)="toggleProductStatus(product)"
+                          class="sr-only peer">
+                        <div [class]="'relative w-11 h-6 rounded-full peer after:content-[\'\'] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white ' + (isProductUpdating(product.id) ? 'bg-gray-300' : 'bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:bg-green-500')"></div>
+                        <span class="ms-3 text-xs font-medium text-gray-700">
+                          <span class="hidden sm:inline">{{ product.isActive ? 'Actif' : 'Inactif' }}</span>
+                        </span>
+                      </label>
+                    </td>
+                    <td class="px-3 md:px-6 py-3 whitespace-nowrap text-center">
+                      <button
+                        (click)="openAdjustModal(product)"
+                        class="px-2 md:px-3 py-1.5 bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 transition-colors inline-flex items-center gap-1 text-xs font-medium cursor-pointer">
+                        <ng-icon name="hugeEdit02" size="14"></ng-icon>
+                        <span class="hidden md:inline">Ajuster</span>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="mt-0 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-200 px-4 py-3 rounded-b-lg">
+            <!-- Info pagination -->
+            <div class="text-sm text-gray-900">
+              Affichage des résultats {{ paginationInfo().startIndex }} à {{ paginationInfo().endIndex }} sur {{ paginationInfo().total }}
+            </div>
+
+            <!-- Boutons de navigation -->
+            <div class="flex items-center gap-1">
+              <!-- Premier -->
+              <button
+                (click)="firstPage()"
+                [disabled]="paginationInfo().currentPage === 1"
+                class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                «
+              </button>
+
+              <!-- Précédent -->
+              <button
+                (click)="previousPage()"
+                [disabled]="paginationInfo().currentPage === 1"
+                class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                ‹
+              </button>
+
+              <!-- Numéros de pages -->
+              @for (page of getPageNumbers(); track page) {
+                <button
+                  (click)="goToPage(page)"
+                  [class]="page === paginationInfo().currentPage
+                    ? 'px-3 py-1.5 text-sm bg-gray-700 text-white rounded cursor-pointer'
+                    : 'px-3 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded cursor-pointer transition-colors'">
+                  {{ page }}
+                </button>
+              }
+
+              <!-- Suivant -->
+              <button
+                (click)="nextPage()"
+                [disabled]="paginationInfo().currentPage === paginationInfo().totalPages"
+                class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                ›
+              </button>
+
+              <!-- Dernier -->
+              <button
+                (click)="lastPage()"
+                [disabled]="paginationInfo().currentPage === paginationInfo().totalPages"
+                class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                »
+              </button>
+            </div>
+
+            <!-- Valeur totale du stock -->
+            <div class="text-sm text-gray-900 flex items-center gap-1">
+              <span>Valeur totale du stock : </span>
+              <strong class="text-teal-600 text-base">{{ formatCurrency(stats().totalValue) }}</strong>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal d'ajustement de stock -->
+@if (showAdjustModal() && selectedProduct()) {
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+      <!-- Modal Header -->
+      <div class="bg-teal-600 text-white px-6 py-4 flex items-center justify-between rounded-t-xl">
+        <div>
+          <h2 class="text-xl font-bold">Ajuster le Stock</h2>
+          <p class="text-sm text-teal-100">{{ selectedProduct()!.name }}</p>
+        </div>
+        <button
+          (click)="closeAdjustModal()"
+          class="text-white hover:text-gray-200 transition-colors cursor-pointer">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6">
+        <!-- Error Message -->
+        @if (errorMessage()) {
+          <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+            <ng-icon name="hugeAlert01" size="20" class="text-red-600"></ng-icon>
+            <span class="text-red-700 text-sm">{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <!-- Stock actuel -->
+        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">Stock actuel:</span>
+            <span class="text-2xl font-bold text-gray-900">{{ selectedProduct()!.quantity }} unités</span>
+          </div>
+          <div class="flex items-center justify-between mt-2">
+            <span class="text-sm text-gray-600">Stock minimum:</span>
+            <span class="text-sm font-medium text-gray-700">{{ selectedProduct()!.minStock }} unités</span>
+          </div>
+        </div>
+
+        <form [formGroup]="adjustForm" (ngSubmit)="onAdjustSubmit()">
+          <!-- Ajustement -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Ajustement <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <input
+                type="number"
+                formControlName="adjustment"
+                placeholder="Ex: +10 ou -5"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+            </div>
+            <p class="text-xs text-gray-500 mt-1">
+              Entrez un nombre positif pour ajouter ou négatif pour retirer
+            </p>
+          </div>
+
+          <!-- Raison -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Raison <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="reason"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent cursor-pointer">
+              <option value="">Sélectionner une raison</option>
+              <option value="reception">Réception de marchandise</option>
+              <option value="vente">Vente</option>
+              <option value="retour">Retour client</option>
+              <option value="perte">Perte/Casse</option>
+              <option value="inventaire">Ajustement d'inventaire</option>
+              <option value="autre">Autre</option>
+            </select>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              (click)="closeAdjustModal()"
+              [disabled]="submitting()"
+              class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 cursor-pointer">
+              Annuler
+            </button>
+            <button
+              type="submit"
+              [disabled]="submitting() || adjustForm.invalid"
+              class="px-6 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer">
+              @if (submitting()) {
+                <span class="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+              }
+              Ajuster
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

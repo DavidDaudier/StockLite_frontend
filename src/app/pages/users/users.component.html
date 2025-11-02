@@ -1,0 +1,747 @@
+<div class="flex h-screen bg-white">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <main class="relative flex-1 flex flex-col overflow-hidden bg-white">
+    <!-- Header -->
+    <app-pos-header></app-pos-header>
+
+    <!-- Titre de la page -->
+    <div class="px-6 pt-4 pb-3 bg-white">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+            Gestion des Utilisateurs
+          </h1>
+          <p class="text-sm text-gray-500 mt-1">Dashboard > Utilisateurs</p>
+        </div>
+        <!-- Boutons d'export et ajout -->
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            (click)="exportToPDF()"
+            [disabled]="loading() || selectionMode()"
+            class="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 bg-amber-400 text-white text-sm font-medium rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed">
+            <ng-icon name="hugePdf01" size="18"></ng-icon>
+            <span class="hidden sm:inline">Export PDF</span>
+            <span class="sm:hidden">PDF</span>
+          </button>
+          <button
+            (click)="exportToExcel()"
+            [disabled]="loading() || selectionMode()"
+            class="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed">
+            <ng-icon name="hugeXls01" size="18"></ng-icon>
+            <span class="hidden sm:inline">Export Excel</span>
+            <span class="sm:hidden">Excel</span>
+          </button>
+          <button
+            (click)="openCreateModal()"
+            [disabled]="loading() || selectionMode()"
+            class="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed">
+            <ng-icon name="hugeUserAdd01" size="18"></ng-icon>
+            <span>Nouvel Utilisateur</span>
+          </button>
+          <button
+            (click)="toggleSelectionMode()"
+            [disabled]="loading()"
+            [class]="selectionMode() && selectedUserIds().size > 0 ? 'flex-1 sm:flex-none px-3 sm:px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md' : 'flex-1 sm:flex-none px-3 sm:px-4 py-2.5 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md'">
+            <ng-icon name="hugeDelete03" size="18"></ng-icon>
+            @if (selectionMode()) {
+              @if (selectedUserIds().size > 0) {
+                <span>Supprimer ({{ selectedUserIds().size }})</span>
+              } @else {
+                <span>Annuler</span>
+              }
+            } @else {
+              <span>Sélectionner</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selection Mode Info -->
+    @if (selectionMode()) {
+      <div class="mx-6 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <ng-icon name="hugeAlert01" size="20" class="text-blue-600"></ng-icon>
+          <span class="text-blue-700 text-sm">
+            Mode sélection activé. Cliquez sur les utilisateurs à supprimer.
+            <span class="font-semibold">{{ selectedUserIds().size }} sélectionné(s)</span>
+          </span>
+        </div>
+      </div>
+    }
+
+    <!-- Success Message -->
+    @if (successMessage()) {
+      <div class="mx-6 mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+        <ng-icon name="hugeCheckmarkCircle04" size="20" class="text-green-600"></ng-icon>
+        <span class="text-green-700">{{ successMessage() }}</span>
+      </div>
+    }
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="mx-6 mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+        <ng-icon name="hugeAlert01" size="20" class="text-red-600"></ng-icon>
+        <span class="text-red-700 text-sm">{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <!-- Statistiques -->
+    <div class="px-6 pb-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <!-- Total utilisateurs -->
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-blue-600 font-medium">Total Utilisateurs</p>
+              <p class="text-2xl font-bold text-blue-900 mt-1">{{ stats().total }}</p>
+            </div>
+            <div class="p-3 bg-blue-500 rounded-lg text-white">
+              <ng-icon name="hugeUserGroup" size="24" class="text-white"></ng-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Administrateurs -->
+        <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-purple-600 font-medium">Administrateurs</p>
+              <p class="text-2xl font-bold text-purple-900 mt-1">{{ stats().admins }}</p>
+            </div>
+            <div class="p-3 bg-purple-500 rounded-lg text-white">
+              <ng-icon name="hugeUserSettings01" size="24" class="text-white"></ng-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vendeurs -->
+        <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-yellow-600 font-medium">Vendeurs</p>
+              <p class="text-2xl font-bold text-yellow-900 mt-1">{{ stats().sellers }}</p>
+            </div>
+            <div class="p-3 bg-yellow-500 rounded-lg text-white">
+              <ng-icon name="hugeUserSwitch" size="24" class="text-white"></ng-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Utilisateurs actifs -->
+        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-green-600 font-medium">Utilisateurs Actifs</p>
+              <p class="text-2xl font-bold text-green-900 mt-1">{{ stats().active }}</p>
+            </div>
+            <div class="p-3 bg-green-500 rounded-lg text-white">
+              <ng-icon name="hugeUserCheck01" size="24" class="text-white"></ng-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Utilisateurs inactifs -->
+        <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600 font-medium">Utilisateurs Inactifs</p>
+              <p class="text-2xl font-bold text-gray-900 mt-1">{{ stats().inactive }}</p>
+            </div>
+            <div class="p-3 bg-gray-500 rounded-lg text-white">
+              <ng-icon name="hugeUserBlock01" size="24" class="text-white"></ng-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="flex-1 overflow-y-auto px-6 pb-6 bg-white">
+      <div class="bg-gray-100 rounded-[15px] p-4 border border-gray-300">
+        <!-- Barre de recherche et filtres -->
+        <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 mb-4">
+          <!-- Barre de recherche -->
+          <div class="flex-1">
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <ng-icon name="hugeSearch01" class="text-gray-400 text-lg" />
+              </div>
+              <input
+                type="text"
+                [(ngModel)]="searchTerm"
+                (ngModelChange)="applyFilters()"
+                placeholder="Rechercher un utilisateur (nom, email, username)..."
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-sm">
+            </div>
+          </div>
+
+          <!-- Filtres -->
+          <div class="flex flex-col sm:flex-row gap-3">
+            <!-- Filtre par rôle -->
+            <div class="w-full sm:w-48 lg:w-54 mx-auto">
+              <select
+                [(ngModel)]="roleFilter"
+                (ngModelChange)="applyFilters()"
+                class="block w-full px-2 py-[11px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-sm cursor-pointer">
+                <option value="all">👥 Tous les rôles</option>
+                <option [value]="UserRole.ADMIN">🔑 Administrateurs</option>
+                <option [value]="UserRole.SELLER">🛒 Vendeurs</option>
+              </select>
+            </div>
+
+            <!-- Entrées par page -->
+            <div class="w-full sm:w-48 lg:w-48 mx-auto">
+              <select
+                (change)="onItemsPerPageChange($event)"
+                [value]="itemsPerPage()"
+                class="w-full px-2 py-[11px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-sm cursor-pointer">
+                <option value="10">📄 10 par page</option>
+                <option value="20">📄 20 par page</option>
+                <option value="30">📄 30 par page</option>
+                <option value="40">📄 40 par page</option>
+                <option value="50">📄 50 par page</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        @if (loading()) {
+          <div class="flex items-center justify-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent"></div>
+          </div>
+        }
+
+        <!-- Empty State -->
+        @else if (filteredUsers().length === 0) {
+          <div class="flex flex-col items-center justify-center py-12 text-gray-500">
+            <ng-icon name="hugeUserAccount" size="54" class="text-gray-300 mb-4"></ng-icon>
+            <p class="text-gray-500 text-center mb-2">Aucun utilisateur trouvé</p>
+          </div>
+        }
+
+        <!-- Tableau des utilisateurs -->
+        @else {
+          <div class="bg-white rounded-lg border border-gray-200 overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 table-fixed">
+              <thead class="bg-teal-600 text-white sticky top-0 z-10">
+                <tr>
+                  @if (selectionMode()) {
+                    <th scope="col" class="px-3 md:px-6 py-4 text-center text-xs font-medium uppercase tracking-wider whitespace-nowrap w-16" (click)="$event.stopPropagation()">
+                      <input
+                        type="checkbox"
+                        [checked]="allUsersSelected()"
+                        (change)="toggleSelectAll()"
+                        [class]="allUsersSelected() && selectedUserIds().size > 0 ? 'w-4 h-4 text-red-600 bg-white border-red-500 rounded focus:ring-red-500 cursor-pointer accent-red-600' : 'w-4 h-4 text-white bg-white border-gray-300 rounded focus:ring-white cursor-pointer'">
+                    </th>
+                  }
+                  <th scope="col" class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">
+                    Utilisateur
+                  </th>
+                  <th scope="col" class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">
+                    Email
+                  </th>
+                  <th scope="col" class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">
+                    Rôle
+                  </th>
+                  <th scope="col" class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">
+                    Statut
+                  </th>
+                  <th scope="col" class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">
+                    Dernière connexion
+                  </th>
+                  @if (!selectionMode()) {
+                    <th scope="col" class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">
+                      Actions
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                @for (user of paginatedUsers(); track user.id) {
+                  <tr [class]="'transition-colors ' + (isUserSelected(user.id) ? 'bg-red-100 border-l-4 border-l-red-600' : 'hover:bg-gray-50 odd:bg-white even:bg-gray-50')" [style.cursor]="selectionMode() ? 'pointer' : 'default'" (click)="selectionMode() ? toggleUserSelection(user.id) : null">
+                    @if (selectionMode()) {
+                      <td class="px-3 md:px-6 py-3 whitespace-nowrap text-center" (click)="$event.stopPropagation()">
+                        <input
+                          type="checkbox"
+                          [checked]="isUserSelected(user.id)"
+                          (change)="toggleUserSelection(user.id)"
+                          [class]="isUserSelected(user.id) ? 'w-4 h-4 text-red-600 bg-gray-100 border-red-500 rounded focus:ring-red-500 cursor-pointer accent-red-600' : 'w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 cursor-pointer'">
+                      </td>
+                    }
+                    <td class="px-3 md:px-6 py-3 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                          <span class="text-white font-semibold text-sm">{{ getUserInitials(user.fullName) }}</span>
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-gray-900">{{ user.fullName || user.username }}</div>
+                          <div class="text-xs text-gray-500">{{ '@' + user.username }}</div>
+                          <!-- Mobile: Show email on small screens -->
+                          @if (user.email) {
+                            <div class="text-xs text-gray-500 sm:hidden mt-1">{{ user.email }}</div>
+                          }
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-3 md:px-6 py-3 whitespace-nowrap hidden sm:table-cell">
+                      <div class="text-sm text-gray-900">{{ user.email || '-' }}</div>
+                    </td>
+                    <td class="px-3 md:px-6 py-3 whitespace-nowrap text-left">
+                      <span [class]="'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getRoleBadgeClass(user.role)">
+                        {{ getRoleLabel(user.role) }}
+                      </span>
+                    </td>
+                    <td class="px-3 md:px-6 py-3 whitespace-nowrap text-left" (click)="$event.stopPropagation()">
+                      <label class="inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          [checked]="user.isActive"
+                          (change)="toggleUserActive(user)"
+                          class="sr-only peer">
+                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                        <span class="ms-3 text-xs font-medium text-gray-700">
+                          <span class="hidden sm:inline">{{ user.isActive ? 'Actif' : 'Inactif' }}</span>
+                        </span>
+                      </label>
+                    </td>
+                    <td class="px-3 md:px-6 py-3 whitespace-nowrap text-left text-sm text-gray-500 hidden lg:table-cell" (click)="$event.stopPropagation()">
+                      <div class="flex items-center justify-start gap-2">
+                        <span>{{ formatLastLogin(user.lastLoginAt) }}</span>
+                        <button
+                          (click)="refreshLastLogin(user.id)"
+                          [disabled]="isRefreshingLastLogin(user.id)"
+                          class="p-1 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                          title="Rafraîchir la dernière connexion">
+                          <ng-icon
+                            name="hugeReload"
+                            size="16"
+                            [class]="isRefreshingLastLogin(user.id) ? 'animate-spin' : ''">
+                          </ng-icon>
+                        </button>
+                      </div>
+                    </td>
+                    @if (!selectionMode()) {
+                      <td class="px-3 md:px-6 py-3 whitespace-nowrap text-left" (click)="$event.stopPropagation()">
+                        <div class="flex items-center justify-start gap-2">
+                          @if (user.role === UserRole.SELLER) {
+                            <button
+                              (click)="openPermissionsModal(user)"
+                              class="px-2 md:px-3 py-1.5 bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 transition-colors inline-flex items-center gap-1 text-xs font-medium cursor-pointer"
+                              title="Gérer les permissions">
+                              <ng-icon name="hugeSettings02" size="14"></ng-icon>
+                              <span class="hidden md:inline">Permissions</span>
+                            </button>
+                          }
+                          <button
+                            (click)="openEditModal(user)"
+                            class="px-2 md:px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors inline-flex items-center gap-1 text-xs font-medium cursor-pointer"
+                            title="Modifier">
+                            <ng-icon name="hugeEdit02" size="14"></ng-icon>
+                            <span class="hidden md:inline">Modifier</span>
+                          </button>
+                          <button
+                            (click)="deleteUser(user)"
+                            class="px-2 md:px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors inline-flex items-center gap-1 text-xs font-medium cursor-pointer"
+                            title="Supprimer">
+                            <ng-icon name="hugeDelete03" size="14"></ng-icon>
+                            <span class="hidden md:inline">Supprimer</span>
+                          </button>
+                        </div>
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="mt-0 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-200 px-4 py-3 rounded-b-lg">
+            <!-- Info pagination -->
+            <div class="text-sm text-gray-900">
+              Affichage des résultats {{ paginationInfo().startIndex }} à {{ paginationInfo().endIndex }} sur {{ paginationInfo().total }}
+            </div>
+
+            <!-- Boutons de navigation -->
+            <div class="flex items-center gap-1">
+              <!-- Premier -->
+              <button
+                (click)="firstPage()"
+                [disabled]="paginationInfo().currentPage === 1"
+                class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                «
+              </button>
+
+              <!-- Précédent -->
+              <button
+                (click)="previousPage()"
+                [disabled]="paginationInfo().currentPage === 1"
+                class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                ‹
+              </button>
+
+              <!-- Numéros de pages -->
+              @for (page of getPageNumbers(); track page) {
+                <button
+                  (click)="goToPage(page)"
+                  [class]="page === paginationInfo().currentPage
+                    ? 'px-3 py-1.5 text-sm bg-gray-700 text-white rounded cursor-pointer'
+                    : 'px-3 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded cursor-pointer transition-colors'">
+                  {{ page }}
+                </button>
+              }
+
+              <!-- Suivant -->
+              <button
+                (click)="nextPage()"
+                [disabled]="paginationInfo().currentPage === paginationInfo().totalPages"
+                class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                ›
+              </button>
+
+              <!-- Dernier -->
+              <button
+                (click)="lastPage()"
+                [disabled]="paginationInfo().currentPage === paginationInfo().totalPages"
+                class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                »
+              </button>
+            </div>
+
+            <!-- Total utilisateurs -->
+            <div class="text-sm text-gray-900 flex items-center gap-1">
+              <span>Total utilisateurs : </span>
+              <strong class="text-teal-600 text-base">{{ stats().total }}</strong>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+@if (showModal()) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full">
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between p-6 border-b border-gray-200">
+      <h3 class="text-xl font-bold text-gray-900">
+        {{ modalMode === 'create' ? 'Nouvel Utilisateur' : 'Modifier Utilisateur' }}
+      </h3>
+      <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
+        <ng-icon name="hugeCancel01" class="text-2xl" />
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+      <!-- Username -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Nom d'utilisateur <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="formData.username"
+          placeholder="johndoe"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+
+      <!-- Full Name -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Nom complet
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="formData.fullName"
+          placeholder="John Doe"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Email
+        </label>
+        <input
+          type="email"
+          [(ngModel)]="formData.email"
+          placeholder="john@example.com"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+
+      <!-- Password -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Mot de passe
+          @if (modalMode === 'create') {
+            <span class="text-red-500">*</span>
+          }
+          @if (modalMode === 'edit') {
+            <span class="text-xs text-gray-500">(laisser vide pour ne pas changer)</span>
+          }
+        </label>
+        <input
+          type="password"
+          [(ngModel)]="formData.password"
+          placeholder="••••••••"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+
+      <!-- Role -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Rôle <span class="text-red-500">*</span>
+        </label>
+        <select
+          [(ngModel)]="formData.role"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <option [value]="UserRole.SELLER">Vendeur</option>
+          <option [value]="UserRole.ADMIN">Administrateur</option>
+        </select>
+        <p class="mt-1 text-xs text-gray-500">
+          Les administrateurs ont accès à toutes les fonctionnalités
+        </p>
+      </div>
+
+      <!-- Permissions Section (Only for Sellers) -->
+      @if (formData.role === UserRole.SELLER) {
+        <div class="border-t border-gray-200 pt-4">
+          <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <ng-icon name="hugeSettings02" size="18" class="text-teal-600"></ng-icon>
+            Gérer les Permissions
+          </h4>
+          <p class="text-xs text-gray-600 mb-3">
+            Sélectionnez les pages du sidebar auxquelles ce vendeur aura accès
+          </p>
+
+          <div class="space-y-2">
+            <!-- Dashboard Permission -->
+            <label class="flex items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+              <input
+                type="checkbox"
+                [(ngModel)]="permissionsForm.dashboard"
+                class="w-4 h-4 text-teal-600 rounded focus:ring-2 focus:ring-teal-500">
+              <div class="ml-3">
+                <span class="text-sm font-medium text-gray-900">Dashboard</span>
+                <p class="text-xs text-gray-500">Page d'accueil avec statistiques</p>
+              </div>
+            </label>
+
+            <!-- POS Permission -->
+            <label class="flex items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+              <input
+                type="checkbox"
+                [(ngModel)]="permissionsForm.pos"
+                class="w-4 h-4 text-teal-600 rounded focus:ring-2 focus:ring-teal-500">
+              <div class="ml-3">
+                <span class="text-sm font-medium text-gray-900">Point de Vente</span>
+                <p class="text-xs text-gray-500">Interface de vente et gestion du panier</p>
+              </div>
+            </label>
+
+            <!-- History Permission -->
+            <label class="flex items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+              <input
+                type="checkbox"
+                [(ngModel)]="permissionsForm.history"
+                class="w-4 h-4 text-teal-600 rounded focus:ring-2 focus:ring-teal-500">
+              <div class="ml-3">
+                <span class="text-sm font-medium text-gray-900">Historique</span>
+                <p class="text-xs text-gray-500">Historique des ventes</p>
+              </div>
+            </label>
+
+            <!-- Reports Permission -->
+            <label class="flex items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+              <input
+                type="checkbox"
+                [(ngModel)]="permissionsForm.reports"
+                class="w-4 h-4 text-teal-600 rounded focus:ring-2 focus:ring-teal-500">
+              <div class="ml-3">
+                <span class="text-sm font-medium text-gray-900">Rapports</span>
+                <p class="text-xs text-gray-500">Rapports et statistiques de vente</p>
+              </div>
+            </label>
+
+            <!-- Profile Permission -->
+            <label class="flex items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+              <input
+                type="checkbox"
+                [(ngModel)]="permissionsForm.profile"
+                class="w-4 h-4 text-teal-600 rounded focus:ring-2 focus:ring-teal-500">
+              <div class="ml-3">
+                <span class="text-sm font-medium text-gray-900">Profil</span>
+                <p class="text-xs text-gray-500">Page de profil utilisateur</p>
+              </div>
+            </label>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+      <button
+        (click)="closeModal()"
+        [disabled]="loading()"
+        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50">
+        Annuler
+      </button>
+      <button
+        (click)="saveUser()"
+        [disabled]="loading()"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
+        {{ loading() ? 'Enregistrement...' : (modalMode === 'create' ? 'Créer' : 'Modifier') }}
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Permissions Modal -->
+@if (showPermissionsModal()) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full">
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between p-6 border-b border-gray-200">
+      <div>
+        <h3 class="text-xl font-bold text-gray-900">Gérer les Permissions</h3>
+        <p class="text-sm text-gray-500 mt-1">{{ currentUser?.fullName }}</p>
+      </div>
+      <button (click)="closePermissionsModal()" class="text-gray-400 hover:text-gray-600">
+        <ng-icon name="hugeCancel01" class="text-2xl" />
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 space-y-4">
+      <p class="text-sm text-gray-600 mb-4">
+        Sélectionnez les pages du sidebar auxquelles ce vendeur aura accès
+      </p>
+
+      <!-- Dashboard Permission -->
+      <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+        <input
+          type="checkbox"
+          [(ngModel)]="permissionsForm.dashboard"
+          class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+        <div class="ml-3">
+          <span class="text-sm font-medium text-gray-900">Dashboard</span>
+          <p class="text-xs text-gray-500">Page d'accueil avec statistiques</p>
+        </div>
+      </label>
+
+      <!-- POS Permission -->
+      <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+        <input
+          type="checkbox"
+          [(ngModel)]="permissionsForm.pos"
+          class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+        <div class="ml-3">
+          <span class="text-sm font-medium text-gray-900">Point de Vente</span>
+          <p class="text-xs text-gray-500">Interface de vente et gestion du panier</p>
+        </div>
+      </label>
+
+      <!-- History Permission -->
+      <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+        <input
+          type="checkbox"
+          [(ngModel)]="permissionsForm.history"
+          class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+        <div class="ml-3">
+          <span class="text-sm font-medium text-gray-900">Historique</span>
+          <p class="text-xs text-gray-500">Historique des ventes</p>
+        </div>
+      </label>
+
+      <!-- Reports Permission -->
+      <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+        <input
+          type="checkbox"
+          [(ngModel)]="permissionsForm.reports"
+          class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+        <div class="ml-3">
+          <span class="text-sm font-medium text-gray-900">Rapports</span>
+          <p class="text-xs text-gray-500">Rapports et statistiques de vente</p>
+        </div>
+      </label>
+
+      <!-- Profile Permission -->
+      <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+        <input
+          type="checkbox"
+          [(ngModel)]="permissionsForm.profile"
+          class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+        <div class="ml-3">
+          <span class="text-sm font-medium text-gray-900">Profil</span>
+          <p class="text-xs text-gray-500">Page de profil utilisateur</p>
+        </div>
+      </label>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+      <button
+        (click)="closePermissionsModal()"
+        [disabled]="loading()"
+        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50">
+        Annuler
+      </button>
+      <button
+        (click)="savePermissions()"
+        [disabled]="loading()"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
+        {{ loading() ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Multiple Delete Confirmation Modal -->
+@if (showMultipleDeleteModal()) {
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+      <div class="p-6">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+            <ng-icon name="hugeAlert01" size="24" class="text-red-600"></ng-icon>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-gray-900">Supprimer les utilisateurs</h3>
+            <p class="text-sm text-gray-500">Cette action est irréversible</p>
+          </div>
+        </div>
+        <p class="text-gray-700 mb-6">
+          Êtes-vous sûr de vouloir supprimer <strong>{{ selectedUserIds().size }} utilisateur(s)</strong> sélectionné(s) ?
+        </p>
+        <div class="flex justify-end gap-3">
+          <button
+            (click)="closeMultipleDeleteModal()"
+            [disabled]="loading()"
+            class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 cursor-pointer">
+            Annuler
+          </button>
+          <button
+            (click)="confirmMultipleDelete()"
+            [disabled]="loading()"
+            class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer">
+            @if (loading()) {
+              <span class="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+            }
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

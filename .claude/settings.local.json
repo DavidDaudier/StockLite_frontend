@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/David DAUDIER/Documents/Mes Clients/StockLite/Backend/src/**)",
+      "Read(//c/Users/David DAUDIER/Documents/Mes Clients/StockLite/Backend/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,49 @@
+<div class="flex h-screen bg-white">
+    <!-- Sidebar -->
+    <app-sidebar></app-sidebar>
+
+    <!-- Main Content -->
+    <main class="relative flex-1 flex flex-col overflow-hidden bg-white">
+        <!-- Header -->
+        <app-pos-header></app-pos-header>
+
+        <div class="flex-1 flex overflow-hidden">
+            <!-- Center: Product Categories and List -->
+            <div class="flex-1 flex flex-col overflow-hidden bg-white">
+                <!-- Titre de la page et boutons d'action -->
+                <div class="px-6 pt-4 pb-3 bg-white flex items-center justify-between">
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Point de vente</h1>
+                        <p class="text-sm text-gray-500">Dashboard > Pos</p>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="flex items-center gap-3">
+                        <button class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors cursor-pointer">
+                            <ng-icon name="hugePlusSign" class="text-base" />
+                            New
+                        </button>
+                        <button (click)="goToDraftList()" class="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm flex items-center gap-2 border border-gray-300 transition-colors cursor-pointer">
+                            <ng-icon name="hugeNotebook01" class="text-base" />
+                            Draft List
+                        </button>
+                        <button class="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm flex items-center gap-2 border border-gray-300 transition-colors cursor-pointer">
+                            <ng-icon name="hugeTimeSchedule" class="text-base" />
+                            Sales History
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product List -->
+                <div class="flex-1 overflow-y-auto px-6 pt-0 pb-6 bg-white">
+                    <app-product-list></app-product-list>
+                </div>
+            </div>
+
+            <!-- Right: Cart/Receipt -->
+            <aside class="w-80 bg-gray-100 border border-gray-300 overflow-y-auto rounded-[15px] mt-[22px] mb-4 mr-6">
+                <app-product-receipt></app-product-receipt>
+            </aside>
+        </div>
+    </main>
+</div>

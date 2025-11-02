@@ -1,0 +1,261 @@
+<div class="flex h-screen bg-white">
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Header -->
+    <app-pos-header></app-pos-header>
+
+    <!-- Reports Content -->
+    <main class="flex-1 overflow-y-auto bg-gray-50">
+      <!-- Page Title -->
+      <div class="bg-white border-b border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">Rapports de ventes</h1>
+            <p class="text-sm text-gray-500">Analyse détaillée de vos performances</p>
+          </div>
+          <button
+            (click)="exportReport()"
+            class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg flex items-center gap-2 transition-colors">
+            <ng-icon name="hugeFileDownload" class="text-lg" />
+            Exporter
+          </button>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span class="text-red-700">{{ errorMessage }}</span>
+      </div>
+
+      <!-- Period Selector Tabs -->
+      <div class="px-6 pt-6">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-2 inline-flex gap-2">
+          <button
+            (click)="changePeriod('daily')"
+            [class]="selectedPeriod === 'daily' ? 'bg-teal-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+            class="px-4 py-2 rounded-md font-medium transition-colors">
+            <ng-icon name="hugeCalendar03" class="text-lg mr-2" />
+            Journalier
+          </button>
+          <button
+            (click)="changePeriod('weekly')"
+            [class]="selectedPeriod === 'weekly' ? 'bg-teal-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+            class="px-4 py-2 rounded-md font-medium transition-colors">
+            <ng-icon name="hugeCalendar03" class="text-lg mr-2" />
+            Hebdomadaire
+          </button>
+          <button
+            (click)="changePeriod('monthly')"
+            [class]="selectedPeriod === 'monthly' ? 'bg-teal-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+            class="px-4 py-2 rounded-md font-medium transition-colors">
+            <ng-icon name="hugeCalendar03" class="text-lg mr-2" />
+            Mensuel
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="flex items-center justify-center h-64">
+        <div class="text-center">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent"></div>
+          <p class="mt-4 text-gray-600">Chargement du rapport...</p>
+        </div>
+      </div>
+
+      <!-- Daily Report -->
+      <div *ngIf="!loading && selectedPeriod === 'daily' && dailyReport" class="p-6 space-y-6">
+        <!-- Date Selector -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Sélectionner une date</label>
+          <input
+            type="date"
+            [(ngModel)]="selectedDate"
+            (change)="onDateChange()"
+            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-600">Chiffre d'affaires</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ formatCurrency(dailyReport.totalRevenue) }}</p>
+              </div>
+              <div class="p-3 bg-green-50 rounded-full">
+                <ng-icon name="hugeDollarCircle" class="text-2xl text-green-600" />
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-600">Transactions</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ dailyReport.totalSales }}</p>
+              </div>
+              <div class="p-3 bg-blue-50 rounded-full">
+                <ng-icon name="hugeShoppingCart01" class="text-2xl text-blue-600" />
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div>
+              <p class="text-sm text-gray-600">Panier moyen</p>
+              <p class="text-2xl font-bold text-gray-900 mt-1">{{ formatCurrency(dailyReport.averageSaleValue) }}</p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div>
+              <p class="text-sm text-gray-600">Remises</p>
+              <p class="text-2xl font-bold text-gray-900 mt-1">{{ formatCurrency(dailyReport.totalDiscount) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">Méthodes de paiement</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div *ngFor="let pm of getPaymentMethodsArray()" class="bg-gray-50 rounded-lg p-4">
+              <p class="text-sm text-gray-600 capitalize">{{ pm.method }}</p>
+              <p class="text-xl font-bold text-gray-900 mt-1">{{ formatCurrency(pm.total) }}</p>
+              <p class="text-sm text-gray-500">{{ pm.count }} transaction(s)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Report -->
+      <div *ngIf="!loading && selectedPeriod === 'weekly' && weeklyReport" class="p-6 space-y-6">
+        <!-- Stats Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <p class="text-sm text-gray-600">Chiffre d'affaires hebdomadaire</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ formatCurrency(weeklyReport.totalRevenue) }}</p>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <p class="text-sm text-gray-600">Total ventes</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ weeklyReport.totalSales }}</p>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <p class="text-sm text-gray-600">Moyenne quotidienne</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ formatCurrency(weeklyReport.averageDailyRevenue) }}</p>
+          </div>
+        </div>
+
+        <!-- Daily Breakdown Chart -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">Ventes par jour</h3>
+          <div class="h-64 flex items-end justify-between gap-2">
+            <div *ngFor="let day of weeklyReport.dailyBreakdown" class="flex-1 flex flex-col items-center gap-2">
+              <div class="text-xs font-medium text-gray-900">{{ formatCurrency(day.revenue) }}</div>
+              <div class="w-full bg-gradient-to-t from-teal-500 to-teal-400 rounded-t-lg transition-all hover:from-teal-600 hover:to-teal-500"
+                   [style.height.%]="getBarHeight(day.revenue)"></div>
+              <div class="text-xs text-gray-600">{{ day.date.substring(5) }}</div>
+              <div class="text-xs text-gray-500">{{ day.salesCount }} ventes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Report -->
+      <div *ngIf="!loading && selectedPeriod === 'monthly' && monthlyReport" class="p-6 space-y-6">
+        <!-- Month/Year Selector -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex gap-4">
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Mois</label>
+            <select
+              [(ngModel)]="selectedMonth"
+              (change)="onMonthChange()"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+              <option *ngFor="let month of months" [value]="month.value">{{ month.label }}</option>
+            </select>
+          </div>
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Année</label>
+            <select
+              [(ngModel)]="selectedYear"
+              (change)="onMonthChange()"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+              <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <p class="text-sm text-gray-600">Chiffre d'affaires</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ formatCurrency(monthlyReport.totalRevenue) }}</p>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <p class="text-sm text-gray-600">Total ventes</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ monthlyReport.totalSales }}</p>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <p class="text-sm text-gray-600">Panier moyen</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ formatCurrency(monthlyReport.averageSaleValue) }}</p>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <p class="text-sm text-gray-600">Remises totales</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ formatCurrency(monthlyReport.totalDiscount) }}</p>
+          </div>
+        </div>
+
+        <!-- Top Products -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">Top 10 des produits</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produit</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantité vendue</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Chiffre d'affaires</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nb de ventes</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <tr *ngFor="let product of monthlyReport.topProducts; let i = index" class="hover:bg-gray-50">
+                  <td class="px-4 py-3">
+                    <span class="w-6 h-6 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center text-sm font-bold">{{ i + 1 }}</span>
+                  </td>
+                  <td class="px-4 py-3 font-medium text-gray-900">{{ product.productName }}</td>
+                  <td class="px-4 py-3 text-gray-600">{{ product.totalQuantity }}</td>
+                  <td class="px-4 py-3 font-semibold text-gray-900">{{ formatCurrency(product.totalRevenue) }}</td>
+                  <td class="px-4 py-3 text-gray-600">{{ product.salesCount }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Top Sellers -->
+        <div *ngIf="monthlyReport.topSellers.length > 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">Meilleurs vendeurs</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div *ngFor="let seller of monthlyReport.topSellers" class="bg-gradient-to-br from-teal-50 to-teal-100 rounded-lg p-4">
+              <p class="text-sm text-gray-700 font-medium">{{ seller.sellerName }}</p>
+              <p class="text-xl font-bold text-teal-700 mt-1">{{ formatCurrency(seller.totalRevenue) }}</p>
+              <p class="text-sm text-gray-600">{{ seller.totalSales }} vente(s)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
