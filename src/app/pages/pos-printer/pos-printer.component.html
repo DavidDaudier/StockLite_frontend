@@ -1,0 +1,388 @@
+<div class="flex h-screen bg-gray-50">
+  <app-sidebar></app-sidebar>
+
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <app-pos-header></app-pos-header>
+
+    <main class="flex-1 overflow-y-auto p-6">
+      <div class="max-w-7xl mx-auto">
+        <!-- En-tête -->
+        <div class="mb-6">
+          <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <ng-icon name="hugePrinter" size="28" class="text-cyan-600"></ng-icon>
+            Configuration POS & Imprimantes
+          </h1>
+          <p class="text-gray-600 mt-1">Gérez vos périphériques d'impression et vos reçus</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="bg-white rounded-lg shadow mb-6">
+          <div class="border-b border-gray-200">
+            <nav class="flex -mb-px">
+              <button
+                (click)="setActiveTab('printers')"
+                [class]="activeTab() === 'printers' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                class="px-6 py-4 text-sm font-medium border-b-2 transition-colors">
+                <ng-icon name="hugePrinter" size="18" class="inline mr-2"></ng-icon>
+                Imprimantes
+              </button>
+              <button
+                (click)="setActiveTab('receipt')"
+                [class]="activeTab() === 'receipt' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                class="px-6 py-4 text-sm font-medium border-b-2 transition-colors">
+                <ng-icon name="hugeSettings01" size="18" class="inline mr-2"></ng-icon>
+                Configuration Reçu
+              </button>
+              <button
+                (click)="setActiveTab('test')"
+                [class]="activeTab() === 'test' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                class="px-6 py-4 text-sm font-medium border-b-2 transition-colors">
+                <ng-icon name="hugeCheckmarkCircle04" size="18" class="inline mr-2"></ng-icon>
+                Test d'impression
+              </button>
+            </nav>
+          </div>
+
+          <!-- Tab: Printers -->
+          @if (activeTab() === 'printers') {
+            <div class="p-6">
+              <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-semibold text-gray-900">Imprimantes configurées</h2>
+                @if (authService.canCreate('pos-printer')) {
+                <button
+                  (click)="openAddPrinterModal()"
+                  class="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 font-medium flex items-center gap-2">
+                  <ng-icon name="hugeAdd01" size="18"></ng-icon>
+                  Ajouter une imprimante
+                </button>
+                }
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @for (printer of printers(); track printer.id) {
+                  <div [class]="'border-2 rounded-lg p-4 ' + (printer.isDefault ? 'border-cyan-500 bg-cyan-50' : 'border-gray-200')">
+                    <div class="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                          {{ printer.name }}
+                          @if (printer.isDefault) {
+                            <span class="px-2 py-1 text-xs font-medium text-cyan-700 bg-cyan-100 rounded-full">Par défaut</span>
+                          }
+                        </h3>
+                        <p class="text-sm text-gray-600 mt-1">
+                          {{ printer.type === 'thermal' ? 'Thermique' : 'Standard' }} -
+                          {{ getConnectionIcon(printer.connection) }}
+                          @if (printer.address) {
+                            - {{ printer.address }}
+                          }
+                        </p>
+                      </div>
+                      @if (authService.canDelete('pos-printer')) {
+                      <button
+                        (click)="deletePrinter(printer.id)"
+                        class="text-red-600 hover:text-red-900">
+                        <ng-icon name="hugeDelete03" size="18"></ng-icon>
+                      </button>
+                      }
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                      <span class="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                        Papier: {{ printer.paperWidth }}mm
+                      </span>
+                      @if (authService.canUpdate('pos-printer')) {
+                      <button
+                        [class]="printer.isActive ? 'text-xs text-green-700 bg-green-100 px-2 py-1 rounded hover:bg-green-200' : 'text-xs text-gray-700 bg-gray-100 px-2 py-1 rounded hover:bg-gray-200'"
+                        (click)="togglePrinterStatus(printer.id)">
+                        {{ printer.isActive ? 'Actif' : 'Inactif' }}
+                      </button>
+                      }
+                      @if (!printer.isDefault && authService.canUpdate('pos-printer')) {
+                        <button
+                          (click)="setDefaultPrinter(printer.id)"
+                          class="text-xs text-cyan-700 bg-cyan-100 px-2 py-1 rounded hover:bg-cyan-200">
+                          Définir par défaut
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Tab: Receipt Configuration -->
+          @if (activeTab() === 'receipt') {
+            <div class="p-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-6">Configuration du reçu</h2>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Company Info -->
+                <div class="space-y-4">
+                  <h3 class="font-medium text-gray-700">Informations de l'entreprise</h3>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nom de l'entreprise</label>
+                    <input
+                      type="text"
+                      [(ngModel)]="receiptConfig().companyName"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
+                    <textarea
+                      [(ngModel)]="receiptConfig().companyAddress"
+                      rows="2"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"></textarea>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                    <input
+                      type="text"
+                      [(ngModel)]="receiptConfig().companyPhone"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input
+                      type="email"
+                      [(ngModel)]="receiptConfig().companyEmail"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">NIF / Numéro fiscal</label>
+                    <input
+                      type="text"
+                      [(ngModel)]="receiptConfig().taxId"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                  </div>
+                </div>
+
+                <!-- Display Options -->
+                <div class="space-y-4">
+                  <h3 class="font-medium text-gray-700">Options d'affichage</h3>
+
+                  <div class="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="showLogo"
+                      [(ngModel)]="receiptConfig().showLogo"
+                      class="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500">
+                    <label for="showLogo" class="text-sm font-medium text-gray-700">Afficher le logo</label>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="showProductDetails"
+                      [(ngModel)]="receiptConfig().showProductDetails"
+                      class="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500">
+                    <label for="showProductDetails" class="text-sm font-medium text-gray-700">Afficher les détails des produits</label>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="showPaymentMethod"
+                      [(ngModel)]="receiptConfig().showPaymentMethod"
+                      class="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500">
+                    <label for="showPaymentMethod" class="text-sm font-medium text-gray-700">Afficher le mode de paiement</label>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="showTax"
+                      [(ngModel)]="receiptConfig().showTax"
+                      class="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500">
+                    <label for="showTax" class="text-sm font-medium text-gray-700">Afficher la TVA</label>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Taille de police</label>
+                    <input
+                      type="number"
+                      [(ngModel)]="receiptConfig().fontSize"
+                      min="8"
+                      max="16"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Largeur du papier (mm)</label>
+                    <select
+                      [(ngModel)]="receiptConfig().paperWidth"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                      <option [value]="58">58mm</option>
+                      <option [value]="80">80mm</option>
+                      <option [value]="210">A4 (210mm)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Message de pied de page</label>
+                    <textarea
+                      [(ngModel)]="receiptConfig().footerMessage"
+                      rows="3"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-6 flex justify-end">
+                @if (authService.canUpdate('pos-printer')) {
+                <button
+                  (click)="saveReceiptConfig()"
+                  class="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 font-medium flex items-center gap-2">
+                  <ng-icon name="hugeCheckmarkBadge04" size="18"></ng-icon>
+                  Sauvegarder la configuration
+                </button>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Tab: Test -->
+          @if (activeTab() === 'test') {
+            <div class="p-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-6">Test d'impression</h2>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Test controls -->
+                <div>
+                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <h3 class="font-medium text-blue-900 mb-2">Imprimante sélectionnée</h3>
+                    @if (defaultPrinter(); as printer) {
+                      <p class="text-sm text-blue-800">{{ printer.name }}</p>
+                      <p class="text-xs text-blue-600 mt-1">
+                        {{ printer.type === 'thermal' ? 'Thermique' : 'Standard' }} -
+                        Papier {{ printer.paperWidth }}mm
+                      </p>
+                    } @else {
+                      <p class="text-sm text-red-600">Aucune imprimante par défaut active</p>
+                    }
+                  </div>
+
+                  @if (authService.canRead('pos-printer')) {
+                  <button
+                    (click)="testPrint()"
+                    class="w-full px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 font-medium flex items-center justify-center gap-2">
+                    <ng-icon name="hugePrinter" size="20"></ng-icon>
+                    Lancer le test d'impression
+                  </button>
+                  }
+                  @if (!authService.canRead('pos-printer')) {
+                  <div class="w-full px-6 py-3 bg-gray-300 text-gray-600 rounded-lg font-medium flex items-center justify-center gap-2">
+                    <ng-icon name="hugePrinter" size="20"></ng-icon>
+                    Lancer le test d'impression
+                  </div>
+                  }
+                </div>
+
+                <!-- Preview -->
+                <div>
+                  <h3 class="font-medium text-gray-700 mb-3">Aperçu du reçu</h3>
+                  <div class="bg-white border-2 border-gray-300 rounded-lg p-6 font-mono text-sm">
+                    <pre class="whitespace-pre-wrap text-center">{{ generateReceiptPreview() }}</pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Add Printer Modal -->
+@if (showAddPrinterModal()) {
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Ajouter une imprimante</h3>
+      </div>
+
+      <div class="px-6 py-4 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+          <input
+            type="text"
+            [(ngModel)]="newPrinterData.name"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+          <select
+            [(ngModel)]="newPrinterData.type"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+            <option value="thermal">Thermique</option>
+            <option value="standard">Standard</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Connexion</label>
+          <select
+            [(ngModel)]="newPrinterData.connection"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+            <option value="usb">USB</option>
+            <option value="bluetooth">Bluetooth</option>
+            <option value="network">Réseau</option>
+          </select>
+        </div>
+
+        @if (newPrinterData.connection === 'network') {
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Adresse IP</label>
+            <input
+              type="text"
+              [(ngModel)]="newPrinterData.address"
+              placeholder="192.168.1.100"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+          </div>
+        }
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Largeur du papier (mm)</label>
+          <select
+            [(ngModel)]="newPrinterData.paperWidth"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+            <option [value]="58">58mm</option>
+            <option [value]="80">80mm</option>
+            <option [value]="210">A4 (210mm)</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="isDefault"
+            [(ngModel)]="newPrinterData.isDefault"
+            class="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500">
+          <label for="isDefault" class="text-sm font-medium text-gray-700">Définir comme imprimante par défaut</label>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+        <button
+          (click)="closeAddPrinterModal()"
+          class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium">
+          Annuler
+        </button>
+        @if (authService.canCreate('pos-printer')) {
+        <button
+          (click)="addPrinter()"
+          class="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 font-medium">
+          Ajouter
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+}

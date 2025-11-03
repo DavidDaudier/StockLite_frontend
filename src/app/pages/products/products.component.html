@@ -20,6 +20,7 @@
             <!-- Boutons actions -->
             <div class="flex items-center gap-3">
                 <!-- Bouton ajouter -->
+                @if (authService.canCreate('products')) {
                 <button
                     (click)="openAddModal()"
                     [disabled]="isSelectionMode()"
@@ -27,8 +28,10 @@
                     <ng-icon name="hugeAddCircle" size="20"></ng-icon>
                     Ajouter un produit
                 </button>
+                }
 
                 <!-- Bouton gestion catégories -->
+                @if (authService.canCreate('products')) {
                 <button
                     (click)="openCategoriesModal()"
                     [disabled]="isSelectionMode()"
@@ -36,8 +39,10 @@
                     <ng-icon name="hugeGeometricShapes01" size="20"></ng-icon>
                     Catégories
                 </button>
+                }
 
                 <!-- Bouton suppression multiple -->
+                @if (authService.canDelete('products')) {
                 <button
                     (click)="toggleSelectionMode()"
                     [disabled]="loading()"
@@ -53,6 +58,7 @@
                         <span>Sélectionner</span>
                     }
                 </button>
+                }
             </div>
         </div>
     </div>
@@ -166,12 +172,14 @@
                             Le catalogue est vide pour le moment.
                             }
                         </p>
+                        @if (authService.canCreate('products')) {
                         <button
                             (click)="openAddModal()"
                             class="px-6 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-2 mx-auto cursor-pointer">
                             <ng-icon name="hugePlusSign" size="20"></ng-icon>
                             Ajouter le premier produit
                         </button>
+                        }
                     </div>
                 }
 
@@ -180,8 +188,8 @@
                     <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));">
                     @for (product of filteredProducts(); track product.id) {
                         <div
-                            [class]="'bg-white rounded-xl border shadow-md overflow-hidden hover:shadow-lg transition-all cursor-pointer ' + (isProductSelected(product.id) ? 'border-red-600 border-2 ring-2 ring-red-200' : 'border-gray-200 hover:border-gray-400')"
-                            (click)="isSelectionMode() ? toggleProductSelection(product.id) : viewProductDetails(product)">
+                            [class]="'bg-white rounded-xl border shadow-md overflow-hidden hover:shadow-lg transition-all ' + (isProductSelected(product.id) ? 'border-red-600 border-2 ring-2 ring-red-200' : 'border-gray-200 hover:border-gray-400') + (isSelectionMode() || authService.canRead('products') ? ' cursor-pointer' : '')"
+                            (click)="isSelectionMode() ? toggleProductSelection(product.id) : (authService.canRead('products') ? viewProductDetails(product) : null)">
                         <!-- Product Info -->
                         <div class="p-4 relative">
                             <!-- Checkbox en mode sélection -->
@@ -227,18 +235,22 @@
                             <!-- Action Buttons -->
                             @if (!isSelectionMode()) {
                                 <div class="flex items-center justify-between gap-2 pt-3 mt-auto border-t border-gray-200">
+                                    @if (authService.canUpdate('products')) {
                                     <button
                                         (click)="$event.stopPropagation(); openEditModal(product)"
                                         class="flex-1 bg-teal-200 rounded-lg px-2 py-1.5 flex items-center justify-center gap-1 cursor-pointer inset-shadow-sm inset-shadow-gray-400 hover:inset-shadow-none transition text-xs font-medium">
                                         <ng-icon name="hugeEdit01" size="14" />
                                         Modifier
                                     </button>
+                                    }
+                                    @if (authService.canDelete('products')) {
                                     <button
                                         (click)="$event.stopPropagation(); openDeleteModal(product)"
                                         class="bg-red-200 rounded-lg px-2 py-1.5 flex items-center justify-center gap-1 cursor-pointer inset-shadow-sm inset-shadow-gray-400 hover:inset-shadow-none transition text-xs font-medium">
                                         <ng-icon name="hugeDelete02" size="14" />
                                         Supprimer
                                     </button>
+                                    }
                                 </div>
                             }
                         </div>

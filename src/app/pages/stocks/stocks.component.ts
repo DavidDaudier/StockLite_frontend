@@ -30,6 +30,7 @@ import { PosHeaderComponent } from '../../components/pos-header/pos-header.compo
 import { ProductsService } from '../../core/services/products.service';
 import { CategoriesService } from '../../core/services/categories.service';
 import { AppInfoService } from '../../services/app-info.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Product, UpdateProductDto } from '../../core/models/product.model';
 import { Category } from '../../core/models/category.model';
 import { AppInfo } from '../../models/app-info.model';
@@ -134,7 +135,8 @@ export class StocksComponent implements OnInit, OnDestroy {
     private productsService: ProductsService,
     private categoriesService: CategoriesService,
     private appInfoService: AppInfoService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    public authService: AuthService
   ) {
     this.adjustForm = this.fb.group({
       adjustment: [0, [Validators.required]],

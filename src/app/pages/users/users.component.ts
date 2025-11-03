@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsersService } from '../../core/services/users.service';
+import { AuthService } from '../../core/services/auth.service';
 import { User, CreateUserDto, UpdateUserDto, UserRole, UserPermissions } from '../../core/models/user.model';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { SidebarComponent } from '../../layouts/sidebar/sidebar.component';
@@ -92,13 +93,42 @@ export class UsersComponent implements OnInit {
     role: UserRole.SELLER
   };
 
-  // Permissions form
-  permissionsForm: UserPermissions = {
-    dashboard: true,
-    pos: true,
-    history: true,
-    reports: true,
-    profile: true
+  // Permissions form - dynamique selon le rôle
+  permissionsForm: any = {};
+
+  // Pages disponibles pour chaque rôle
+  sellerPages = ['dashboard', 'pos', 'history', 'reports', 'profile'];
+  adminPages = [
+    'dashboard',
+    'products',
+    'pos',
+    'stock-tracking',
+    'history',
+    'reports',
+    'report-vendor',
+    'inventories',
+    'zoom',
+    'users',
+    'profile',
+    'pos-printer',
+    'settings'
+  ];
+
+  // Labels des pages
+  pageLabels: { [key: string]: string } = {
+    dashboard: 'Dashboard',
+    products: 'Produits',
+    pos: 'Point de vente',
+    'stock-tracking': 'Suivi de Stocks',
+    history: 'Historique',
+    reports: 'Rapports Financiers',
+    'report-vendor': 'Rapports Vendeur',
+    inventories: 'Inventaires',
+    zoom: 'Zoom',
+    users: 'Utilisateurs',
+    profile: 'Profil',
+    'pos-printer': 'POS/Printer',
+    settings: 'Paramètre'
   };
 
   // Search
@@ -156,6 +186,10 @@ export class UsersComponent implements OnInit {
   selectedUserIds = signal<Set<string>>(new Set());
   showMultipleDeleteModal = signal<boolean>(false);
 
+  // Single user deletion
+  showDeleteModal = signal<boolean>(false);
+  userToDelete = signal<User | null>(null);
+
   // Computed: check if all users are selected
   allUsersSelected = computed(() => {
     const paginated = this.paginatedUsers();
@@ -172,7 +206,8 @@ export class UsersComponent implements OnInit {
 
   constructor(
     private usersService: UsersService,
-    private appInfoService: AppInfoService
+    private appInfoService: AppInfoService,
+    public authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -248,14 +283,8 @@ export class UsersComponent implements OnInit {
       password: '',
       role: UserRole.SELLER
     };
-    // Reset permissions form
-    this.permissionsForm = {
-      dashboard: false,
-      pos: false,
-      history: false,
-      reports: false,
-      profile: false
-    };
+    // Initialize permissions based on default role (SELLER)
+    this.initializePermissions(UserRole.SELLER);
     this.showModal.set(true);
   }
 
@@ -270,24 +299,19 @@ export class UsersComponent implements OnInit {
       role: user.role
     };
 
-    // Load permissions if user is a seller
-    if (user.role === UserRole.SELLER && user.permissions) {
-      this.permissionsForm = {
-        dashboard: user.permissions.dashboard || false,
-        pos: user.permissions.pos || false,
-        history: user.permissions.history || false,
-        reports: user.permissions.reports || false,
-        profile: user.permissions.profile || false
-      };
-    } else {
-      // Reset permissions if not a seller
-      this.permissionsForm = {
-        dashboard: false,
-        pos: false,
-        history: false,
-        reports: false,
-        profile: false
-      };
+    // Load permissions based on user's role and existing permissions
+    // Always initialize with all pages first, then merge existing permissions
+    this.initializePermissions(user.role);
+
+    if (user.permissions) {
+      // Merge existing permissions with initialized permissions
+      // This ensures new pages added later are included with default values
+      const existingPerms = user.permissions as any;
+      for (const page in existingPerms) {
+        if (this.permissionsForm[page] !== undefined) {
+          this.permissionsForm[page] = JSON.parse(JSON.stringify(existingPerms[page]));
+        }
+      }
     }
 
     this.showModal.set(true);
@@ -327,31 +351,42 @@ export class UsersComponent implements OnInit {
     this.loading.set(true);
 
     if (this.modalMode === 'create') {
-      this.usersService.create(this.formData).subscribe({
+      // Clean up empty string fields before sending to backend
+      const cleanedData: CreateUserDto = {
+        username: this.formData.username.trim(),
+        password: this.formData.password,
+        role: this.formData.role
+      };
+
+      // Only include email if it's not empty
+      if (this.formData.email && this.formData.email.trim()) {
+        cleanedData.email = this.formData.email.trim();
+      }
+
+      // Only include fullName if it's not empty
+      if (this.formData.fullName && this.formData.fullName.trim()) {
+        cleanedData.fullName = this.formData.fullName.trim();
+      }
+
+      this.usersService.create(cleanedData).subscribe({
         next: (createdUser) => {
-          // If user is a seller, save permissions
-          if (this.formData.role === UserRole.SELLER) {
-            this.usersService.updatePermissions(createdUser.id, this.permissionsForm).subscribe({
-              next: () => {
-                this.showSuccess('Utilisateur et permissions créés avec succès');
-                this.loadUsers();
-                this.loadStats();
-                this.closeModal();
-              },
-              error: (error) => {
-                console.error('Erreur création permissions:', error);
-                this.showError('Utilisateur créé mais erreur lors de la création des permissions');
-                this.loadUsers();
-                this.loadStats();
-                this.closeModal();
-              }
-            });
-          } else {
-            this.showSuccess('Utilisateur créé avec succès');
-            this.loadUsers();
-            this.loadStats();
-            this.closeModal();
-          }
+          // Save permissions for both sellers and admins
+          console.log('Envoi des permissions:', JSON.stringify(this.permissionsForm, null, 2));
+          this.usersService.updatePermissions(createdUser.id, this.permissionsForm).subscribe({
+            next: () => {
+              this.showSuccess('Utilisateur et permissions créés avec succès');
+              this.loadUsers();
+              this.loadStats();
+              this.closeModal();
+            },
+            error: (error) => {
+              console.error('Erreur création permissions:', error);
+              this.showError('Utilisateur créé mais erreur lors de la création des permissions');
+              this.loadUsers();
+              this.loadStats();
+              this.closeModal();
+            }
+          });
         },
         error: (error) => {
           console.error('Erreur création utilisateur:', error);
@@ -360,57 +395,52 @@ export class UsersComponent implements OnInit {
         }
       });
     } else if (this.currentUser) {
+      // Clean up empty string fields before sending to backend
       const updateData: UpdateUserDto = {
-        username: this.formData.username,
-        email: this.formData.email,
-        fullName: this.formData.fullName,
+        username: this.formData.username.trim(),
         role: this.formData.role
       };
 
+      // Only include email if it's not empty
+      if (this.formData.email && this.formData.email.trim()) {
+        updateData.email = this.formData.email.trim();
+      }
+
+      // Only include fullName if it's not empty
+      if (this.formData.fullName && this.formData.fullName.trim()) {
+        updateData.fullName = this.formData.fullName.trim();
+      }
+
       // Only include password if it was changed
-      if (this.formData.password) {
-        updateData.password = this.formData.password;
+      if (this.formData.password && this.formData.password.trim()) {
+        updateData.password = this.formData.password.trim();
       }
 
       this.usersService.update(this.currentUser.id, updateData).subscribe({
         next: (updatedUser) => {
-          // If user is a seller, save permissions
-          if (this.formData.role === UserRole.SELLER) {
-            this.usersService.updatePermissions(updatedUser.id, this.permissionsForm).subscribe({
-              next: () => {
-                // Mise à jour optimiste de l'utilisateur dans la liste
-                const updatedUsers = this.users().map(u =>
-                  u.id === updatedUser.id ? updatedUser : u
-                );
-                this.users.set(updatedUsers);
-                this.applyFilters();
+          // Save permissions for both sellers and admins
+          this.usersService.updatePermissions(updatedUser.id, this.permissionsForm).subscribe({
+            next: () => {
+              // Mise à jour optimiste de l'utilisateur dans la liste
+              const updatedUsers = this.users().map(u =>
+                u.id === updatedUser.id ? updatedUser : u
+              );
+              this.users.set(updatedUsers);
+              this.applyFilters();
 
-                this.showSuccess('Utilisateur et permissions modifiés avec succès');
-                this.loadStats();
-                this.closeModal();
-                this.loading.set(false);
-              },
-              error: (error) => {
-                console.error('Erreur modification permissions:', error);
-                this.showError('Utilisateur modifié mais erreur lors de la modification des permissions');
-                this.loadStats();
-                this.closeModal();
-                this.loading.set(false);
-              }
-            });
-          } else {
-            // Mise à jour optimiste de l'utilisateur dans la liste
-            const updatedUsers = this.users().map(u =>
-              u.id === updatedUser.id ? updatedUser : u
-            );
-            this.users.set(updatedUsers);
-            this.applyFilters();
-
-            this.showSuccess('Utilisateur modifié avec succès');
-            this.loadStats();
-            this.closeModal();
-            this.loading.set(false);
-          }
+              this.showSuccess('Utilisateur et permissions modifiés avec succès');
+              this.loadStats();
+              this.closeModal();
+              this.loading.set(false);
+            },
+            error: (error) => {
+              console.error('Erreur modification permissions:', error);
+              this.showError('Utilisateur modifié mais erreur lors de la modification des permissions');
+              this.loadStats();
+              this.closeModal();
+              this.loading.set(false);
+            }
+          });
         },
         error: (error) => {
           console.error('Erreur modification utilisateur:', error);
@@ -438,20 +468,28 @@ export class UsersComponent implements OnInit {
   }
 
   deleteUser(user: User): void {
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur "${user.fullName || user.username}" ?`)) {
-      return;
-    }
+    this.userToDelete.set(user);
+    this.showDeleteModal.set(true);
+  }
+
+  confirmDeleteUser(): void {
+    const user = this.userToDelete();
+    if (!user) return;
 
     this.loading.set(true);
     this.usersService.delete(user.id).subscribe({
       next: () => {
         this.showSuccess('Utilisateur supprimé avec succès');
+        this.showDeleteModal.set(false);
+        this.userToDelete.set(null);
         this.loadUsers();
         this.loadStats();
       },
       error: (error) => {
         console.error('Erreur suppression utilisateur:', error);
         this.showError('Erreur lors de la suppression de l\'utilisateur');
+        this.showDeleteModal.set(false);
+        this.userToDelete.set(null);
         this.loading.set(false);
       }
     });
@@ -513,6 +551,89 @@ export class UsersComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  // === Gestion des Permissions ===
+
+  // Initialiser les permissions selon le rôle
+  initializePermissions(role: UserRole): void {
+    if (role === UserRole.SELLER) {
+      // Permissions simples pour vendeurs (toutes à false par défaut)
+      this.permissionsForm = {};
+      this.sellerPages.forEach(page => {
+        this.permissionsForm[page] = false;
+      });
+    } else if (role === UserRole.ADMIN) {
+      // Permissions granulaires pour admins (toutes les actions à false par défaut)
+      this.permissionsForm = {};
+      this.adminPages.forEach(page => {
+        this.permissionsForm[page] = {
+          create: false,
+          read: false,
+          update: false,
+          delete: false
+        };
+      });
+    }
+  }
+
+  // Quand le rôle change dans le formulaire
+  onRoleChange(): void {
+    this.initializePermissions(this.formData.role);
+  }
+
+  // Toggle une permission de page pour un vendeur
+  toggleSellerPermission(page: string): void {
+    // Note: ngModel gère déjà la modification de la valeur via two-way binding
+    // Ne rien faire ici pour éviter le double-toggle
+  }
+
+  // Toggle une action spécifique pour un admin
+  toggleAdminAction(page: string, action: 'create' | 'read' | 'update' | 'delete'): void {
+    // Note: ngModel gère déjà la modification de la valeur via two-way binding
+    // Cette méthode peut servir pour des actions additionnelles si nécessaire
+    if (!this.permissionsForm[page]) {
+      this.permissionsForm[page] = {
+        create: false,
+        read: false,
+        update: false,
+        delete: false
+      };
+    }
+    // Ne pas inverser la valeur ici car ngModel l'a déjà fait!
+  }
+
+  // Toggle "Tous" pour une page admin
+  toggleAllActions(page: string): void {
+    const allSelected = this.areAllActionsSelected(page);
+    if (!this.permissionsForm[page]) {
+      this.permissionsForm[page] = {};
+    }
+    this.permissionsForm[page] = {
+      create: !allSelected,
+      read: !allSelected,
+      update: !allSelected,
+      delete: !allSelected
+    };
+  }
+
+  // Vérifier si toutes les actions sont sélectionnées pour une page
+  areAllActionsSelected(page: string): boolean {
+    const pagePerms = this.permissionsForm[page];
+    if (!pagePerms) return false;
+    return pagePerms.create && pagePerms.read && pagePerms.update && pagePerms.delete;
+  }
+
+  // Vérifier si au moins une action est sélectionnée pour une page admin
+  hasAnyAction(page: string): boolean {
+    const pagePerms = this.permissionsForm[page];
+    if (!pagePerms || typeof pagePerms === 'boolean') return false;
+    return pagePerms.create || pagePerms.read || pagePerms.update || pagePerms.delete;
+  }
+
+  // Obtenir les pages disponibles selon le rôle sélectionné
+  getAvailablePages(): string[] {
+    return this.formData.role === UserRole.SELLER ? this.sellerPages : this.adminPages;
   }
 
   // Méthodes de pagination

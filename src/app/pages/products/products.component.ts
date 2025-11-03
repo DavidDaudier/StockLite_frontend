@@ -28,6 +28,7 @@ import { PosHeaderComponent } from '../../components/pos-header/pos-header.compo
 import { ProductsService } from '../../core/services/products.service';
 import { CategoriesService } from '../../core/services/categories.service';
 import { AppInfoService } from '../../services/app-info.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Product, CreateProductDto, UpdateProductDto } from '../../core/models/product.model';
 import { Category } from '../../core/models/category.model';
 import { AppInfo } from '../../models/app-info.model';
@@ -111,7 +112,8 @@ export class ProductsComponent implements OnInit, OnDestroy {
     private productsService: ProductsService,
     private categoriesService: CategoriesService,
     private appInfoService: AppInfoService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    public authService: AuthService
   ) {
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],

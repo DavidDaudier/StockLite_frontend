@@ -34,6 +34,7 @@
             <span class="hidden sm:inline">Export Excel</span>
             <span class="sm:hidden">Excel</span>
           </button>
+          @if (authService.canCreate('users')) {
           <button
             (click)="openCreateModal()"
             [disabled]="loading() || selectionMode()"
@@ -41,6 +42,8 @@
             <ng-icon name="hugeUserAdd01" size="18"></ng-icon>
             <span>Nouvel Utilisateur</span>
           </button>
+          }
+          @if (authService.canDelete('users')) {
           <button
             (click)="toggleSelectionMode()"
             [disabled]="loading()"
@@ -56,6 +59,7 @@
               <span>Sélectionner</span>
             }
           </button>
+          }
         </div>
       </div>
     </div>
@@ -292,22 +296,35 @@
                       <div class="text-sm text-gray-900">{{ user.email || '-' }}</div>
                     </td>
                     <td class="px-3 md:px-6 py-3 whitespace-nowrap text-left">
-                      <span [class]="'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getRoleBadgeClass(user.role)">
-                        {{ getRoleLabel(user.role) }}
-                      </span>
+                      <div class="flex flex-col gap-1">
+                        <span [class]="'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getRoleBadgeClass(user.role)">
+                          {{ getRoleLabel(user.role) }}
+                        </span>
+                        @if (user.isSuperAdmin) {
+                          <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+                            ⭐ Super Admin
+                          </span>
+                        }
+                      </div>
                     </td>
                     <td class="px-3 md:px-6 py-3 whitespace-nowrap text-left" (click)="$event.stopPropagation()">
-                      <label class="inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          [checked]="user.isActive"
-                          (change)="toggleUserActive(user)"
-                          class="sr-only peer">
-                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                        <span class="ms-3 text-xs font-medium text-gray-700">
-                          <span class="hidden sm:inline">{{ user.isActive ? 'Actif' : 'Inactif' }}</span>
+                      @if (user.isSuperAdmin) {
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                          Toujours actif
                         </span>
-                      </label>
+                      } @else {
+                        <label class="inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            [checked]="user.isActive"
+                            (change)="toggleUserActive(user)"
+                            class="sr-only peer">
+                          <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                          <span class="ms-3 text-xs font-medium text-gray-700">
+                            <span class="hidden sm:inline">{{ user.isActive ? 'Actif' : 'Inactif' }}</span>
+                          </span>
+                        </label>
+                      }
                     </td>
                     <td class="px-3 md:px-6 py-3 whitespace-nowrap text-left text-sm text-gray-500 hidden lg:table-cell" (click)="$event.stopPropagation()">
                       <div class="flex items-center justify-start gap-2">
@@ -327,31 +344,41 @@
                     </td>
                     @if (!selectionMode()) {
                       <td class="px-3 md:px-6 py-3 whitespace-nowrap text-left" (click)="$event.stopPropagation()">
-                        <div class="flex items-center justify-start gap-2">
-                          @if (user.role === UserRole.SELLER) {
+                        @if (user.isSuperAdmin) {
+                          <span class="px-2 py-1 inline-flex text-xs leading-5 font-medium text-gray-500">
+                            Protégé
+                          </span>
+                        } @else {
+                          <div class="flex items-center justify-start gap-2">
+                            @if (user.role === UserRole.SELLER && authService.canUpdate('users')) {
+                              <button
+                                (click)="openPermissionsModal(user)"
+                                class="px-2 md:px-3 py-1.5 bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 transition-colors inline-flex items-center gap-1 text-xs font-medium cursor-pointer"
+                                title="Gérer les permissions">
+                                <ng-icon name="hugeSettings02" size="14"></ng-icon>
+                                <span class="hidden md:inline">Permissions</span>
+                              </button>
+                            }
+                            @if (authService.canUpdate('users')) {
                             <button
-                              (click)="openPermissionsModal(user)"
-                              class="px-2 md:px-3 py-1.5 bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 transition-colors inline-flex items-center gap-1 text-xs font-medium cursor-pointer"
-                              title="Gérer les permissions">
-                              <ng-icon name="hugeSettings02" size="14"></ng-icon>
-                              <span class="hidden md:inline">Permissions</span>
+                              (click)="openEditModal(user)"
+                              class="px-2 md:px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors inline-flex items-center gap-1 text-xs font-medium cursor-pointer"
+                              title="Modifier">
+                              <ng-icon name="hugeEdit02" size="14"></ng-icon>
+                              <span class="hidden md:inline">Modifier</span>
                             </button>
-                          }
-                          <button
-                            (click)="openEditModal(user)"
-                            class="px-2 md:px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors inline-flex items-center gap-1 text-xs font-medium cursor-pointer"
-                            title="Modifier">
-                            <ng-icon name="hugeEdit02" size="14"></ng-icon>
-                            <span class="hidden md:inline">Modifier</span>
-                          </button>
-                          <button
-                            (click)="deleteUser(user)"
-                            class="px-2 md:px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors inline-flex items-center gap-1 text-xs font-medium cursor-pointer"
-                            title="Supprimer">
-                            <ng-icon name="hugeDelete03" size="14"></ng-icon>
-                            <span class="hidden md:inline">Supprimer</span>
-                          </button>
-                        </div>
+                            }
+                            @if (authService.canDelete('users')) {
+                            <button
+                              (click)="deleteUser(user)"
+                              class="px-2 md:px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors inline-flex items-center gap-1 text-xs font-medium cursor-pointer"
+                              title="Supprimer">
+                              <ng-icon name="hugeDelete03" size="14"></ng-icon>
+                              <span class="hidden md:inline">Supprimer</span>
+                            </button>
+                            }
+                          </div>
+                        }
                       </td>
                     }
                   </tr>
@@ -502,89 +529,111 @@
         </label>
         <select
           [(ngModel)]="formData.role"
+          (change)="onRoleChange()"
           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
           <option [value]="UserRole.SELLER">Vendeur</option>
           <option [value]="UserRole.ADMIN">Administrateur</option>
         </select>
         <p class="mt-1 text-xs text-gray-500">
-          Les administrateurs ont accès à toutes les fonctionnalités
+          @if (formData.role === UserRole.SELLER) {
+            Les vendeurs ont un accès limité aux pages sélectionnées
+          } @else {
+            Les administrateurs peuvent avoir des permissions granulaires par page
+          }
         </p>
       </div>
 
-      <!-- Permissions Section (Only for Sellers) -->
-      @if (formData.role === UserRole.SELLER) {
-        <div class="border-t border-gray-200 pt-4">
-          <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <ng-icon name="hugeSettings02" size="18" class="text-teal-600"></ng-icon>
-            Gérer les Permissions
-          </h4>
+      <!-- Permissions Section -->
+      <div class="border-t border-gray-200 pt-4">
+        <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <ng-icon name="hugeSettings02" size="18" class="text-teal-600"></ng-icon>
+          Gérer les Permissions
+        </h4>
+
+        <!-- Seller Permissions: Simple checkboxes -->
+        @if (formData.role === UserRole.SELLER) {
           <p class="text-xs text-gray-600 mb-3">
             Sélectionnez les pages du sidebar auxquelles ce vendeur aura accès
           </p>
-
           <div class="space-y-2">
-            <!-- Dashboard Permission -->
-            <label class="flex items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-              <input
-                type="checkbox"
-                [(ngModel)]="permissionsForm.dashboard"
-                class="w-4 h-4 text-teal-600 rounded focus:ring-2 focus:ring-teal-500">
-              <div class="ml-3">
-                <span class="text-sm font-medium text-gray-900">Dashboard</span>
-                <p class="text-xs text-gray-500">Page d'accueil avec statistiques</p>
-              </div>
-            </label>
-
-            <!-- POS Permission -->
-            <label class="flex items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-              <input
-                type="checkbox"
-                [(ngModel)]="permissionsForm.pos"
-                class="w-4 h-4 text-teal-600 rounded focus:ring-2 focus:ring-teal-500">
-              <div class="ml-3">
-                <span class="text-sm font-medium text-gray-900">Point de Vente</span>
-                <p class="text-xs text-gray-500">Interface de vente et gestion du panier</p>
-              </div>
-            </label>
-
-            <!-- History Permission -->
-            <label class="flex items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-              <input
-                type="checkbox"
-                [(ngModel)]="permissionsForm.history"
-                class="w-4 h-4 text-teal-600 rounded focus:ring-2 focus:ring-teal-500">
-              <div class="ml-3">
-                <span class="text-sm font-medium text-gray-900">Historique</span>
-                <p class="text-xs text-gray-500">Historique des ventes</p>
-              </div>
-            </label>
-
-            <!-- Reports Permission -->
-            <label class="flex items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-              <input
-                type="checkbox"
-                [(ngModel)]="permissionsForm.reports"
-                class="w-4 h-4 text-teal-600 rounded focus:ring-2 focus:ring-teal-500">
-              <div class="ml-3">
-                <span class="text-sm font-medium text-gray-900">Rapports</span>
-                <p class="text-xs text-gray-500">Rapports et statistiques de vente</p>
-              </div>
-            </label>
-
-            <!-- Profile Permission -->
-            <label class="flex items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-              <input
-                type="checkbox"
-                [(ngModel)]="permissionsForm.profile"
-                class="w-4 h-4 text-teal-600 rounded focus:ring-2 focus:ring-teal-500">
-              <div class="ml-3">
-                <span class="text-sm font-medium text-gray-900">Profil</span>
-                <p class="text-xs text-gray-500">Page de profil utilisateur</p>
-              </div>
-            </label>
+            @for (page of getAvailablePages(); track page) {
+              <label class="flex items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="permissionsForm[page]"
+                  (change)="toggleSellerPermission(page)"
+                  class="w-4 h-4 text-teal-600 rounded focus:ring-2 focus:ring-teal-500">
+                <div class="ml-3">
+                  <span class="text-sm font-medium text-gray-900">{{ pageLabels[page] }}</span>
+                </div>
+              </label>
+            }
           </div>
-        </div>
-      }
+        }
+
+        <!-- Admin Permissions: Granular actions -->
+        @if (formData.role === UserRole.ADMIN) {
+          <p class="text-xs text-gray-600 mb-3">
+            Cochez les pages et actions accessibles pour cet administrateur
+          </p>
+          <div class="space-y-3">
+            @for (page of getAvailablePages(); track page) {
+              <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm font-semibold text-gray-900">{{ pageLabels[page] }}</span>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <!-- Tous -->
+                  <label class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer transition-colors text-xs">
+                    <input
+                      type="checkbox"
+                      [checked]="areAllActionsSelected(page)"
+                      (change)="toggleAllActions(page)"
+                      class="w-3.5 h-3.5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 mr-2">
+                    <span class="font-medium">Tous</span>
+                  </label>
+                  <!-- Ajouter -->
+                  <label class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer transition-colors text-xs">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="permissionsForm[page].create"
+                      (change)="toggleAdminAction(page, 'create')"
+                      class="w-3.5 h-3.5 text-green-600 rounded focus:ring-2 focus:ring-green-500 mr-2">
+                    <span>Ajouter</span>
+                  </label>
+                  <!-- Lire -->
+                  <label class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer transition-colors text-xs">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="permissionsForm[page].read"
+                      (change)="toggleAdminAction(page, 'read')"
+                      class="w-3.5 h-3.5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 mr-2">
+                    <span>Lire</span>
+                  </label>
+                  <!-- Modifier -->
+                  <label class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer transition-colors text-xs">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="permissionsForm[page].update"
+                      (change)="toggleAdminAction(page, 'update')"
+                      class="w-3.5 h-3.5 text-amber-600 rounded focus:ring-2 focus:ring-amber-500 mr-2">
+                    <span>Modifier</span>
+                  </label>
+                  <!-- Supprimer -->
+                  <label class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer transition-colors text-xs">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="permissionsForm[page].delete"
+                      (change)="toggleAdminAction(page, 'delete')"
+                      class="w-3.5 h-3.5 text-red-600 rounded focus:ring-2 focus:ring-red-500 mr-2">
+                    <span>Supprimer</span>
+                  </label>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
     </div>
 
     <!-- Modal Footer -->
@@ -705,6 +754,45 @@
     </div>
   </div>
 </div>
+}
+
+<!-- Single Delete Confirmation Modal -->
+@if (showDeleteModal()) {
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+      <div class="p-6">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+            <ng-icon name="hugeAlert01" size="24" class="text-red-600"></ng-icon>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-gray-900">Supprimer l'utilisateur</h3>
+            <p class="text-sm text-gray-500">Cette action est irréversible</p>
+          </div>
+        </div>
+        <p class="text-gray-700 mb-6">
+          Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>"{{ userToDelete()?.fullName || userToDelete()?.username }}"</strong> ?
+        </p>
+        <div class="flex justify-end gap-3">
+          <button
+            (click)="showDeleteModal.set(false); userToDelete.set(null)"
+            [disabled]="loading()"
+            class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 cursor-pointer">
+            Annuler
+          </button>
+          <button
+            (click)="confirmDeleteUser()"
+            [disabled]="loading()"
+            class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer">
+            @if (loading()) {
+              <span class="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+            }
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 }
 
 <!-- Multiple Delete Confirmation Modal -->

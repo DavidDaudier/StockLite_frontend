@@ -284,12 +284,14 @@
                       </label>
                     </td>
                     <td class="px-3 md:px-6 py-3 whitespace-nowrap text-center">
+                      @if (authService.canUpdate('stock-tracking')) {
                       <button
                         (click)="openAdjustModal(product)"
                         class="px-2 md:px-3 py-1.5 bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 transition-colors inline-flex items-center gap-1 text-xs font-medium cursor-pointer">
                         <ng-icon name="hugeEdit02" size="14"></ng-icon>
                         <span class="hidden md:inline">Ajuster</span>
                       </button>
+                      }
                     </td>
                   </tr>
                 }

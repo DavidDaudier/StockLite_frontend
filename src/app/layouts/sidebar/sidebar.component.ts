@@ -14,11 +14,17 @@ import {
   hugeSettings01,
   hugeLogout03,
   hugeUserMultiple,
-  hugeUser
+  hugeUser,
+  hugeAnalyticsUp,
+  hugeInvestigation,
+  hugeVideoReplay,
+  hugePrinter,
+  hugeClock05
 } from '@ng-icons/huge-icons';
 
 @Component({
   selector: 'app-sidebar',
+  standalone: true,
   imports: [
     CommonModule,
     NgIcon,
@@ -35,7 +41,12 @@ import {
       hugeSettings01,
       hugeLogout03,
       hugeUserMultiple,
-      hugeUser
+      hugeUser,
+      hugeAnalyticsUp,
+      hugeInvestigation,
+      hugeVideoReplay,
+      hugePrinter,
+      hugeClock05
     })
   ],
   templateUrl: './sidebar.component.html',
@@ -50,27 +61,80 @@ export class SidebarComponent implements OnInit {
   menuItems: Array<{ icon: string; label: string; route: string; active: boolean }> = [];
 
   ngOnInit() {
-    // Initialiser les items du menu selon le rôle
+    // Initialiser les items du menu selon le rôle et les permissions
     const isAdmin = this.authService.isAdmin();
+    const isSuperAdmin = this.authService.isSuperAdmin();
     const prefix = isAdmin ? '/admin' : '/seller';
 
-    if (isAdmin) {
-      // Menu admin
+    // Définir tous les menus possibles
+    const allMenus = {
+      dashboard: { icon: 'hugeDashboardBrowsing', label: 'Dashboard', route: `${prefix}/dashboard`, page: 'dashboard' },
+      products: { icon: 'hugePackageSent', label: 'Produits', route: `${prefix}/products`, page: 'products' },
+      pos: { icon: 'hugeDashboardSquareEdit', label: 'Point de vente', route: `${prefix}/pos`, page: 'pos' },
+      'stock-tracking': { icon: 'hugeAppleStocks', label: 'Suivi de Stocks', route: `${prefix}/stocks`, page: 'stocks' },
+      stocks: { icon: 'hugeAppleStocks', label: 'Suivi de Stocks', route: `${prefix}/stocks`, page: 'stocks' },
+      history: { icon: 'hugeClock05', label: 'Historique', route: `${prefix}/history`, page: 'history' },
+      // Label différent selon le rôle: Admin = "Rapports Financiers", Seller = "Rapports"
+      reports: { icon: 'hugeAnalyticsUp', label: isAdmin ? 'Rapports Financiers' : 'Rapports', route: `${prefix}/reports`, page: 'reports' },
+      'report-vendor': { icon: 'hugeAnalyticsUp', label: 'Rapports Vendeur', route: `${prefix}/report-vendor`, page: 'report-vendor' },
+      inventories: { icon: 'hugeInvestigation', label: 'Inventaires', route: `${prefix}/inventories`, page: 'inventories' },
+      zoom: { icon: 'hugeVideoReplay', label: 'Zoom', route: `${prefix}/zoom`, page: 'zoom' },
+      users: { icon: 'hugeUserMultiple', label: 'Utilisateurs', route: `${prefix}/users`, page: 'users' },
+      profile: { icon: 'hugeUser', label: 'Profil', route: `${prefix}/profile`, page: 'profile' },
+      'pos-printer': { icon: 'hugePrinter', label: 'POS/Printer', route: `${prefix}/pos-printer`, page: 'pos-printer' },
+      settings: { icon: 'hugeSettings01', label: 'Paramètre', route: `${prefix}/settings`, page: 'settings' }
+    };
+
+    // SEULEMENT Super Admin : afficher toutes les pages
+    if (isSuperAdmin) {
       this.menuItems = [
-        { icon: 'hugeDashboardBrowsing', label: 'Dashboard', route: `${prefix}/dashboard`, active: false },
-        { icon: 'hugePackageSent', label: 'Produits', route: `${prefix}/products`, active: false },
-        { icon: 'hugeAppleStocks', label: 'Suivi des stocks', route: `${prefix}/stocks`, active: false },
-        { icon: 'hugeUserMultiple', label: 'Utilisateurs', route: `${prefix}/users`, active: false },
-        { icon: 'hugeContracts', label: 'Rapports financiers', route: `${prefix}/reports`, active: false },
-        { icon: 'hugeSettings01', label: 'Paramètres', route: `${prefix}/settings`, active: false }
-      ];
-    } else {
-      // Menu vendeur (sans Produits, sans Suivi des stocks, sans Utilisateurs)
-      this.menuItems = [
-        { icon: 'hugeDashboardBrowsing', label: 'Dashboard', route: `${prefix}/dashboard`, active: false },
-        { icon: 'hugeContracts', label: 'Rapports financiers', route: `${prefix}/reports`, active: false },
-        { icon: 'hugeUser', label: 'Profil', route: `${prefix}/profile`, active: false }
-      ];
+        allMenus.dashboard,
+        allMenus.products,
+        allMenus.pos,
+        allMenus['stock-tracking'],
+        allMenus.history,
+        allMenus.reports,
+        allMenus['report-vendor'],
+        allMenus.inventories,
+        allMenus.zoom,
+        allMenus.users,
+        allMenus.profile,
+        allMenus['pos-printer'],
+        allMenus.settings
+      ].map(item => ({ ...item, active: false }));
+      return;
+    }
+
+    // Pour les admins réguliers et vendeurs : construire le menu basé sur les permissions
+    const accessiblePages = this.authService.getAccessiblePages();
+    this.menuItems = [];
+
+    // Ajouter les menus auxquels l'utilisateur a accès
+    for (const page of accessiblePages) {
+      const menu = allMenus[page as keyof typeof allMenus];
+      if (menu) {
+        this.menuItems.push({ ...menu, active: false });
+      }
+    }
+
+    // Si aucune permission définie
+    if (this.menuItems.length === 0) {
+      if (isAdmin) {
+        // Admin sans permissions = afficher un message ou rediriger
+        // Pour l'instant, on affiche au moins le profil
+        this.menuItems = [
+          allMenus.profile
+        ].map(item => ({ ...item, active: false }));
+      } else {
+        // Vendeur par défaut : 5 pages de base
+        this.menuItems = [
+          allMenus.dashboard,
+          allMenus.pos,
+          allMenus.history,
+          allMenus.reports,
+          allMenus.profile
+        ].map(item => ({ ...item, active: false }));
+      }
     }
   }
 

@@ -74,22 +74,49 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/products/products.component').then(m => m.ProductsComponent)
       },
       {
+        path: 'pos',
+        loadComponent: () => import('./pages/seller/pos/pos.component').then(m => m.PosComponent)
+      },
+      {
         path: 'stocks',
         loadComponent: () => import('./pages/stocks/stocks.component').then(m => m.StocksComponent)
+      },
+      {
+        path: 'history',
+        loadComponent: () => import('./pages/seller/sales-history/sales-history.component').then(m => m.SalesHistoryComponent)
       },
       {
         path: 'reports',
         loadComponent: () => import('./pages/reports/reports.component').then(m => m.ReportsComponent)
       },
       {
-        path: 'settings',
-        loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent)
+        path: 'report-vendor',
+        loadComponent: () => import('./pages/seller/seller-reports/seller-reports.component').then(m => m.SellerReportsComponent)
+      },
+      {
+        path: 'inventories',
+        loadComponent: () => import('./pages/inventories/inventories.component').then(m => m.InventoriesComponent)
+      },
+      {
+        path: 'zoom',
+        loadComponent: () => import('./pages/zoom/zoom.component').then(m => m.ZoomComponent)
       },
       {
         path: 'users',
         loadComponent: () => import('./pages/users/users.component').then(m => m.UsersComponent)
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./pages/seller/profile/profile.component').then(m => m.ProfileComponent)
+      },
+      {
+        path: 'pos-printer',
+        loadComponent: () => import('./pages/pos-printer/pos-printer.component').then(m => m.PosPrinterComponent)
+      },
+      {
+        path: 'settings',
+        loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent)
       }
-      // TODO: Ajouter categories, orders quand créés
     ]
   },
 

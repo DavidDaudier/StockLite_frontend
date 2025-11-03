@@ -3,13 +3,42 @@ export enum UserRole {
   SELLER = 'seller'
 }
 
-export interface UserPermissions {
+// Permissions simples pour les vendeurs (boolean pour chaque page)
+export interface SellerPermissions {
   dashboard?: boolean;
   pos?: boolean;
   history?: boolean;
   reports?: boolean;
   profile?: boolean;
 }
+
+// Actions granulaires pour les admins
+export interface PageActions {
+  create?: boolean;
+  read?: boolean;
+  update?: boolean;
+  delete?: boolean;
+}
+
+// Permissions granulaires pour les admins
+export interface AdminPermissions {
+  dashboard?: PageActions;
+  products?: PageActions;
+  pos?: PageActions;
+  'stock-tracking'?: PageActions;
+  history?: PageActions;
+  reports?: PageActions;
+  'report-vendor'?: PageActions;
+  inventories?: PageActions;
+  zoom?: PageActions;
+  users?: PageActions;
+  profile?: PageActions;
+  'pos-printer'?: PageActions;
+  settings?: PageActions;
+}
+
+// Type générique pour permissions (peut être Admin ou Seller)
+export type UserPermissions = SellerPermissions | AdminPermissions;
 
 export interface User {
   id: string;
@@ -21,6 +50,7 @@ export interface User {
   phone?: string;
   role: UserRole;
   isActive: boolean;
+  isSuperAdmin?: boolean;
   permissions?: UserPermissions;
   lastLoginAt?: Date;
   createdAt: Date;

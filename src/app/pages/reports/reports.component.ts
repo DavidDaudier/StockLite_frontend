@@ -6,6 +6,7 @@ import { ReportsService } from '../../core/services/reports.service';
 import { UsersService } from '../../core/services/users.service';
 import { SalesService } from '../../core/services/sales.service';
 import { AppInfoService } from '../../services/app-info.service';
+import { AuthService } from '../../core/services/auth.service';
 import { User } from '../../core/models/user.model';
 import { Sale } from '../../core/models/sale.model';
 import { AppInfo } from '../../models/app-info.model';
@@ -224,7 +225,8 @@ export class ReportsComponent implements OnInit {
     private reportsService: ReportsService,
     private usersService: UsersService,
     private salesService: SalesService,
-    private appInfoService: AppInfoService
+    private appInfoService: AppInfoService,
+    public authService: AuthService
   ) {}
 
   ngOnInit(): void {

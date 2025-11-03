@@ -18,6 +18,7 @@
         </div>
         <!-- Export Buttons -->
         <div class="flex items-center gap-2">
+          @if (authService.canRead('reports')) {
           <button
             (click)="exportToPDF()"
             [disabled]="loading() || selectionMode()"
@@ -25,6 +26,8 @@
             <ng-icon name="hugePdf01" size="18" />
             <span class="hidden sm:inline">Export PDF</span>
           </button>
+          }
+          @if (authService.canRead('reports')) {
           <button
             (click)="exportToExcel()"
             [disabled]="loading() || selectionMode()"
@@ -32,6 +35,8 @@
             <ng-icon name="hugeXls01" size="18" />
             <span class="hidden sm:inline">Export Excel</span>
           </button>
+          }
+          @if (authService.canRead('reports')) {
           <button
             (click)="openComparisonModal()"
             [disabled]="loading() || selectionMode()"
@@ -39,6 +44,7 @@
             <ng-icon name="hugeGitCompare" size="18" />
             <span class="hidden sm:inline">Comparer Profit</span>
           </button>
+          }
         </div>
       </div>
     </div>
@@ -454,6 +460,7 @@
                   </select>
 
                   <!-- Selection button -->
+                  @if (authService.canDelete('reports')) {
                   <button
                     (click)="toggleSelectionMode()"
                     [disabled]="loading() || allSales().length === 0"
@@ -471,6 +478,7 @@
                       <span>Sélectionner</span>
                     }
                   </button>
+                  }
                 </div>
               </div>
             </div>
