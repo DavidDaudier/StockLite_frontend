@@ -37,7 +37,10 @@ import {
   hugeGitCompare,
   hugeArrowUp02,
   hugeDelete03,
-  hugeAlert01
+  hugeAlert01,
+  hugeCheckmarkCircle04,
+  hugeEye,
+  hugeViewOff
 } from '@ng-icons/huge-icons';
 
 interface DateRange {
@@ -69,7 +72,10 @@ interface DateRange {
       hugeGitCompare,
       hugeArrowUp02,
       hugeDelete03,
-      hugeAlert01
+      hugeAlert01,
+      hugeCheckmarkCircle04,
+      hugeEye,
+      hugeViewOff
     })
   ],
   templateUrl: './reports.component.html',
@@ -206,6 +212,9 @@ export class ReportsComponent implements OnInit {
 
   // App info for exports
   appInfo = signal<AppInfo | null>(DEFAULT_APP_INFO);
+
+  // Toggle stats visibility
+  showStats = signal(true);
 
   // Selection mode
   selectionMode = signal<boolean>(false);

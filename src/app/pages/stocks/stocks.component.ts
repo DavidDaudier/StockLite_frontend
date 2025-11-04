@@ -19,7 +19,8 @@ import {
   hugeXls01,
   hugeEye,
   hugeViewOffSlash,
-  hugeDeliveryView01
+  hugeDeliveryView01,
+  hugeViewOff
 } from '@ng-icons/huge-icons';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -66,7 +67,8 @@ interface StockStats {
       hugeXls01,
       hugeEye,
       hugeViewOffSlash,
-      hugeDeliveryView01
+      hugeDeliveryView01,
+      hugeViewOff
     })
   ],
   templateUrl: './stocks.component.html',
@@ -80,6 +82,9 @@ export class StocksComponent implements OnInit, OnDestroy {
   filteredProducts = signal<Product[]>([]);
   categories = signal<Category[]>([]);
   stats = signal<StockStats>({ total: 0, available: 0, low: 0, outOfStock: 0, inactive: 0, totalValue: 0 });
+
+  // Toggle stats visibility
+  showStats = signal(true);
 
   // Filters (using signals)
   searchTerm = signal<string>('');

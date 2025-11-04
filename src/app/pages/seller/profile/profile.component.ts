@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
-import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
+import { SidebarComponent } from '../../../layouts/sidebar/sidebar.component';
 import { PosHeaderComponent } from '../../../components/pos-header/pos-header.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {

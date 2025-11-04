@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CategoriesService } from '../../core/services/categories.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Category, CreateCategoryDto, UpdateCategoryDto } from '../../core/models/category.model';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -57,7 +58,10 @@ export class CategoriesComponent implements OnInit {
     inactive: 0
   });
 
-  constructor(private categoriesService: CategoriesService) {}
+  constructor(
+    private categoriesService: CategoriesService,
+    public authService: AuthService
+  ) {}
 
   ngOnInit(): void {
     this.loadCategories();

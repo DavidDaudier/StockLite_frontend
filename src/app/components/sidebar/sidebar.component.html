@@ -1,29 +1,21 @@
 <aside [ngClass]="isCollapsed() ? 'w-20' : 'w-64'" class="bg-white border-r border-gray-200 flex flex-col h-screen transition-all duration-300">
   <!-- Logo/Brand -->
   <div class="p-4 border-b border-gray-200">
-    <div [ngClass]="isCollapsed() ? 'flex-col gap-3' : 'flex-row justify-between'" class="flex items-center">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center flex-shrink-0">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
-        </div>
-        <div *ngIf="!isCollapsed()" class="overflow-hidden">
-          <h1 class="font-bold text-lg text-gray-900">StockLite</h1>
-          <p class="text-xs text-gray-500">POS System</p>
-        </div>
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center flex-shrink-0">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
       </div>
-      <button
-        (click)="toggleSidebar()"
-        class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-        [title]="isCollapsed() ? 'Ouvrir le menu' : 'Fermer le menu'">
-        <ng-icon [name]="isCollapsed() ? 'hugeMenu01' : 'hugeArrowLeft01'" class="text-gray-600" />
-      </button>
+      <div *ngIf="!isCollapsed()" class="overflow-hidden">
+        <h1 class="font-bold text-lg text-gray-900">StockLite</h1>
+        <p class="text-xs text-gray-500">POS System</p>
+      </div>
     </div>
   </div>
 
   <!-- Menu Items -->
-  <nav class="flex-1 p-4 space-y-2">
+  <nav class="flex-1 overflow-y-auto p-4 space-y-2">
     <a
       *ngFor="let item of menuItems()"
       [routerLink]="item.route"

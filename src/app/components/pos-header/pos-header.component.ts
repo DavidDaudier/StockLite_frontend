@@ -2,9 +2,10 @@ import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
+import { SidebarService } from '../../services/sidebar/sidebar.service';
 import { User } from '../../core/models/user.model';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { hugeSearch01, hugeNotification02, hugeCalendar03, hugeClock01 } from '@ng-icons/huge-icons';
+import { hugeSearch01, hugeNotification02, hugeCalendar03, hugeClock01, hugeMenu01 } from '@ng-icons/huge-icons';
 
 @Component({
   selector: 'app-pos-header',
@@ -15,7 +16,8 @@ import { hugeSearch01, hugeNotification02, hugeCalendar03, hugeClock01 } from '@
       hugeSearch01,
       hugeNotification02,
       hugeCalendar03,
-      hugeClock01
+      hugeClock01,
+      hugeMenu01
     })
   ],
   templateUrl: './pos-header.component.html',
@@ -23,6 +25,7 @@ import { hugeSearch01, hugeNotification02, hugeCalendar03, hugeClock01 } from '@
 })
 export class PosHeaderComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
+  private sidebarService = inject(SidebarService);
 
   searchTerm = signal('');
   currentUser: User | null = null;
@@ -33,6 +36,10 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
   constructor() {
     this.currentUser = this.authService.getCurrentUser();
     this.updateDateTime();
+  }
+
+  toggleSidebar(): void {
+    this.sidebarService.toggle();
   }
 
   ngOnInit(): void {

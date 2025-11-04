@@ -76,12 +76,14 @@
       </div>
 
       <!-- Add Button -->
+      @if (authService.canCreate('categories')) {
       <button
         (click)="openCreateModal()"
         class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
         <ng-icon name="hugePlusSign" />
         <span>Nouvelle Catégorie</span>
       </button>
+      }
     </div>
   </div>
 
@@ -161,16 +163,20 @@
               {{ category.createdAt | date:'dd/MM/yyyy' }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              @if (authService.canUpdate('categories')) {
               <button
                 (click)="openEditModal(category)"
                 class="text-blue-600 hover:text-blue-900 mr-3">
                 <ng-icon name="hugeEdit02" />
               </button>
+              }
+              @if (authService.canDelete('categories')) {
               <button
                 (click)="deleteCategory(category)"
                 class="text-red-600 hover:text-red-900">
                 <ng-icon name="hugeDelete03" />
               </button>
+              }
             </td>
           </tr>
         </tbody>

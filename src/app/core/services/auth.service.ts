@@ -223,6 +223,15 @@ export class AuthService {
     }
 
     console.log('Pages accessibles calculées:', pages);
+
+    // IMPORTANT: L'historique dépend du POS
+    // Si l'utilisateur n'a pas accès au POS, retirer l'historique
+    if (pages.includes('history') && !pages.includes('pos')) {
+      const index = pages.indexOf('history');
+      pages.splice(index, 1);
+      console.log('⚠️ Historique retiré car pas d\'accès au POS');
+    }
+
     return pages;
   }
 

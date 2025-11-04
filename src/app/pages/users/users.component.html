@@ -93,7 +93,17 @@
       </div>
     }
 
+    <!-- Bouton flottant Toggle Stats -->
+    <button
+      (click)="showStats.set(!showStats())"
+      class="fixed -right-2 z-50 p-3 bg-blue-600/70 text-white rounded-l-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 cursor-pointer"
+      [style.top]="showStats() ? '175px' : '45px'"
+      [title]="showStats() ? 'Masquer les statistiques' : 'Afficher les statistiques'">
+      <ng-icon [name]="showStats() ? 'hugeViewOff' : 'hugeEye'" size="20" strokeWidth="2"></ng-icon>
+    </button>
+
     <!-- Statistiques -->
+    @if (showStats()) {
     <div class="px-6 pb-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <!-- Total utilisateurs -->
@@ -162,6 +172,7 @@
         </div>
       </div>
     </div>
+    }
 
     <!-- Contenu principal -->
     <div class="flex-1 overflow-y-auto px-6 pb-6 bg-white">
@@ -230,7 +241,7 @@
 
         <!-- Tableau des utilisateurs -->
         @else {
-          <div class="bg-white rounded-lg border border-gray-200 overflow-x-auto">
+          <div class="table-container-fixed">
             <table class="min-w-full divide-y divide-gray-200 table-fixed">
               <thead class="bg-teal-600 text-white sticky top-0 z-10">
                 <tr>
@@ -296,16 +307,15 @@
                       <div class="text-sm text-gray-900">{{ user.email || '-' }}</div>
                     </td>
                     <td class="px-3 md:px-6 py-3 whitespace-nowrap text-left">
-                      <div class="flex flex-col gap-1">
+                      @if (user.isSuperAdmin) {
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+                          ⭐ Super Admin
+                        </span>
+                      } @else {
                         <span [class]="'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getRoleBadgeClass(user.role)">
                           {{ getRoleLabel(user.role) }}
                         </span>
-                        @if (user.isSuperAdmin) {
-                          <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
-                            ⭐ Super Admin
-                          </span>
-                        }
-                      </div>
+                      }
                     </td>
                     <td class="px-3 md:px-6 py-3 whitespace-nowrap text-left" (click)="$event.stopPropagation()">
                       @if (user.isSuperAdmin) {
@@ -350,7 +360,7 @@
                           </span>
                         } @else {
                           <div class="flex items-center justify-start gap-2">
-                            @if (user.role === UserRole.SELLER && authService.canUpdate('users')) {
+                            @if ((user.role === UserRole.SELLER || user.role === UserRole.ADMIN) && authService.canUpdate('users')) {
                               <button
                                 (click)="openPermissionsModal(user)"
                                 class="px-2 md:px-3 py-1.5 bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 transition-colors inline-flex items-center gap-1 text-xs font-medium cursor-pointer"
@@ -671,70 +681,81 @@
     </div>
 
     <!-- Modal Body -->
-    <div class="p-6 space-y-4">
-      <p class="text-sm text-gray-600 mb-4">
-        Sélectionnez les pages du sidebar auxquelles ce vendeur aura accès
-      </p>
+    <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+      @if (currentUser?.role === UserRole.SELLER) {
+        <p class="text-sm text-gray-600 mb-4">
+          Sélectionnez les pages du sidebar auxquelles ce vendeur aura accès
+        </p>
 
-      <!-- Dashboard Permission -->
-      <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-        <input
-          type="checkbox"
-          [(ngModel)]="permissionsForm.dashboard"
-          class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
-        <div class="ml-3">
-          <span class="text-sm font-medium text-gray-900">Dashboard</span>
-          <p class="text-xs text-gray-500">Page d'accueil avec statistiques</p>
-        </div>
-      </label>
+        @for (page of sellerPages; track page) {
+          <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+            <input
+              type="checkbox"
+              [(ngModel)]="permissionsForm[page]"
+              class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+            <div class="ml-3">
+              <span class="text-sm font-medium text-gray-900">{{ pageLabels[page] }}</span>
+            </div>
+          </label>
+        }
+      } @else if (currentUser?.role === UserRole.ADMIN) {
+        <p class="text-sm text-gray-600 mb-4">
+          Configurez les permissions d'accès pour cet administrateur
+        </p>
 
-      <!-- POS Permission -->
-      <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-        <input
-          type="checkbox"
-          [(ngModel)]="permissionsForm.pos"
-          class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
-        <div class="ml-3">
-          <span class="text-sm font-medium text-gray-900">Point de Vente</span>
-          <p class="text-xs text-gray-500">Interface de vente et gestion du panier</p>
-        </div>
-      </label>
-
-      <!-- History Permission -->
-      <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-        <input
-          type="checkbox"
-          [(ngModel)]="permissionsForm.history"
-          class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
-        <div class="ml-3">
-          <span class="text-sm font-medium text-gray-900">Historique</span>
-          <p class="text-xs text-gray-500">Historique des ventes</p>
-        </div>
-      </label>
-
-      <!-- Reports Permission -->
-      <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-        <input
-          type="checkbox"
-          [(ngModel)]="permissionsForm.reports"
-          class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
-        <div class="ml-3">
-          <span class="text-sm font-medium text-gray-900">Rapports</span>
-          <p class="text-xs text-gray-500">Rapports et statistiques de vente</p>
-        </div>
-      </label>
-
-      <!-- Profile Permission -->
-      <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-        <input
-          type="checkbox"
-          [(ngModel)]="permissionsForm.profile"
-          class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
-        <div class="ml-3">
-          <span class="text-sm font-medium text-gray-900">Profil</span>
-          <p class="text-xs text-gray-500">Page de profil utilisateur</p>
-        </div>
-      </label>
+        @for (page of adminPages; track page) {
+          <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  [checked]="isPageFullyAccessible(page)"
+                  (change)="toggleAllAdminPermissions(page)"
+                  class="w-4 h-4 text-teal-600 rounded focus:ring-2 focus:ring-teal-500">
+                <span class="text-sm font-semibold text-gray-900">{{ pageLabels[page] }}</span>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2 ml-6">
+              <!-- Ajouter -->
+              <label class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer transition-colors text-xs">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="permissionsForm[page].create"
+                  (change)="updatePageCheckbox(page)"
+                  class="w-3.5 h-3.5 text-green-600 rounded focus:ring-2 focus:ring-green-500 mr-2">
+                <span>Ajouter</span>
+              </label>
+              <!-- Lire -->
+              <label class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer transition-colors text-xs">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="permissionsForm[page].read"
+                  (change)="updatePageCheckbox(page)"
+                  class="w-3.5 h-3.5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 mr-2">
+                <span>Lire</span>
+              </label>
+              <!-- Modifier -->
+              <label class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer transition-colors text-xs">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="permissionsForm[page].update"
+                  (change)="updatePageCheckbox(page)"
+                  class="w-3.5 h-3.5 text-amber-600 rounded focus:ring-2 focus:ring-amber-500 mr-2">
+                <span>Modifier</span>
+              </label>
+              <!-- Supprimer -->
+              <label class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer transition-colors text-xs">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="permissionsForm[page].delete"
+                  (change)="updatePageCheckbox(page)"
+                  class="w-3.5 h-3.5 text-red-600 rounded focus:ring-2 focus:ring-red-500 mr-2">
+                <span>Supprimer</span>
+              </label>
+            </div>
+          </div>
+        }
+      }
     </div>
 
     <!-- Modal Footer -->

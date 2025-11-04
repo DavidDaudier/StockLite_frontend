@@ -5,6 +5,31 @@ html{
     font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Custom scrollbar - gris pâle et réduit */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db #f3f4f6;
+}
+
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
 /* Inset shadow utilities for buttons */
 .inset-shadow-sm {
     box-shadow: inset 0 1px 3px 0 rgba(0, 0, 0, 0.1);
@@ -16,4 +41,32 @@ html{
 
 .hover\:inset-shadow-none:hover {
     box-shadow: none;
+}
+
+/* Tableaux avec en-tête fixe et défilement vertical */
+.table-container-fixed {
+    max-height: calc(100vh - 400px);
+    overflow-y: auto;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+}
+
+.table-container-fixed table {
+    width: 100%;
+}
+
+.table-container-fixed thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #0d9488;
+}
+
+.table-container-fixed thead th {
+    background-color: #0d9488 !important;
+}
+
+/* Empêcher le scroll du sidebar lors du clic sur un lien */
+.sidebar-nav {
+    scroll-behavior: auto !important;
 }

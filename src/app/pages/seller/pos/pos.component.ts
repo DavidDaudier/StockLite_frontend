@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { hugePlusSign, hugeNotebook01, hugeTimeSchedule } from '@ng-icons/huge-icons';
 import { ProductService } from '../../../services/product/product.service';
-import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
+import { SidebarComponent } from '../../../layouts/sidebar/sidebar.component';
 import { PosHeaderComponent } from '../../../components/pos-header/pos-header.component';
 // import { CategoryProductComponent } from '../../../components/category-product/category-product.component';
 import { ProductListComponent } from '../../../components/product-list/product-list.component';

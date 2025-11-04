@@ -78,7 +78,17 @@
       </div>
     }
 
+    <!-- Bouton flottant Toggle Stats -->
+    <button
+      (click)="showStats.set(!showStats())"
+      class="fixed -right-2 z-50 p-3 bg-blue-600/70 text-white rounded-l-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 cursor-pointer"
+      [style.top]="showStats() ? '175px' : '45px'"
+      [title]="showStats() ? 'Masquer les statistiques' : 'Afficher les statistiques'">
+      <ng-icon [name]="showStats() ? 'hugeViewOff' : 'hugeEye'" size="20" strokeWidth="2"></ng-icon>
+    </button>
+
     <!-- Statistiques -->
+    @if (showStats()) {
     <div class="px-6 pb-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <!-- Revenu Total -->
@@ -147,6 +157,7 @@
         </div>
       </div>
     </div>
+    }
 
     <!-- Comparison Modal -->
     @if (showComparisonModal()) {
@@ -810,7 +821,7 @@
 
           <!-- Detailed Report Table -->
           @if (salesReport()) {
-            <div class="bg-white rounded-lg border border-gray-200 overflow-x-auto mb-0">
+            <div class="table-container-fixed">
               <div class="p-4 border-b border-gray-200 bg-blue-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-30">
                 <h3 class="text-base font-semibold text-gray-900">Détails du Rapport de Ventes</h3>
               </div>

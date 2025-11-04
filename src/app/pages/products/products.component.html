@@ -32,32 +32,32 @@
 
                 <!-- Bouton gestion catégories -->
                 @if (authService.canCreate('products')) {
-                <button
-                    (click)="openCategoriesModal()"
-                    [disabled]="isSelectionMode()"
-                    class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-                    <ng-icon name="hugeGeometricShapes01" size="20"></ng-icon>
-                    Catégories
-                </button>
+                  <button
+                      (click)="openCategoriesModal()"
+                      [disabled]="isSelectionMode()"
+                      class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                      <ng-icon name="hugeGeometricShapes01" size="20"></ng-icon>
+                      Catégories
+                  </button>
                 }
 
                 <!-- Bouton suppression multiple -->
                 @if (authService.canDelete('products')) {
-                <button
-                    (click)="toggleSelectionMode()"
-                    [disabled]="loading()"
-                    [class]="isSelectionMode() && selectedProducts().size > 0 ? 'px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 shadow-md cursor-pointer' : 'px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 shadow-md cursor-pointer'">
-                    <ng-icon name="hugeDelete02" size="20"></ng-icon>
-                    @if (isSelectionMode()) {
-                        @if (selectedProducts().size > 0) {
-                            <span>Supprimer ({{ selectedProducts().size }})</span>
-                        } @else {
-                            <span>Annuler</span>
-                        }
-                    } @else {
-                        <span>Sélectionner</span>
-                    }
-                </button>
+                  <button
+                      (click)="toggleSelectionMode()"
+                      [disabled]="loading()"
+                      [class]="isSelectionMode() && selectedProducts().size > 0 ? 'px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 shadow-md cursor-pointer' : 'px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 shadow-md cursor-pointer'">
+                      <ng-icon name="hugeDelete02" size="20"></ng-icon>
+                      @if (isSelectionMode()) {
+                          @if (selectedProducts().size > 0) {
+                              <span>Supprimer ({{ selectedProducts().size }})</span>
+                          } @else {
+                              <span>Annuler</span>
+                          }
+                      } @else {
+                          <span>Sélectionner</span>
+                      }
+                  </button>
                 }
             </div>
         </div>
@@ -132,22 +132,24 @@
                     </div>
 
                     <!-- Boutons d'export -->
-                    <div class="flex items-center gap-2">
-                        <button
-                            (click)="exportToPDF()"
-                            [disabled]="loading() || isSelectionMode()"
-                            class="px-4 py-2.5 bg-amber-400 text-white text-sm font-medium rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed">
-                            <ng-icon name="hugePdf01" size="18" strocke="2"></ng-icon>
-                            Export PDF
-                        </button>
-                        <button
-                            (click)="exportToExcel()"
-                            [disabled]="loading() || isSelectionMode()"
-                            class="px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed">
-                            <ng-icon name="hugeXls01" size="18"></ng-icon>
-                            Export Excel
-                        </button>
-                    </div>
+                    @if (authService.canRead('products')) {
+                      <div class="flex items-center gap-2">
+                          <button
+                              (click)="exportToPDF()"
+                              [disabled]="loading() || isSelectionMode()"
+                              class="px-4 py-2.5 bg-amber-400 text-white text-sm font-medium rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed">
+                              <ng-icon name="hugePdf01" size="18" strocke="2"></ng-icon>
+                              Export PDF
+                          </button>
+                          <button
+                              (click)="exportToExcel()"
+                              [disabled]="loading() || isSelectionMode()"
+                              class="px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed">
+                              <ng-icon name="hugeXls01" size="18"></ng-icon>
+                              Export Excel
+                          </button>
+                      </div>
+                    }
                 </div>
             </div>
 
@@ -246,7 +248,7 @@
                                     @if (authService.canDelete('products')) {
                                     <button
                                         (click)="$event.stopPropagation(); openDeleteModal(product)"
-                                        class="bg-red-200 rounded-lg px-2 py-1.5 flex items-center justify-center gap-1 cursor-pointer inset-shadow-sm inset-shadow-gray-400 hover:inset-shadow-none transition text-xs font-medium">
+                                        class="flex-1 bg-red-200 rounded-lg px-2 py-1.5 flex items-center justify-center gap-1 cursor-pointer inset-shadow-sm inset-shadow-gray-400 hover:inset-shadow-none transition text-xs font-medium">
                                         <ng-icon name="hugeDelete02" size="14" />
                                         Supprimer
                                     </button>

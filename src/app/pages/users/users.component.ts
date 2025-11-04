@@ -35,7 +35,9 @@ import {
   hugeXls01,
   hugeTickDouble02,
   hugeCheckmarkSquare02,
-  hugeReload
+  hugeReload,
+  hugeEye,
+  hugeViewOff
 } from '@ng-icons/huge-icons';
 
 @Component({
@@ -65,7 +67,9 @@ import {
       hugeXls01,
       hugeTickDouble02,
       hugeCheckmarkSquare02,
-      hugeReload
+      hugeReload,
+      hugeEye,
+      hugeViewOff
     })
   ],
   templateUrl: './users.component.html',
@@ -145,6 +149,9 @@ export class UsersComponent implements OnInit {
     active: 0,
     inactive: 0
   });
+
+  // Toggle stats visibility
+  showStats = signal(true);
 
   // Pagination (using signals)
   currentPage = signal<number>(1);
@@ -268,6 +275,13 @@ export class UsersComponent implements OnInit {
         user.fullName?.toLowerCase().includes(term)
       );
     }
+
+    // Sort: Super Admin always first
+    filtered = filtered.sort((a, b) => {
+      if (a.isSuperAdmin && !b.isSuperAdmin) return -1;
+      if (!a.isSuperAdmin && b.isSuperAdmin) return 1;
+      return 0;
+    });
 
     this.filteredUsers.set(filtered);
     this.currentPage.set(1); // Réinitialiser à la première page après filtrage
@@ -519,13 +533,32 @@ export class UsersComponent implements OnInit {
 
   openPermissionsModal(user: User): void {
     this.currentUser = user;
-    this.permissionsForm = user.permissions || {
-      dashboard: true,
-      pos: true,
-      history: true,
-      reports: true,
-      profile: true
-    };
+
+    // Initialiser les permissions selon le rôle
+    if (user.role === UserRole.SELLER) {
+      // Pour les sellers : simple boolean
+      this.permissionsForm = user.permissions || {
+        dashboard: true,
+        pos: true,
+        history: true,
+        reports: true,
+        profile: true
+      };
+    } else if (user.role === UserRole.ADMIN) {
+      // Pour les admins : objets avec actions CRUD
+      this.initializePermissions(UserRole.ADMIN);
+
+      // Charger les permissions existantes si elles existent
+      if (user.permissions) {
+        const existingPerms = user.permissions as any;
+        for (const page in existingPerms) {
+          if (this.permissionsForm[page] !== undefined) {
+            this.permissionsForm[page] = JSON.parse(JSON.stringify(existingPerms[page]));
+          }
+        }
+      }
+    }
+
     this.showPermissionsModal.set(true);
   }
 
@@ -551,6 +584,32 @@ export class UsersComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  // Vérifier si une page a toutes les permissions (pour le checkbox principal)
+  isPageFullyAccessible(page: string): boolean {
+    const perms = this.permissionsForm[page];
+    if (!perms || typeof perms === 'boolean') return false;
+    return perms.create && perms.read && perms.update && perms.delete;
+  }
+
+  // Toggle toutes les permissions d'une page
+  toggleAllAdminPermissions(page: string): void {
+    const isFullyAccessible = this.isPageFullyAccessible(page);
+    const newValue = !isFullyAccessible;
+
+    this.permissionsForm[page] = {
+      create: newValue,
+      read: newValue,
+      update: newValue,
+      delete: newValue
+    };
+  }
+
+  // Mettre à jour le checkbox principal quand une action change
+  updatePageCheckbox(page: string): void {
+    // Cette méthode est appelée automatiquement par le two-way binding
+    // Pas besoin de logique supplémentaire car le checkbox principal est calculated
   }
 
   // === Gestion des Permissions ===
