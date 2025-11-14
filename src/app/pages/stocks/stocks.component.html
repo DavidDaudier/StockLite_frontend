@@ -216,12 +216,12 @@
 
         <!-- Tableau des produits -->
         @else {
-          <div class="table-container-fixed">
+          <div [class]="showStats() ? 'table-container-fixed' : 'table-container-fixed-expanded'">
             <table class="min-w-full divide-y divide-gray-200 table-fixed">
               <thead class="bg-teal-600 text-white sticky top-0 z-10">
                 <tr>
-                  <th scope="col" class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">
-                    Produit
+                  <th scope="col" class="w-[12rem] px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">
+                    Nom Produit
                   </th>
                   <th scope="col" class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">
                     Catégorie
@@ -249,7 +249,7 @@
               <tbody class="bg-white divide-y divide-gray-200">
                 @for (product of paginatedProducts(); track product.id) {
                   <tr class="hover:bg-gray-50 transition-colors odd:bg-white even:bg-gray-50">
-                    <td  class="px-3 md:px-6 py-3 whitespace-nowrap">
+                    <td scope="row" class="px-3 md:px-6 py-3 whitespace-nowrap">
                       <div>
                         <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
                         <div class="text-xs text-gray-500">SKU: {{ product.sku }}</div>

@@ -1,23 +1,27 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { SidebarService } from '../../services/sidebar/sidebar.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { User } from '../../core/models/user.model';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { hugeSearch01, hugeNotification02, hugeCalendar03, hugeClock01, hugeMenu01 } from '@ng-icons/huge-icons';
+import { hugeSearch01, hugeNotification02, hugeCalendar03, hugeClock01, hugeMenu01, hugeSidebarLeft01, hugeSidebarRight01 } from '@ng-icons/huge-icons';
 
 @Component({
   selector: 'app-pos-header',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgIcon],
+  imports: [CommonModule, FormsModule, NgIcon, RouterModule],
   viewProviders: [
     provideIcons({
       hugeSearch01,
       hugeNotification02,
       hugeCalendar03,
       hugeClock01,
-      hugeMenu01
+      hugeMenu01,
+      hugeSidebarLeft01,
+      hugeSidebarRight01
     })
   ],
   templateUrl: './pos-header.component.html',
@@ -25,7 +29,9 @@ import { hugeSearch01, hugeNotification02, hugeCalendar03, hugeClock01, hugeMenu
 })
 export class PosHeaderComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
-  private sidebarService = inject(SidebarService);
+  private router = inject(Router);
+  sidebarService = inject(SidebarService);
+  notificationService = inject(NotificationService);
 
   searchTerm = signal('');
   currentUser: User | null = null;
@@ -33,9 +39,33 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
   currentTime = signal('');
   private timeInterval?: number;
 
+  // Computed pour le badge de notifications
+  notificationBadge = computed(() => {
+    const notifications = this.notificationService.getUnreadNotifications();
+    return {
+      count: notifications.length,
+      hasUnread: notifications.length > 0
+    };
+  });
+
+  // Tooltip pour les notifications
+  notificationTooltip = computed(() => {
+    const unreadNotifications = this.notificationService.getUnreadNotifications();
+    if (unreadNotifications.length === 0) {
+      return 'Aucune notification';
+    }
+    const latestNotification = unreadNotifications[0];
+    return latestNotification.title + ': ' + latestNotification.message;
+  });
+
   constructor() {
     this.currentUser = this.authService.getCurrentUser();
     this.updateDateTime();
+  }
+
+  // Méthode publique pour vérifier si l'utilisateur est super admin
+  isSuperAdmin(): boolean {
+    return this.authService.isSuperAdmin();
   }
 
   toggleSidebar(): void {
@@ -85,7 +115,7 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
   }
 
   showNotifications(): void {
-    console.log('Afficher les notifications');
-    // TODO: Implémenter le système de notifications
+    // Navigation vers la page de notifications (super admin uniquement)
+    this.router.navigate(['/admin/notifications']);
   }
 }

@@ -49,4 +49,21 @@ export class SalesService {
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  // Draft management methods
+  getDrafts(): Observable<Sale[]> {
+    return this.http.get<Sale[]>(`${this.apiUrl}/drafts`);
+  }
+
+  createDraft(sale: CreateSaleDto): Observable<Sale> {
+    return this.http.post<Sale>(`${this.apiUrl}/draft`, sale);
+  }
+
+  completeDraft(id: string): Observable<Sale> {
+    return this.http.patch<Sale>(`${this.apiUrl}/${id}/complete`, {});
+  }
+
+  deleteDraft(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/draft/${id}`);
+  }
 }

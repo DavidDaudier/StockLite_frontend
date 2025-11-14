@@ -19,18 +19,18 @@
 
                     <!-- Boutons d'action -->
                     <div class="flex items-center gap-3">
-                        <button class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors cursor-pointer">
+                        <button type="button" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors cursor-pointer">
                             <ng-icon name="hugePlusSign" class="text-base" />
                             New
                         </button>
-                        <button (click)="goToDraftList()" class="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm flex items-center gap-2 border border-gray-300 transition-colors cursor-pointer">
-                            <ng-icon name="hugeNotebook01" class="text-base" />
+                        <a [routerLink]="draftsRoute" class="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm flex items-center gap-2 border border-gray-300 transition-colors cursor-pointer" style="pointer-events: auto;">
+                            <ng-icon name="hugeNotebook01" class="text-base" style="pointer-events: none;" />
                             Draft List
-                        </button>
-                        <button class="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm flex items-center gap-2 border border-gray-300 transition-colors cursor-pointer">
-                            <ng-icon name="hugeTimeSchedule" class="text-base" />
+                        </a>
+                        <a [routerLink]="salesHistoryRoute" class="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg font-medium text-sm flex items-center gap-2 border border-gray-300 transition-colors cursor-pointer" style="pointer-events: auto;">
+                            <ng-icon name="hugeTimeSchedule" class="text-base" style="pointer-events: none;" />
                             Sales History
-                        </button>
+                        </a>
                     </div>
                 </div>
 

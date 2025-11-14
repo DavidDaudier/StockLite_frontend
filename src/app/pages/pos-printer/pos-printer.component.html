@@ -40,6 +40,13 @@
                 <ng-icon name="hugeCheckmarkCircle04" size="18" class="inline mr-2"></ng-icon>
                 Test d'impression
               </button>
+              <button
+                (click)="setActiveTab('mobile')"
+                [class]="activeTab() === 'mobile' ? 'border-cyan-600 text-cyan-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                class="px-6 py-4 text-sm font-medium border-b-2 transition-colors">
+                <ng-icon name="hugeSettings01" size="18" class="inline mr-2"></ng-icon>
+                POS Mobile
+              </button>
             </nav>
           </div>
 
@@ -166,13 +173,45 @@
                 <div class="space-y-4">
                   <h3 class="font-medium text-gray-700">Options d'affichage</h3>
 
+                  <!-- Logo Upload Section -->
+                  <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Logo de l'entreprise</label>
+
+                    @if (receiptConfig().logoUrl) {
+                      <div class="flex items-center gap-4">
+                        <img [src]="receiptConfig().logoUrl" alt="Logo" class="h-20 w-20 object-contain border border-gray-300 rounded">
+                        <div class="flex flex-col gap-2">
+                          <label class="px-3 py-2 text-sm bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 cursor-pointer">
+                            <input type="file" accept="image/*" (change)="onLogoFileSelected($event)" class="hidden">
+                            Changer le logo
+                          </label>
+                          <button
+                            (click)="removeLogo()"
+                            class="px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">
+                            Supprimer le logo
+                          </button>
+                        </div>
+                      </div>
+                    } @else {
+                      <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                        <ng-icon name="hugeFileDownload" size="32" class="text-gray-400 mx-auto mb-2"></ng-icon>
+                        <p class="text-sm text-gray-600 mb-2">Aucun logo ajouté</p>
+                        <label class="px-4 py-2 text-sm bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 cursor-pointer inline-block">
+                          <input type="file" accept="image/*" (change)="onLogoFileSelected($event)" class="hidden">
+                          Ajouter un logo
+                        </label>
+                        <p class="text-xs text-gray-500 mt-2">PNG, JPG jusqu'à 2MB</p>
+                      </div>
+                    }
+                  </div>
+
                   <div class="flex items-center gap-3">
                     <input
                       type="checkbox"
                       id="showLogo"
                       [(ngModel)]="receiptConfig().showLogo"
                       class="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500">
-                    <label for="showLogo" class="text-sm font-medium text-gray-700">Afficher le logo</label>
+                    <label for="showLogo" class="text-sm font-medium text-gray-700">Afficher le logo sur le reçu</label>
                   </div>
 
                   <div class="flex items-center gap-3">
@@ -246,6 +285,125 @@
             </div>
           }
 
+          <!-- Tab: POS Mobile -->
+          @if (activeTab() === 'mobile') {
+            <div class="p-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-6">Configuration POS Mobile</h2>
+
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-blue-800">
+                  <ng-icon name="hugeSettings01" size="16" class="inline"></ng-icon>
+                  Configurez vos appareils mobiles pour utiliser le système POS à distance.
+                </p>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Configuration Section -->
+                <div class="space-y-4">
+                  <h3 class="font-medium text-gray-700">Paramètres généraux</h3>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nom du point de vente mobile</label>
+                    <input
+                      type="text"
+                      [(ngModel)]="mobileConfig().name"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="Ex: POS Mobile 1">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Code PIN d'accès</label>
+                    <input
+                      type="text"
+                      [(ngModel)]="mobileConfig().pinCode"
+                      maxlength="6"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="Code à 6 chiffres">
+                    <p class="text-xs text-gray-500 mt-1">Code PIN requis pour accéder au POS Mobile</p>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="enableMobile"
+                      [(ngModel)]="mobileConfig().enabled"
+                      class="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500">
+                    <label for="enableMobile" class="text-sm font-medium text-gray-700">Activer le POS Mobile</label>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="allowOffline"
+                      [(ngModel)]="mobileConfig().allowOffline"
+                      class="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500">
+                    <label for="allowOffline" class="text-sm font-medium text-gray-700">Autoriser le mode hors ligne</label>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="syncAuto"
+                      [(ngModel)]="mobileConfig().autoSync"
+                      class="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500">
+                    <label for="syncAuto" class="text-sm font-medium text-gray-700">Synchronisation automatique</label>
+                  </div>
+                </div>
+
+                <!-- Instructions Section -->
+                <div class="space-y-4">
+                  <h3 class="font-medium text-gray-700">Instructions d'installation</h3>
+
+                  <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                    <div class="flex items-start gap-3">
+                      <span class="flex-shrink-0 w-6 h-6 bg-cyan-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                      <div>
+                        <p class="text-sm font-medium text-gray-900">Télécharger l'application</p>
+                        <p class="text-xs text-gray-600">Installez l'application StockLite POS sur votre appareil mobile</p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                      <span class="flex-shrink-0 w-6 h-6 bg-cyan-600 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                      <div>
+                        <p class="text-sm font-medium text-gray-900">Scanner le QR Code</p>
+                        <p class="text-xs text-gray-600">Scannez le QR code ci-dessous pour configurer automatiquement</p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                      <span class="flex-shrink-0 w-6 h-6 bg-cyan-600 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                      <div>
+                        <p class="text-sm font-medium text-gray-900">Saisir le code PIN</p>
+                        <p class="text-xs text-gray-600">Entrez le code PIN configuré ci-contre</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- QR Code Placeholder -->
+                  <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <div class="w-40 h-40 bg-gray-100 mx-auto mb-2 flex items-center justify-center">
+                      <ng-icon name="hugeSettings01" size="64" class="text-gray-400"></ng-icon>
+                    </div>
+                    <p class="text-sm text-gray-600">QR Code de configuration</p>
+                    <p class="text-xs text-gray-500 mt-1">Activez le POS Mobile pour générer le QR code</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-6 flex justify-end">
+                @if (authService.canUpdate('pos-printer')) {
+                <button
+                  (click)="saveMobileConfig()"
+                  class="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 font-medium flex items-center gap-2">
+                  <ng-icon name="hugeCheckmarkBadge04" size="18"></ng-icon>
+                  Sauvegarder la configuration
+                </button>
+                }
+              </div>
+            </div>
+          }
+
           <!-- Tab: Test -->
           @if (activeTab() === 'test') {
             <div class="p-6">
@@ -286,8 +444,15 @@
                 <!-- Preview -->
                 <div>
                   <h3 class="font-medium text-gray-700 mb-3">Aperçu du reçu</h3>
-                  <div class="bg-white border-2 border-gray-300 rounded-lg p-6 font-mono text-sm">
-                    <pre class="whitespace-pre-wrap text-center">{{ generateReceiptPreview() }}</pre>
+                  <div class="bg-white border-2 border-gray-300 rounded-lg p-6">
+                    <div class="flex flex-col items-center">
+                      @if (receiptConfig().showLogo && receiptConfig().logoUrl) {
+                        <img [src]="receiptConfig().logoUrl" alt="Logo" class="h-16 mb-4 object-contain">
+                      }
+                      <div class="font-mono text-sm">
+                        <pre class="whitespace-pre-wrap text-center">{{ generateReceiptPreview() }}</pre>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -298,6 +463,68 @@
     </main>
   </div>
 </div>
+
+<!-- Logo Preview Modal -->
+@if (showLogoModal()) {
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Aperçu et ajustement du logo</h3>
+      </div>
+
+      <div class="px-6 py-4 space-y-4">
+        <!-- Logo Preview -->
+        <div class="flex justify-center items-center bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-[200px]">
+          @if (logoPreview()) {
+            <img
+              [src]="logoPreview()"
+              alt="Logo preview"
+              [style.transform]="'scale(' + (logoScale() / 100) + ')'"
+              class="max-w-full max-h-[300px] object-contain transition-transform">
+          }
+        </div>
+
+        <!-- Scale Slider -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Taille: {{ logoScale() }}%
+          </label>
+          <input
+            type="range"
+            min="20"
+            max="150"
+            [value]="logoScale()"
+            (input)="adjustLogoScale(+$any($event.target).value)"
+            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider">
+          <div class="flex justify-between text-xs text-gray-500 mt-1">
+            <span>20%</span>
+            <span>150%</span>
+          </div>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <p class="text-sm text-blue-800">
+            <ng-icon name="hugeSettings01" size="16" class="inline"></ng-icon>
+            Ajustez la taille du logo pour qu'il s'affiche correctement sur le reçu.
+          </p>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+        <button
+          (click)="closeLogoModal()"
+          class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium">
+          Annuler
+        </button>
+        <button
+          (click)="saveLogo()"
+          class="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 font-medium">
+          Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+}
 
 <!-- Add Printer Modal -->
 @if (showAddPrinterModal()) {

@@ -19,7 +19,8 @@ import {
   hugeInvestigation,
   hugeVideoReplay,
   hugePrinter,
-  hugeClock05
+  hugeClock05,
+  hugeTime04
 } from '@ng-icons/huge-icons';
 
 @Component({
@@ -46,7 +47,8 @@ import {
       hugeInvestigation,
       hugeVideoReplay,
       hugePrinter,
-      hugeClock05
+      hugeClock05,
+      hugeTime04
     })
   ],
   templateUrl: './sidebar.component.html',
@@ -76,10 +78,11 @@ export class SidebarComponent implements OnInit {
       history: { icon: 'hugeClock05', label: 'Historique', route: `${prefix}/history`, page: 'history' },
       // Label différent selon le rôle: Admin = "Rapports Financiers", Seller = "Rapports"
       reports: { icon: 'hugeAnalyticsUp', label: isAdmin ? 'Rapports Financiers' : 'Rapports', route: `${prefix}/reports`, page: 'reports' },
-      'report-vendor': { icon: 'hugeAnalyticsUp', label: 'Rapports Vendeur', route: `${prefix}/report-vendor`, page: 'report-vendor' },
+      // 'report-vendor': { icon: 'hugeAnalyticsUp', label: 'Rapports Vendeur', route: `${prefix}/report-vendor`, page: 'report-vendor' },
       inventories: { icon: 'hugeInvestigation', label: 'Inventaires', route: `${prefix}/inventories`, page: 'inventories' },
       zoom: { icon: 'hugeVideoReplay', label: 'Zoom', route: `${prefix}/zoom`, page: 'zoom' },
       users: { icon: 'hugeUserMultiple', label: 'Utilisateurs', route: `${prefix}/users`, page: 'users' },
+      sessions: { icon: 'hugeTime04', label: 'Sessions', route: `${prefix}/sessions`, page: 'sessions' },
       profile: { icon: 'hugeUser', label: 'Profil', route: `${prefix}/profile`, page: 'profile' },
       'pos-printer': { icon: 'hugePrinter', label: 'POS/Printer', route: `${prefix}/pos-printer`, page: 'pos-printer' },
       settings: { icon: 'hugeSettings01', label: 'Paramètre', route: `${prefix}/settings`, page: 'settings' }
@@ -94,10 +97,11 @@ export class SidebarComponent implements OnInit {
         allMenus['stock-tracking'],
         allMenus.history,
         allMenus.reports,
-        allMenus['report-vendor'],
+        // allMenus['report-vendor'],
         allMenus.inventories,
         allMenus.zoom,
         allMenus.users,
+        allMenus.sessions,
         allMenus.profile,
         allMenus['pos-printer'],
         allMenus.settings

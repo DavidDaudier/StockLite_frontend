@@ -5,8 +5,10 @@ import { Subject, takeUntil } from 'rxjs';
 import { SidebarComponent } from '../../layouts/sidebar/sidebar.component';
 import { PosHeaderComponent } from '../../components/pos-header/pos-header.component';
 import { ProductsService } from '../../core/services/products.service';
+import { InventoriesService } from '../../core/services/inventories.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Product } from '../../core/models/product.model';
+import { Inventory, InventoryItem, InventoryStatus, InventoryItemStatus, CreateInventoryDto, UpdateInventoryItemDto } from '../../core/models/inventory.model';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   hugeInvestigation,
@@ -17,16 +19,11 @@ import {
   hugeEdit02,
   hugeCheckmarkBadge04,
   hugeCancel01,
-  hugePackageSent
+  hugePackageSent,
+  hugeWorkHistory,
+  hugeEye,
+  hugeViewOff
 } from '@ng-icons/huge-icons';
-
-interface InventoryItem {
-  product: Product;
-  theoreticalQuantity: number;
-  physicalQuantity: number | null;
-  difference: number;
-  status: 'pending' | 'counted' | 'discrepancy';
-}
 
 @Component({
   selector: 'app-inventories',
@@ -42,7 +39,10 @@ interface InventoryItem {
       hugeEdit02,
       hugeCheckmarkBadge04,
       hugeCancel01,
-      hugePackageSent
+      hugePackageSent,
+      hugeWorkHistory,
+      hugeEye,
+      hugeViewOff
     })
   ],
   templateUrl: './inventories.component.html',
@@ -53,7 +53,8 @@ export class InventoriesComponent implements OnInit, OnDestroy {
 
   // Data
   products = signal<Product[]>([]);
-  inventoryItems = signal<InventoryItem[]>([]);
+  inventories = signal<Inventory[]>([]);
+  currentInventory = signal<Inventory | null>(null);
 
   // Filters
   searchTerm = signal<string>('');
@@ -61,25 +62,40 @@ export class InventoriesComponent implements OnInit, OnDestroy {
 
   // UI State
   loading = signal<boolean>(false);
-  inventoryInProgress = signal<boolean>(false);
   editingItemId = signal<string | null>(null);
   tempPhysicalQuantity = signal<number | null>(null);
+  showHistory = signal<boolean>(false);
+  showStats = signal<boolean>(true);
+  successMessage = signal<string>('');
+  errorMessage = signal<string>('');
+
+  // Confirmation Modal State
+  showConfirmModal = signal<boolean>(false);
+  confirmAction = signal<'complete' | 'cancel' | null>(null);
+  confirmTitle = signal<string>('');
+  confirmMessage = signal<string>('');
+  confirmWarning = signal<string>('');
 
   // Stats
   stats = computed(() => {
-    const items = this.filteredItems();
-    const total = items.length;
-    const pending = items.filter(i => i.status === 'pending').length;
-    const counted = items.filter(i => i.status === 'counted').length;
-    const discrepancy = items.filter(i => i.status === 'discrepancy').length;
-    const totalDifference = items.reduce((sum, i) => sum + Math.abs(i.difference), 0);
+    const inventory = this.currentInventory();
+    if (!inventory) return { total: 0, pending: 0, counted: 0, discrepancy: 0, totalDifference: 0 };
 
-    return { total, pending, counted, discrepancy, totalDifference };
+    return {
+      total: inventory.totalItems,
+      pending: inventory.totalItems - inventory.countedItems,
+      counted: inventory.countedItems,
+      discrepancy: inventory.itemsWithDiscrepancy,
+      totalDifference: inventory.totalDiscrepancy
+    };
   });
 
   // Filtered items
   filteredItems = computed(() => {
-    let items = this.inventoryItems();
+    const inventory = this.currentInventory();
+    if (!inventory) return [];
+
+    let items = inventory.items;
 
     // Filter by search term
     if (this.searchTerm()) {
@@ -100,11 +116,13 @@ export class InventoriesComponent implements OnInit, OnDestroy {
 
   constructor(
     private productsService: ProductsService,
+    private inventoriesService: InventoriesService,
     public authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.loadProducts();
+    this.loadInventories();
   }
 
   ngOnDestroy(): void {
@@ -128,47 +146,95 @@ export class InventoriesComponent implements OnInit, OnDestroy {
       });
   }
 
-  startInventory(): void {
-    const items: InventoryItem[] = this.products().map(product => ({
-      product,
-      theoreticalQuantity: product.quantity,
-      physicalQuantity: null,
-      difference: 0,
-      status: 'pending' as const
-    }));
+  loadInventories(): void {
+    this.inventoriesService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (inventories) => {
+          this.inventories.set(inventories);
 
-    this.inventoryItems.set(items);
-    this.inventoryInProgress.set(true);
+          // Check if there's an in-progress inventory
+          const inProgress = inventories.find(i => i.status === InventoryStatus.IN_PROGRESS);
+          if (inProgress) {
+            this.currentInventory.set(inProgress);
+          }
+        },
+        error: (error) => {
+          console.error('Error loading inventories:', error);
+        }
+      });
   }
 
-  editItem(productId: string, currentQuantity: number | null): void {
-    this.editingItemId.set(productId);
+  startInventory(): void {
+    const items = this.products().map(product => ({
+      productId: product.id,
+      theoreticalQuantity: product.quantity || 0, // Ensure we always have a number
+    }));
+
+    const createDto: CreateInventoryDto = {
+      items
+    };
+
+    this.loading.set(true);
+    this.inventoriesService.create(createDto)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (inventory) => {
+          this.currentInventory.set(inventory);
+          this.loading.set(false);
+          this.loadInventories();
+          this.showSuccess('Inventaire créé avec succès!');
+        },
+        error: (error) => {
+          console.error('Error creating inventory:', error);
+          this.showError('Erreur lors de la création de l\'inventaire');
+          this.loading.set(false);
+        }
+      });
+  }
+
+  editItem(itemId: string, currentQuantity: number | null): void {
+    this.editingItemId.set(itemId);
     this.tempPhysicalQuantity.set(currentQuantity);
   }
 
-  saveItem(productId: string): void {
-    const items = this.inventoryItems();
-    const itemIndex = items.findIndex(i => i.product.id === productId);
+  saveItem(itemId: string): void {
+    const inventory = this.currentInventory();
+    if (!inventory) return;
 
-    if (itemIndex !== -1) {
-      const item = items[itemIndex];
-      const physicalQty = this.tempPhysicalQuantity() ?? 0;
-      const difference = physicalQty - item.theoreticalQuantity;
+    const updateDto: UpdateInventoryItemDto = {
+      physicalQuantity: this.tempPhysicalQuantity() ?? 0
+    };
 
-      const updatedItem: InventoryItem = {
-        ...item,
-        physicalQuantity: physicalQty,
-        difference,
-        status: difference === 0 ? 'counted' : 'discrepancy'
-      };
+    this.inventoriesService.updateItem(inventory.id, itemId, updateDto)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.editingItemId.set(null);
+          this.tempPhysicalQuantity.set(null);
+          // Reload inventory to get updated stats
+          this.loadInventoryById(inventory.id);
+          this.showSuccess('Article mis à jour avec succès!');
+        },
+        error: (error) => {
+          console.error('Error updating item:', error);
+          this.showError('Erreur lors de la mise à jour de l\'article');
+        }
+      });
+  }
 
-      const updatedItems = [...items];
-      updatedItems[itemIndex] = updatedItem;
-
-      this.inventoryItems.set(updatedItems);
-      this.editingItemId.set(null);
-      this.tempPhysicalQuantity.set(null);
-    }
+  private loadInventoryById(id: string): void {
+    this.inventoriesService.getById(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (inventory) => {
+          this.currentInventory.set(inventory);
+          this.loadInventories();
+        },
+        error: (error) => {
+          console.error('Error loading inventory:', error);
+        }
+      });
   }
 
   cancelEdit(): void {
@@ -176,75 +242,115 @@ export class InventoriesComponent implements OnInit, OnDestroy {
     this.tempPhysicalQuantity.set(null);
   }
 
-  isEditing(productId: string): boolean {
-    return this.editingItemId() === productId;
+  isEditing(itemId: string): boolean {
+    return this.editingItemId() === itemId;
   }
 
   completeInventory(): void {
-    const items = this.inventoryItems();
-    const allCounted = items.every(i => i.physicalQuantity !== null);
+    const inventory = this.currentInventory();
+    if (!inventory) return;
+
+    const allCounted = inventory.countedItems === inventory.totalItems;
+
+    this.confirmAction.set('complete');
+    this.confirmTitle.set('Finaliser l\'inventaire');
+    this.confirmMessage.set('Voulez-vous vraiment finaliser cet inventaire ? Les ajustements seront appliqués au stock.');
 
     if (!allCounted) {
-      if (!confirm('Certains produits n\'ont pas été comptés. Voulez-vous continuer ?')) {
-        return;
-      }
+      this.confirmWarning.set('⚠️ Attention : Certains produits n\'ont pas été comptés.');
+    } else {
+      this.confirmWarning.set('');
     }
 
-    if (!confirm('Voulez-vous vraiment finaliser cet inventaire ? Les ajustements seront appliqués au stock.')) {
-      return;
-    }
-
-    this.loading.set(true);
-
-    // Apply adjustments for items with discrepancy
-    const itemsWithDiscrepancy = items.filter(i => i.difference !== 0 && i.physicalQuantity !== null);
-
-    let completed = 0;
-    let errors = 0;
-
-    if (itemsWithDiscrepancy.length === 0) {
-      this.finishInventory();
-      return;
-    }
-
-    itemsWithDiscrepancy.forEach(item => {
-      this.productsService.update(item.product.id, { quantity: item.physicalQuantity! })
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            completed++;
-            if (completed + errors === itemsWithDiscrepancy.length) {
-              this.finishInventory();
-            }
-          },
-          error: (error) => {
-            console.error('Error updating product:', error);
-            errors++;
-            if (completed + errors === itemsWithDiscrepancy.length) {
-              this.finishInventory();
-            }
-          }
-        });
-    });
+    this.showConfirmModal.set(true);
   }
 
-  private finishInventory(): void {
-    this.loading.set(false);
-    this.inventoryInProgress.set(false);
-    this.inventoryItems.set([]);
-    this.loadProducts();
-    alert('Inventaire finalisé avec succès!');
+  private executeCompleteInventory(): void {
+    const inventory = this.currentInventory();
+    if (!inventory) return;
+
+    this.loading.set(true);
+    this.inventoriesService.complete(inventory.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.loading.set(false);
+          this.currentInventory.set(null);
+          this.loadInventories();
+          this.loadProducts(); // Reload products to reflect updated quantities
+          this.showSuccess('Inventaire finalisé avec succès!');
+        },
+        error: (error) => {
+          console.error('Error completing inventory:', error);
+          this.loading.set(false);
+          this.showError('Erreur lors de la finalisation de l\'inventaire');
+        }
+      });
   }
 
   cancelInventory(): void {
-    if (!confirm('Voulez-vous vraiment annuler cet inventaire ? Toutes les données seront perdues.')) {
+    const inventory = this.currentInventory();
+    if (!inventory) return;
+
+    this.confirmAction.set('cancel');
+    this.confirmTitle.set('Annuler l\'inventaire');
+    this.confirmMessage.set('Voulez-vous vraiment annuler cet inventaire ? Toutes les données seront perdues.');
+    this.confirmWarning.set('⚠️ Cette action est irréversible.');
+    this.showConfirmModal.set(true);
+  }
+
+  private executeCancelInventory(): void {
+    const inventory = this.currentInventory();
+    if (!inventory) return;
+
+    this.inventoriesService.cancel(inventory.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.currentInventory.set(null);
+          this.editingItemId.set(null);
+          this.tempPhysicalQuantity.set(null);
+          this.loadInventories();
+          this.showSuccess('Inventaire annulé avec succès!');
+        },
+        error: (error) => {
+          console.error('Error cancelling inventory:', error);
+          this.showError('Erreur lors de l\'annulation de l\'inventaire');
+        }
+      });
+  }
+
+  toggleHistory(): void {
+    this.showHistory.update(v => !v);
+  }
+
+  viewInventory(inventory: Inventory): void {
+    this.currentInventory.set(inventory);
+    this.showHistory.set(false);
+  }
+
+  closeInventoryView(): void {
+    this.currentInventory.set(null);
+    this.loadInventories();
+  }
+
+  deleteInventory(id: string): void {
+    if (!confirm('Voulez-vous vraiment supprimer cet inventaire ?')) {
       return;
     }
 
-    this.inventoryInProgress.set(false);
-    this.inventoryItems.set([]);
-    this.editingItemId.set(null);
-    this.tempPhysicalQuantity.set(null);
+    this.inventoriesService.delete(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.loadInventories();
+          this.showSuccess('Inventaire supprimé avec succès!');
+        },
+        error: (error) => {
+          console.error('Error deleting inventory:', error);
+          this.showError('Erreur lors de la suppression de l\'inventaire');
+        }
+      });
   }
 
   getStatusColor(status: string): string {
@@ -266,6 +372,67 @@ export class InventoriesComponent implements OnInit, OnDestroy {
         return 'Écart';
       default:
         return 'En attente';
+    }
+  }
+
+  getInventoryStatusColor(status: InventoryStatus): string {
+    switch (status) {
+      case InventoryStatus.COMPLETED:
+        return 'bg-green-100 text-green-800';
+      case InventoryStatus.CANCELLED:
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-blue-100 text-blue-800';
+    }
+  }
+
+  getInventoryStatusLabel(status: InventoryStatus): string {
+    switch (status) {
+      case InventoryStatus.COMPLETED:
+        return 'Finalisé';
+      case InventoryStatus.CANCELLED:
+        return 'Annulé';
+      default:
+        return 'En cours';
+    }
+  }
+
+  formatDate(date: string): string {
+    return new Date(date).toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  private showSuccess(message: string): void {
+    this.successMessage.set(message);
+    setTimeout(() => this.successMessage.set(''), 3000);
+  }
+
+  private showError(message: string): void {
+    this.errorMessage.set(message);
+    setTimeout(() => this.errorMessage.set(''), 5000);
+  }
+
+  closeConfirmModal(): void {
+    this.showConfirmModal.set(false);
+    this.confirmAction.set(null);
+    this.confirmTitle.set('');
+    this.confirmMessage.set('');
+    this.confirmWarning.set('');
+  }
+
+  confirmModalAction(): void {
+    const action = this.confirmAction();
+    this.closeConfirmModal();
+
+    if (action === 'complete') {
+      this.executeCompleteInventory();
+    } else if (action === 'cancel') {
+      this.executeCancelInventory();
     }
   }
 }

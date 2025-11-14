@@ -91,11 +91,20 @@
       <span *ngIf="!loading()">Procéder au paiement</span>
       <span *ngIf="loading()">Traitement...</span>
     </button>
-    <button
-      (click)="cart.reset()"
-      class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg py-2 transition-colors text-sm">
-      Vider le panier
-    </button>
+    <div class="flex gap-2">
+      <button
+        (click)="cart.reset()"
+        class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg py-2 transition-colors text-sm">
+        Vider le panier
+      </button>
+      <button
+        (click)="saveDraft()"
+        [disabled]="loading()"
+        class="flex-1 bg-orange-500 hover:bg-orange-600 text-white rounded-lg py-2 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+        <span *ngIf="!loading()">Ajouter au brouillon</span>
+        <span *ngIf="loading()">Traitement...</span>
+      </button>
+    </div>
   </div>
 </div>
 

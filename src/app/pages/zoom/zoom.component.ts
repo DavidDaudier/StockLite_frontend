@@ -6,6 +6,7 @@ import { SidebarComponent } from '../../layouts/sidebar/sidebar.component';
 import { PosHeaderComponent } from '../../components/pos-header/pos-header.component';
 import { UsersService } from '../../core/services/users.service';
 import { SalesService } from '../../core/services/sales.service';
+import { SessionsService, Session } from '../../core/services/sessions.service';
 import { User } from '../../core/models/user.model';
 import { Sale } from '../../core/models/sale.model';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -33,6 +34,9 @@ interface SellerActivity {
   totalSales: number;
   isOnline: boolean;
   lastActivity?: Date;
+  location?: string;
+  deviceInfo?: string;
+  totalOnlineTime?: number; // in minutes
 }
 
 @Component({
@@ -64,6 +68,8 @@ export class ZoomComponent implements OnInit, OnDestroy {
   // Data signals
   sellers = signal<User[]>([]);
   allSales = signal<Sale[]>([]);
+  sessions = signal<Session[]>([]);
+  activeSessions = signal<Session[]>([]); // Sessions actives en temps réel
   sellerActivities = signal<SellerActivity[]>([]);
 
   // Filters
@@ -107,7 +113,8 @@ export class ZoomComponent implements OnInit, OnDestroy {
 
   constructor(
     private usersService: UsersService,
-    private salesService: SalesService
+    private salesService: SalesService,
+    private sessionsService: SessionsService
   ) {}
 
   ngOnInit(): void {
@@ -145,10 +152,10 @@ export class ZoomComponent implements OnInit, OnDestroy {
   loadData(): void {
     this.loading.set(true);
 
-    // Load all sellers
+    // Load all sellers and simple admins
     this.usersService.getAll().pipe(takeUntil(this.destroy$)).subscribe({
       next: (users) => {
-        const sellers = users.filter(u => u.role === 'seller');
+        const sellers = users.filter(u => u.role === 'seller' || (u.role === 'admin' && !u.isSuperAdmin));
         this.sellers.set(sellers);
 
         // Load sales for selected date
@@ -159,19 +166,82 @@ export class ZoomComponent implements OnInit, OnDestroy {
         const startDateStr = this.formatDateToString(startDate);
         const endDateStr = this.formatDateToString(endDate);
 
-        this.salesService.getAll(undefined, startDateStr, endDateStr)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: (sales) => {
-              this.allSales.set(sales);
-              this.calculateActivities(sellers, sales);
-              this.loading.set(false);
-            },
-            error: (error) => {
-              console.error('Error loading sales:', error);
-              this.loading.set(false);
-            }
-          });
+        // Load sessions for the date range if service is available
+        if (this.sessionsService) {
+          console.log('📅 [Zoom] Loading sessions for date range:', { startDateStr, endDateStr, selectedDate: this.selectedDate() });
+
+          // Load active sessions for real-time online status
+          this.sessionsService.getActiveSessions()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (activeSessions) => {
+                console.log('✅ [Zoom] Active sessions loaded:', activeSessions.length, activeSessions);
+                this.activeSessions.set(activeSessions);
+              },
+              error: (error) => {
+                console.error('Error loading active sessions:', error);
+              }
+            });
+
+          // Load historical sessions for the selected date
+          this.sessionsService.getByDateRange(startDateStr, endDateStr)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (sessions) => {
+                console.log('✅ [Zoom] Historical sessions loaded:', sessions.length, sessions);
+                this.sessions.set(sessions);
+
+                // Load sales after sessions are loaded
+                this.salesService.getAll(undefined, startDateStr, endDateStr)
+                  .pipe(takeUntil(this.destroy$))
+                  .subscribe({
+                    next: (sales) => {
+                      console.log('✅ [Zoom] Sales loaded:', sales.length);
+                      this.allSales.set(sales);
+                      this.calculateActivities(sellers, sales, sessions, this.activeSessions());
+                      this.loading.set(false);
+                    },
+                    error: (error) => {
+                      console.error('Error loading sales:', error);
+                      this.loading.set(false);
+                    }
+                  });
+              },
+              error: (error) => {
+                console.error('Error loading sessions:', error);
+                // Continue without sessions data
+                this.salesService.getAll(undefined, startDateStr, endDateStr)
+                  .pipe(takeUntil(this.destroy$))
+                  .subscribe({
+                    next: (sales) => {
+                      this.allSales.set(sales);
+                      this.calculateActivities(sellers, sales, [], this.activeSessions());
+                      this.loading.set(false);
+                    },
+                    error: (error) => {
+                      console.error('Error loading sales:', error);
+                      this.loading.set(false);
+                    }
+                  });
+              }
+            });
+        } else {
+          // SessionsService not available, continue without sessions
+          console.warn('SessionsService not available, loading without session data');
+          this.salesService.getAll(undefined, startDateStr, endDateStr)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (sales) => {
+                this.allSales.set(sales);
+                this.calculateActivities(sellers, sales, [], []);
+                this.loading.set(false);
+              },
+              error: (error) => {
+                console.error('Error loading sales:', error);
+                this.loading.set(false);
+              }
+            });
+        }
       },
       error: (error) => {
         console.error('Error loading sellers:', error);
@@ -187,10 +257,38 @@ export class ZoomComponent implements OnInit, OnDestroy {
     return `${year}-${month}-${day}`;
   }
 
-  calculateActivities(sellers: User[], sales: Sale[]): void {
+  calculateActivities(sellers: User[], sales: Sale[], sessions: Session[], activeSessions: Session[]): void {
+    console.log('🔍 [Zoom] calculateActivities called with:', {
+      sellersCount: sellers.length,
+      salesCount: sales.length,
+      sessionsCount: sessions.length,
+      activeSessionsCount: activeSessions.length
+    });
+
     const activities: SellerActivity[] = sellers.map(seller => {
       // Filter sales for this seller
       const sellerSales = sales.filter(s => s.sellerId === seller.id || s.seller?.id === seller.id);
+
+      // Find the most recent session for this seller
+      const userSessions = sessions.filter(s => s.userId === seller.id);
+      const latestSession = userSessions.length > 0
+        ? userSessions.reduce((latest, current) =>
+            new Date(current.startTime) > new Date(latest.startTime) ? current : latest
+          )
+        : null;
+
+      console.log(`👤 [Zoom] Seller: ${seller.username}`, {
+        userSessionsCount: userSessions.length,
+        latestSession: latestSession ? {
+          id: latestSession.id,
+          status: latestSession.status,
+          startTime: latestSession.startTime,
+          lastActivity: latestSession.lastActivity,
+          location: latestSession.location
+        } : null,
+        allSessionsStatuses: userSessions.map(s => ({ id: s.id, status: s.status, startTime: s.startTime })),
+        sellerSalesCount: sellerSales.length
+      });
 
       // Calculate connection time (first sale of the day)
       const connectionTime = sellerSales.length > 0
@@ -203,14 +301,57 @@ export class ZoomComponent implements OnInit, OnDestroy {
         : undefined;
 
       // Calculate total revenue
-      const totalRevenue = sellerSales.reduce((sum, s) => sum + s.total, 0);
+      const totalRevenue = sellerSales.reduce((sum, s) => {
+        const saleTotal = s.total || 0;
+        return sum + (typeof saleTotal === 'number' ? saleTotal : 0);
+      }, 0);
 
-      // Check if online (has activity in last 5 minutes for today)
+      // Check if online: user has an active session (real-time check)
       const now = new Date();
       const isToday = this.selectedDate() === this.formatDateForInput(now);
-      const isOnline = isToday && disconnectionTime
+
+      // Check if user has an active session RIGHT NOW (from activeSessions)
+      const activeSession = activeSessions.find(s => s.userId === seller.id);
+      const hasActiveSession = !!activeSession;
+
+      // Check if user has recent activity (sale in last 5 minutes) - only if viewing today
+      const hasRecentActivity = isToday && disconnectionTime
         ? (now.getTime() - disconnectionTime.getTime()) < 5 * 60 * 1000
         : false;
+
+      const isOnline = hasActiveSession || hasRecentActivity;
+
+      console.log(`🔄 [Zoom] Online status for ${seller.username}:`, {
+        isToday,
+        selectedDate: this.selectedDate(),
+        todayFormatted: this.formatDateForInput(now),
+        hasActiveSession,
+        activeSessionId: activeSession?.id,
+        hasRecentActivity,
+        isOnline,
+        latestSessionStatus: latestSession?.status
+      });
+
+      // Calculate total online time in minutes
+      let totalOnlineTime = 0;
+      if (latestSession) {
+        const start = new Date(latestSession.startTime);
+        const end = latestSession.endTime ? new Date(latestSession.endTime) : new Date(latestSession.lastActivity);
+        totalOnlineTime = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+      } else if (connectionTime && disconnectionTime) {
+        totalOnlineTime = Math.round((disconnectionTime.getTime() - connectionTime.getTime()) / (1000 * 60));
+      }
+
+      // Use active session data if online, otherwise use latest session from history
+      const sessionToUse = activeSession || latestSession;
+
+      // Get real location from session or fallback to unknown
+      const location = sessionToUse?.location || 'Localisation inconnue';
+
+      // Get real device info from session or fallback to unknown
+      const deviceInfo = sessionToUse
+        ? `${sessionToUse.os || 'Unknown OS'} - ${sessionToUse.browser || 'Unknown Browser'}`
+        : 'Appareil inconnu';
 
       return {
         seller,
@@ -220,7 +361,10 @@ export class ZoomComponent implements OnInit, OnDestroy {
         totalRevenue,
         totalSales: sellerSales.length,
         isOnline,
-        lastActivity: disconnectionTime
+        lastActivity: disconnectionTime,
+        location,
+        deviceInfo,
+        totalOnlineTime
       };
     });
 
@@ -243,6 +387,10 @@ export class ZoomComponent implements OnInit, OnDestroy {
   }
 
   formatCurrency(amount: number): string {
+    // Handle NaN, null, undefined
+    if (amount == null || isNaN(amount)) {
+      return '0 Gds';
+    }
     return new Intl.NumberFormat('fr-FR', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
@@ -300,5 +448,33 @@ export class ZoomComponent implements OnInit, OnDestroy {
   getTotalQuantity(items: any[]): number {
     if (!items || items.length === 0) return 0;
     return items.reduce((sum, item) => sum + item.quantity, 0);
+  }
+
+  formatOnlineTime(minutes: number): string {
+    if (minutes === 0) return '--';
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours === 0) return `${mins}min`;
+    return `${hours}h ${mins}min`;
+  }
+
+  getPerformanceLevel(activity: SellerActivity): { label: string; color: string } {
+    const avgRevenuePerSale = activity.totalSales > 0 ? activity.totalRevenue / activity.totalSales : 0;
+
+    if (avgRevenuePerSale >= 1000) {
+      return { label: 'Excellent', color: 'text-green-600' };
+    } else if (avgRevenuePerSale >= 500) {
+      return { label: 'Très bon', color: 'text-blue-600' };
+    } else if (avgRevenuePerSale >= 300) {
+      return { label: 'Bon', color: 'text-yellow-600' };
+    } else {
+      return { label: 'Moyen', color: 'text-orange-600' };
+    }
+  }
+
+  getProductivity(activity: SellerActivity): string {
+    if (!activity.totalOnlineTime || activity.totalOnlineTime === 0) return '--';
+    const salesPerHour = (activity.totalSales / activity.totalOnlineTime) * 60;
+    return salesPerHour.toFixed(1) + ' ventes/h';
   }
 }

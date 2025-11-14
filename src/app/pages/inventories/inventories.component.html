@@ -1,37 +1,149 @@
-<div class="flex h-screen bg-gray-50">
+<div class="flex h-screen bg-white">
   <app-sidebar></app-sidebar>
 
-  <div class="flex-1 flex flex-col overflow-hidden">
+  <!-- Main Content -->
+  <main class="relative flex-1 flex flex-col overflow-hidden bg-white">
     <app-pos-header></app-pos-header>
 
-    <main class="flex-1 overflow-y-auto p-6">
-      <div class="max-w-7xl mx-auto">
-        <!-- En-tête -->
-        <div class="mb-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <ng-icon name="hugeInvestigation" size="28" class="text-purple-600"></ng-icon>
-                Gestion des Inventaires
-              </h1>
-              <p class="text-gray-600 mt-1">Comptage physique et ajustements de stock</p>
-            </div>
-
-            @if (!inventoryInProgress() && authService.canCreate('inventories')) {
-              <button
-                (click)="startInventory()"
-                [disabled]="loading() || products().length === 0"
-                class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium flex items-center gap-2">
-                <ng-icon name="hugeAdd01" size="20"></ng-icon>
-                Démarrer un inventaire
-              </button>
-            }
-          </div>
+    <!-- Titre de la page -->
+    <div class="px-6 pt-4 pb-3 bg-white">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+            Gestion des Inventaires
+          </h1>
+          <p class="text-sm text-gray-500 mt-1">Dashboard > Inventaires</p>
         </div>
 
+        <div class="flex items-center gap-3">
+          @if (!currentInventory() && authService.canCreate('inventories')) {
+            <button
+              (click)="startInventory()"
+              [disabled]="loading() || products().length === 0"
+              class="px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+              <ng-icon name="hugeAdd01" size="20"></ng-icon>
+              Démarrer un inventaire
+            </button>
+          }
+          <button
+            (click)="toggleHistory()"
+            class="px-4 py-2.5 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 shadow-md cursor-pointer">
+            <ng-icon name="hugeWorkHistory" size="20"></ng-icon>
+            Historique
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Message -->
+    @if (successMessage()) {
+      <div class="mx-6 my-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+        <ng-icon name="hugeCheckmarkCircle04" size="20" class="text-green-600"></ng-icon>
+        <span class="text-green-700">{{ successMessage() }}</span>
+      </div>
+    }
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="mx-6 my-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+        <ng-icon name="hugeAlert01" size="20" class="text-red-600"></ng-icon>
+        <span class="text-red-700">{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <!-- Bouton flottant Toggle Stats -->
+    @if (currentInventory() && !showHistory()) {
+    <button
+      (click)="showStats.set(!showStats())"
+      class="fixed -right-2 z-50 p-3 bg-blue-600/70 text-white rounded-l-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 cursor-pointer"
+      [style.top]="showStats() ? '175px' : '45px'"
+      [title]="showStats() ? 'Masquer les statistiques' : 'Afficher les statistiques'">
+      <ng-icon [name]="showStats() ? 'hugeViewOff' : 'hugeEye'" size="20" strokeWidth="2"></ng-icon>
+    </button>
+    }
+
+    <!-- Contenu principal -->
+    <div class="flex-1 overflow-y-auto px-6 pb-6 bg-white">
+      <!-- Container englobant avec bg gris -->
+      <div class="bg-gray-100 rounded-[15px] p-4 border border-gray-300">
+
+        <!-- History view -->
+        @if (showHistory()) {
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-bold text-gray-900">Historique des inventaires</h2>
+              <button
+                (click)="toggleHistory()"
+                class="text-gray-600 hover:text-gray-900">
+                <ng-icon name="hugeCancel01" size="24"></ng-icon>
+              </button>
+            </div>
+
+            @if (inventories().length === 0) {
+              <p class="text-center text-gray-500 py-12">Aucun inventaire trouvé</p>
+            } @else {
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Numéro</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Date</th>
+                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">Articles</th>
+                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">Comptés</th>
+                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">Écarts</th>
+                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">Statut</th>
+                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    @for (inventory of inventories(); track inventory.id) {
+                      <tr>
+                        <td class="px-6 py-4">
+                          <span class="font-medium text-gray-900">{{ inventory.inventoryNumber }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600">
+                          {{ formatDate(inventory.createdAt) }}
+                        </td>
+                        <td class="px-6 py-4 text-center text-sm">{{ inventory.totalItems }}</td>
+                        <td class="px-6 py-4 text-center text-sm">{{ inventory.countedItems }}</td>
+                        <td class="px-6 py-4 text-center text-sm">{{ inventory.itemsWithDiscrepancy }}</td>
+                        <td class="px-6 py-4 text-center">
+                          <span [class]="'px-3 py-1 text-xs font-medium rounded-full ' + getInventoryStatusColor(inventory.status)">
+                            {{ getInventoryStatusLabel(inventory.status) }}
+                          </span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                          <div class="flex items-center justify-center gap-2">
+                            @if (authService.canRead('inventories')) {
+                            <button
+                              (click)="viewInventory(inventory)"
+                              class="text-purple-600 hover:text-purple-900"
+                              title="Voir les détails">
+                              <ng-icon name="hugeEye" size="18"></ng-icon>
+                            </button>
+                            }
+                            @if (authService.canDelete('inventories') && inventory.status !== 'in_progress' && (authService.getCurrentUser()?.role === 'admin' || authService.getCurrentUser()?.isSuperAdmin)) {
+                              <button
+                                (click)="deleteInventory(inventory.id)"
+                                class="text-red-600 hover:text-red-900"
+                                title="Supprimer">
+                                <ng-icon name="hugeCancel01" size="18"></ng-icon>
+                              </button>
+                            }
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+
         <!-- No inventory state -->
-        @if (!inventoryInProgress() && !loading()) {
-          <div class="bg-white rounded-lg shadow p-12 text-center">
+        @if (!currentInventory() && !loading() && !showHistory()) {
+          <div class="bg-white rounded-lg shadow-sm p-12 text-center">
             <ng-icon name="hugeInvestigation" size="64" class="text-gray-400 mx-auto mb-4"></ng-icon>
             <h2 class="text-xl font-semibold text-gray-700 mb-2">Aucun inventaire en cours</h2>
             <p class="text-gray-500 mb-6">
@@ -53,127 +165,174 @@
         }
 
         <!-- Inventory in progress -->
-        @if (inventoryInProgress()) {
+        @if (currentInventory() && !showHistory()) {
           <!-- Stats cards -->
-          <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-            <div class="bg-white rounded-lg shadow p-4">
-              <p class="text-sm text-gray-600">Total</p>
-              <p class="text-2xl font-bold text-gray-900">{{ stats().total }}</p>
+          @if (showStats()) {
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+            <!-- Total -->
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-blue-600 font-medium">Total</p>
+                  <p class="text-2xl font-bold text-blue-900 mt-1">{{ stats().total }}</p>
+                </div>
+                <div class="p-3 bg-blue-500 rounded-lg text-white">
+                  <ng-icon name="hugeInvestigation" size="24" class="text-white"></ng-icon>
+                </div>
+              </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow p-4">
-              <p class="text-sm text-gray-600">En attente</p>
-              <p class="text-2xl font-bold text-gray-500">{{ stats().pending }}</p>
+            <!-- En attente -->
+            <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-600 font-medium">En attente</p>
+                  <p class="text-2xl font-bold text-gray-900 mt-1">{{ stats().pending }}</p>
+                </div>
+                <div class="p-3 bg-gray-500 rounded-lg text-white">
+                  <ng-icon name="hugeWorkHistory" size="24" class="text-white"></ng-icon>
+                </div>
+              </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow p-4">
-              <p class="text-sm text-gray-600">Comptés</p>
-              <p class="text-2xl font-bold text-green-600">{{ stats().counted }}</p>
+            <!-- Comptés -->
+            <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-green-600 font-medium">Comptés</p>
+                  <p class="text-2xl font-bold text-green-900 mt-1">{{ stats().counted }}</p>
+                </div>
+                <div class="p-3 bg-green-500 rounded-lg text-white">
+                  <ng-icon name="hugeCheckmarkCircle04" size="24" class="text-white"></ng-icon>
+                </div>
+              </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow p-4">
-              <p class="text-sm text-gray-600">Écarts</p>
-              <p class="text-2xl font-bold text-red-600">{{ stats().discrepancy }}</p>
+            <!-- Écarts -->
+            <div class="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-xl border border-red-200 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-red-600 font-medium">Écarts</p>
+                  <p class="text-2xl font-bold text-red-900 mt-1">{{ stats().discrepancy }}</p>
+                </div>
+                <div class="p-3 bg-red-500 rounded-lg text-white">
+                  <ng-icon name="hugeAlert01" size="24" class="text-white"></ng-icon>
+                </div>
+              </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow p-4">
-              <p class="text-sm text-gray-600">Écart total</p>
-              <p class="text-2xl font-bold text-orange-600">{{ stats().totalDifference }}</p>
+            <!-- Écart total -->
+            <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-orange-600 font-medium">Écart total</p>
+                  <p class="text-2xl font-bold text-orange-900 mt-1">{{ stats().totalDifference }}</p>
+                </div>
+                <div class="p-3 bg-orange-500 rounded-lg text-white">
+                  <ng-icon name="hugePackageSent" size="24" class="text-white"></ng-icon>
+                </div>
+              </div>
             </div>
           </div>
+          }
 
           <!-- Filters and actions -->
-          <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <!-- Search -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  <ng-icon name="hugeSearch01" size="16" class="inline"></ng-icon>
-                  Recherche
-                </label>
-                <input
-                  type="text"
-                  [(ngModel)]="searchTerm"
-                  placeholder="Nom ou SKU..."
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+          <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+            <!-- Barre de recherche, filtres et boutons d'action sur la même ligne -->
+            <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
+              <!-- Barre de recherche -->
+              <div class="flex-1">
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <ng-icon name="hugeSearch01" class="text-gray-400 text-lg" />
+                  </div>
+                  <input
+                    type="text"
+                    [(ngModel)]="searchTerm"
+                    placeholder="Rechercher un produit (nom, SKU)..."
+                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-sm">
+                </div>
               </div>
 
-              <!-- Status filter -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+              <!-- Filtre par statut -->
+              <div class="w-full sm:w-48 lg:w-48">
                 <select
                   [(ngModel)]="filterStatus"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                  <option value="all">Tous</option>
-                  <option value="pending">En attente</option>
-                  <option value="counted">Comptés</option>
-                  <option value="discrepancy">Écarts</option>
+                  class="w-full px-2 py-[11px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-sm cursor-pointer">
+                  <option value="all">📊 Tous les statuts</option>
+                  <option value="pending">⏳ En attente</option>
+                  <option value="counted">✅ Comptés</option>
+                  <option value="discrepancy">⚠️ Écarts</option>
                 </select>
               </div>
 
-              <!-- Actions -->
-              <div class="flex items-end gap-2">
-                @if (authService.canUpdate('inventories')) {
-                <button
-                  (click)="completeInventory()"
-                  [disabled]="loading()"
-                  class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2">
-                  <ng-icon name="hugeCheckmarkCircle04" size="18"></ng-icon>
-                  Finaliser
-                </button>
-                }
+              <!-- Actions buttons -->
+              <div class="flex flex-wrap items-center gap-2">
+                @if (currentInventory()?.status === 'in_progress') {
+                  @if (authService.canUpdate('inventories')) {
+                  <button
+                    (click)="completeInventory()"
+                    [disabled]="loading()"
+                    class="px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2 shadow-md">
+                    <ng-icon name="hugeCheckmarkCircle04" size="20"></ng-icon>
+                    Finaliser
+                  </button>
+                  }
 
-                @if (authService.canDelete('inventories')) {
-                <button
-                  (click)="cancelInventory()"
-                  [disabled]="loading()"
-                  class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2">
-                  <ng-icon name="hugeCancel01" size="18"></ng-icon>
-                  Annuler
-                </button>
+                  @if (authService.canDelete('inventories')) {
+                  <button
+                    (click)="cancelInventory()"
+                    [disabled]="loading()"
+                    class="px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2 shadow-md">
+                    <ng-icon name="hugeCancel01" size="20"></ng-icon>
+                    Annuler
+                  </button>
+                  }
+                } @else {
+                  <button
+                    (click)="closeInventoryView()"
+                    class="px-4 py-2.5 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 shadow-md">
+                    <ng-icon name="hugeCancel01" size="20"></ng-icon>
+                    Fermer
+                  </button>
                 }
               </div>
             </div>
           </div>
 
           <!-- Inventory table -->
-          <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="table-container-fixed">
+              <table class="min-w-full divide-y divide-gray-200 table-fixed">
+                <thead class="bg-teal-600 text-white sticky top-0 z-10">
                   <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Produit</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Stock théorique</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Stock physique</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Écart</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Statut</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Actions</th>
+                    <th scope="col" class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Produit</th>
+                    <th scope="col" class="px-3 md:px-6 py-4 text-center text-xs font-medium uppercase tracking-wider whitespace-nowrap">Stock théorique</th>
+                    <th scope="col" class="px-3 md:px-6 py-4 text-center text-xs font-medium uppercase tracking-wider whitespace-nowrap">Stock physique</th>
+                    <th scope="col" class="px-3 md:px-6 py-4 text-center text-xs font-medium uppercase tracking-wider whitespace-nowrap">Écart</th>
+                    <th scope="col" class="px-3 md:px-6 py-4 text-center text-xs font-medium uppercase tracking-wider whitespace-nowrap">Statut</th>
+                    <th scope="col" class="px-3 md:px-6 py-4 text-center text-xs font-medium uppercase tracking-wider whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                   @for (item of filteredItems(); track item.product.id) {
-                    <tr [class]="item.status === 'discrepancy' ? 'bg-red-50' : item.status === 'counted' ? 'bg-green-50' : ''">
+                    <tr [class]="'transition-colors ' + (item.status === 'discrepancy' ? 'bg-red-50 hover:bg-red-100' : item.status === 'counted' ? 'bg-green-50 hover:bg-green-100' : 'hover:bg-gray-50 odd:bg-white even:bg-gray-50')">
                       <!-- Product -->
-                      <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                          <div class="p-2 bg-purple-100 rounded-lg">
-                            <ng-icon name="hugePackageSent" size="20" class="text-purple-600"></ng-icon>
-                          </div>
-                          <div>
-                            <p class="font-medium text-gray-900">{{ item.product.name }}</p>
-                            <p class="text-sm text-gray-600">{{ item.product.sku }}</p>
-                          </div>
+                      <td class="px-3 md:px-6 py-3 whitespace-nowrap">
+                        <div>
+                          <div class="text-sm font-medium text-gray-900">{{ item.product.name }}</div>
+                          <div class="text-xs text-gray-500">SKU: {{ item.product.sku }}</div>
                         </div>
                       </td>
 
                       <!-- Theoretical quantity -->
-                      <td class="px-6 py-4 text-center">
+                      <td class="px-3 md:px-6 py-3 text-center">
                         <span class="text-sm font-semibold text-gray-900">{{ item.theoreticalQuantity }}</span>
                       </td>
 
                       <!-- Physical quantity -->
-                      <td class="px-6 py-4 text-center">
-                        @if (!isEditing(item.product.id)) {
+                      <td class="px-3 md:px-6 py-3 text-center">
+                        @if (!isEditing(item.id)) {
                           @if (item.physicalQuantity !== null) {
                             <span class="text-sm font-semibold text-gray-900">{{ item.physicalQuantity }}</span>
                           } @else {
@@ -185,13 +344,13 @@
                             [(ngModel)]="tempPhysicalQuantity"
                             min="0"
                             class="w-20 px-2 py-1 border border-purple-300 rounded text-center focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            (keyup.enter)="saveItem(item.product.id)"
+                            (keyup.enter)="saveItem(item.id)"
                             (keyup.escape)="cancelEdit()">
                         }
                       </td>
 
                       <!-- Difference -->
-                      <td class="px-6 py-4 text-center">
+                      <td class="px-3 md:px-6 py-3 text-center">
                         @if (item.physicalQuantity !== null) {
                           <span [class]="'text-sm font-semibold ' + (item.difference > 0 ? 'text-green-600' : item.difference < 0 ? 'text-red-600' : 'text-gray-600')">
                             {{ item.difference > 0 ? '+' : '' }}{{ item.difference }}
@@ -202,35 +361,40 @@
                       </td>
 
                       <!-- Status -->
-                      <td class="px-6 py-4 text-center">
-                        <span [class]="'px-3 py-1 text-xs font-medium rounded-full ' + getStatusColor(item.status)">
+                      <td class="px-3 md:px-6 py-3 text-center">
+                        <span [class]="'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getStatusColor(item.status)">
                           {{ getStatusLabel(item.status) }}
                         </span>
                       </td>
 
                       <!-- Actions -->
-                      <td class="px-6 py-4 text-center">
-                        @if (authService.canUpdate('inventories')) {
-                        @if (!isEditing(item.product.id)) {
+                      <td class="px-3 md:px-6 py-3 text-center">
+                        @if (currentInventory()?.status === 'in_progress' && authService.canUpdate('inventories')) {
+                        @if (!isEditing(item.id)) {
                           <button
-                            (click)="editItem(item.product.id, item.physicalQuantity)"
-                            class="text-purple-600 hover:text-purple-900">
-                            <ng-icon name="hugeEdit02" size="18"></ng-icon>
+                            (click)="editItem(item.id, item.physicalQuantity)"
+                            class="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-purple-600 hover:text-purple-900 hover:bg-purple-50 rounded transition-colors">
+                            <ng-icon name="hugeEdit02" size="16"></ng-icon>
+                            <span class="hidden sm:inline">Modifier</span>
                           </button>
                         } @else {
                           <div class="flex items-center justify-center gap-2">
                             <button
-                              (click)="saveItem(item.product.id)"
-                              class="text-green-600 hover:text-green-900">
-                              <ng-icon name="hugeCheckmarkBadge04" size="18"></ng-icon>
+                              (click)="saveItem(item.id)"
+                              class="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-green-600 hover:text-green-900 hover:bg-green-50 rounded transition-colors">
+                              <ng-icon name="hugeCheckmarkBadge04" size="16"></ng-icon>
+                              <span class="hidden sm:inline">Sauv.</span>
                             </button>
                             <button
                               (click)="cancelEdit()"
-                              class="text-red-600 hover:text-red-900">
-                              <ng-icon name="hugeCancel01" size="18"></ng-icon>
+                              class="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors">
+                              <ng-icon name="hugeCancel01" size="16"></ng-icon>
+                              <span class="hidden sm:inline">Annuler</span>
                             </button>
                           </div>
                         }
+                        } @else {
+                          <span class="text-gray-400 text-sm">-</span>
                         }
                       </td>
                     </tr>
@@ -248,13 +412,58 @@
         }
 
         <!-- Loading state -->
-        @if (loading() && !inventoryInProgress()) {
-          <div class="text-center py-12">
+        @if (loading() && !currentInventory()) {
+          <div class="bg-white rounded-lg shadow-sm p-12 text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
             <p class="mt-4 text-gray-600">Chargement...</p>
           </div>
         }
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
+
 </div>
+
+<!-- Confirmation Modal -->
+@if (showConfirmModal()) {
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+      <div class="p-6">
+        <div class="flex items-center gap-4 mb-4">
+          <div [class]="'flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ' + (confirmAction() === 'complete' ? 'bg-green-100' : 'bg-red-100')">
+            <ng-icon [name]="confirmAction() === 'complete' ? 'hugeCheckmarkCircle04' : 'hugeAlert01'" size="24" [class]="confirmAction() === 'complete' ? 'text-green-600' : 'text-red-600'"></ng-icon>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-gray-900">{{ confirmTitle() }}</h3>
+            <p class="text-sm text-gray-500">Cette action nécessite une confirmation</p>
+          </div>
+        </div>
+        <p class="text-gray-700 mb-4">
+          {{ confirmMessage() }}
+        </p>
+        @if (confirmWarning()) {
+          <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p class="text-sm text-yellow-800">{{ confirmWarning() }}</p>
+          </div>
+        }
+        <div class="flex justify-end gap-3">
+          <button
+            (click)="closeConfirmModal()"
+            [disabled]="loading()"
+            class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 cursor-pointer">
+            Annuler
+          </button>
+          <button
+            (click)="confirmModalAction()"
+            [disabled]="loading()"
+            [class]="'px-6 py-2.5 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer ' + (confirmAction() === 'complete' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-red-600 text-white hover:bg-red-700')">
+            @if (loading()) {
+              <span class="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+            }
+            {{ confirmAction() === 'complete' ? 'Finaliser' : 'Confirmer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

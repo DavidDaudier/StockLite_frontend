@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { SidebarComponent } from '../../../layouts/sidebar/sidebar.component';
 import { PosHeaderComponent } from '../../../components/pos-header/pos-header.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { DashboardService } from '../../../core/services/dashboard.service';
+import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import {
   hugeDollarCircle,
   hugeShoppingCart01,
@@ -12,6 +13,9 @@ import {
   hugeTradeUp,
   hugeAlertCircle
 } from '@ng-icons/huge-icons';
+
+// Register Chart.js components
+Chart.register(...registerables);
 
 interface DailyStat {
   label: string;
@@ -58,8 +62,11 @@ interface SalesByHour {
   templateUrl: './seller-dashboard.component.html',
   styleUrl: './seller-dashboard.component.css'
 })
-export class SellerDashboardComponent implements OnInit, OnDestroy {
+export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
+
+  @ViewChild('paymentMethodChart') paymentMethodChartRef!: ElementRef<HTMLCanvasElement>;
+  private paymentMethodChart?: Chart;
 
   constructor(private dashboardService: DashboardService) {}
 
@@ -118,7 +125,14 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
     this.loadDashboardData();
   }
 
+  ngAfterViewInit(): void {
+    // Les graphiques seront initialisés après le chargement des données
+  }
+
   ngOnDestroy(): void {
+    if (this.paymentMethodChart) {
+      this.paymentMethodChart.destroy();
+    }
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -160,6 +174,9 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
           }));
 
           this.loading = false;
+
+          // Initialiser les graphiques après le chargement des données
+          setTimeout(() => this.initializePaymentMethodChart(dailyReport.sales), 100);
         },
         error: (error) => {
           console.error('Erreur lors du chargement des données:', error);
@@ -243,5 +260,80 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
       return 'text-orange-600 bg-orange-50';
     }
     return 'text-yellow-600 bg-yellow-50';
+  }
+
+  initializePaymentMethodChart(sales: any[]): void {
+    if (!this.paymentMethodChartRef) return;
+
+    // Agréger les ventes par méthode de paiement
+    const paymentMethodMap = new Map<string, number>();
+    sales.forEach(sale => {
+      const method = sale.paymentMethod || 'cash';
+      paymentMethodMap.set(method, (paymentMethodMap.get(method) || 0) + 1);
+    });
+
+    // Préparer les données pour le graphique
+    const labels = Array.from(paymentMethodMap.keys()).map(method => {
+      const labels: Record<string, string> = {
+        'cash': 'Espèces',
+        'card': 'Carte',
+        'mobile_money': 'Mobile Money',
+        'bank_transfer': 'Virement'
+      };
+      return labels[method] || method;
+    });
+    const data = Array.from(paymentMethodMap.values());
+
+    // Créer le graphique
+    const ctx = this.paymentMethodChartRef.nativeElement.getContext('2d');
+    if (ctx) {
+      if (this.paymentMethodChart) {
+        this.paymentMethodChart.destroy();
+      }
+
+      this.paymentMethodChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: [
+              '#10B981', // green
+              '#3B82F6', // blue
+              '#8B5CF6', // purple
+              '#F59E0B'  // orange
+            ],
+            borderColor: '#ffffff',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 15,
+                font: {
+                  size: 12
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const label = context.label || '';
+                  const value = context.parsed || 0;
+                  const total = (context.dataset.data as number[]).reduce((a, b) => a + b, 0);
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return `${label}: ${value} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
   }
 }

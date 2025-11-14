@@ -48,7 +48,7 @@
         </div>
 
         <!-- Charts and Tables Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Sales Chart -->
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="flex items-center justify-between mb-6">
@@ -72,6 +72,24 @@
                 </div>
                 <div class="text-xs text-gray-600 font-medium">{{ sale.hour }}</div>
               </div>
+            </div>
+          </div>
+
+          <!-- Payment Methods Chart -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h2 class="text-lg font-bold text-gray-900">Méthodes de paiement</h2>
+                <p class="text-sm text-gray-500">Répartition du jour</p>
+              </div>
+              <div class="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm font-medium">
+                Aujourd'hui
+              </div>
+            </div>
+
+            <!-- Pie Chart -->
+            <div class="h-64 flex items-center justify-center">
+              <canvas #paymentMethodChart></canvas>
             </div>
           </div>
 

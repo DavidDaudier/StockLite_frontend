@@ -17,6 +17,7 @@ export class AuthService {
 
   private tokenKey = 'stocklite_token';
   private userKey = 'stocklite_user';
+  private sessionKey = 'stocklite_session';
   private isBrowser: boolean;
 
   constructor(
@@ -30,25 +31,151 @@ export class AuthService {
   }
 
   private loadUserFromStorage(): void {
-    if (!this.isBrowser) return;
+    if (!this.isBrowser) {
+      console.log('⚠️ [AuthService] Not in browser, skipping localStorage load');
+      return;
+    }
 
+    console.log('🔄 [AuthService] Loading user from localStorage...');
+
+    const token = localStorage.getItem(this.tokenKey);
     const userJson = localStorage.getItem(this.userKey);
-    if (userJson) {
-      const user = JSON.parse(userJson);
-      this.currentUserSubject.next(user);
+    const sessionId = localStorage.getItem(this.sessionKey);
+
+    console.log('📦 [AuthService] localStorage contents:');
+    console.log('  - token:', token ? 'présent' : 'absent');
+    console.log('  - user:', userJson ? 'présent' : 'absent');
+    console.log('  - sessionId:', sessionId ? 'présent' : 'absent');
+
+    if (userJson && token) {
+      try {
+        const user = JSON.parse(userJson);
+        this.currentUserSubject.next(user);
+        console.log('✅ [AuthService] User loaded:', user.username);
+        console.log('  - Role:', user.role);
+        console.log('  - isSuperAdmin:', user.isSuperAdmin);
+      } catch (error) {
+        console.error('❌ [AuthService] Error parsing user from localStorage:', error);
+        this.clearStorage();
+      }
+    } else {
+      console.log('⚠️ [AuthService] No valid session found in localStorage');
+      this.clearStorage();
     }
   }
 
-  login(username: string, password: string): Observable<AuthResponse> {
+  private clearStorage(): void {
+    console.log('🗑️ [AuthService] clearStorage appelé');
+    console.trace('📍 Stack trace de clearStorage:');
+    if (!this.isBrowser) return;
+    localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.userKey);
+    localStorage.removeItem(this.sessionKey);
+    this.currentUserSubject.next(null);
+    console.log('✅ [AuthService] localStorage vidé');
+  }
+
+  login(username: string, password: string, locationData?: any): Observable<AuthResponse> {
+    console.log('🔐 [AuthService] Tentative de connexion pour:', username);
     return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, {
       username,
-      password
+      password,
+      ...locationData
     }).pipe(
       tap(response => {
+        console.log('✅ [AuthService] Réponse du serveur reçue:', {
+          user: response.user.username,
+          role: response.user.role,
+          hasToken: !!response.access_token,
+          hasSessionId: !!response.sessionId
+        });
         this.setSession(response);
         this.wsService.connect(response.user.id, response.user.role);
+        console.log('🔌 [AuthService] WebSocket connecté');
       })
     );
+  }
+
+  async loginWithGeolocation(username: string, password: string): Promise<Observable<AuthResponse>> {
+    console.log('🔍 Début de la récupération de la géolocalisation...');
+    // Get geolocation data with timeout (10 seconds)
+    const locationData = await this.getGeolocationWithTimeout(10000);
+    console.log('📍 Données de géolocalisation récupérées:', locationData);
+    return this.login(username, password, locationData);
+  }
+
+  private async getGeolocationWithTimeout(timeout: number): Promise<any> {
+    try {
+      const result = await Promise.race([
+        this.getGeolocation(),
+        new Promise((resolve) => setTimeout(() => resolve({}), timeout))
+      ]);
+      return result;
+    } catch (error) {
+      console.warn('Geolocation timeout or error:', error);
+      return {};
+    }
+  }
+
+  private async getGeolocation(): Promise<any> {
+    console.log('🌍 Tentative de récupération de la géolocalisation...');
+
+    if (!this.isBrowser || !navigator.geolocation) {
+      console.warn('⚠️ Géolocalisation non disponible (navigateur ou API)');
+      return {};
+    }
+
+    try {
+      console.log('📡 Demande de position au navigateur...');
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          reject,
+          { timeout: 8000, enableHighAccuracy: false }
+        );
+      });
+
+      const { latitude, longitude } = position.coords;
+      console.log(`✅ Position obtenue: ${latitude}, ${longitude}`);
+
+      // Préparer les données de base (toujours retournées)
+      const baseData = {
+        latitude,
+        longitude,
+        city: '',
+        country: '',
+        location: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+      };
+
+      // Try to get location name using reverse geocoding (OpenStreetMap Nominatim)
+      try {
+        console.log('🗺️ Récupération du nom de la ville via OpenStreetMap...');
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`,
+          { headers: { 'Accept-Language': 'fr' } }
+        );
+        const data = await response.json();
+
+        const city = data.address?.city || data.address?.town || data.address?.village || '';
+        const country = data.address?.country || '';
+        const location = city && country ? `${city}, ${country}` : country || baseData.location;
+
+        console.log(`✅ Localisation trouvée: ${location}`);
+        return {
+          latitude,
+          longitude,
+          city,
+          country,
+          location
+        };
+      } catch (error) {
+        console.warn('⚠️ Reverse geocoding échoué, utilisation des coordonnées:', error);
+        return baseData;
+      }
+    } catch (error: any) {
+      console.error('❌ Erreur géolocalisation:', error.message, error);
+      return {};
+    }
   }
 
   register(userData: {
@@ -62,21 +189,57 @@ export class AuthService {
   }
 
   private setSession(authResult: AuthResponse): void {
+    console.log('💾 [AuthService] Début de setSession...');
+    console.log('  - isBrowser:', this.isBrowser);
+    console.log('  - access_token présent:', !!authResult.access_token);
+    console.log('  - user présent:', !!authResult.user);
+    console.log('  - sessionId présent:', !!authResult.sessionId);
+
     if (this.isBrowser) {
-      localStorage.setItem(this.tokenKey, authResult.access_token);
-      localStorage.setItem(this.userKey, JSON.stringify(authResult.user));
+      try {
+        console.log('💾 [AuthService] Sauvegarde dans localStorage...');
+        localStorage.setItem(this.tokenKey, authResult.access_token);
+        console.log('  ✅ Token sauvegardé');
+
+        localStorage.setItem(this.userKey, JSON.stringify(authResult.user));
+        console.log('  ✅ User sauvegardé:', authResult.user.username);
+
+        if (authResult.sessionId) {
+          localStorage.setItem(this.sessionKey, authResult.sessionId);
+          console.log('  ✅ SessionId sauvegardé:', authResult.sessionId);
+        }
+
+        // Vérification immédiate
+        const savedToken = localStorage.getItem(this.tokenKey);
+        const savedUser = localStorage.getItem(this.userKey);
+        console.log('🔍 [AuthService] Vérification immédiate après sauvegarde:');
+        console.log('  - Token dans localStorage:', savedToken ? 'présent' : 'ABSENT!');
+        console.log('  - User dans localStorage:', savedUser ? 'présent' : 'ABSENT!');
+      } catch (error) {
+        console.error('❌ [AuthService] Erreur lors de la sauvegarde dans localStorage:', error);
+      }
+    } else {
+      console.warn('⚠️ [AuthService] Pas dans le navigateur, localStorage non disponible');
     }
+
     this.currentUserSubject.next(authResult.user);
+    console.log('✅ [AuthService] currentUserSubject mis à jour');
   }
 
   logout(): void {
+    console.log('👋 [AuthService] Logout appelé');
+    console.trace('📍 Stack trace de logout:');
     if (this.isBrowser) {
       localStorage.removeItem(this.tokenKey);
       localStorage.removeItem(this.userKey);
+      localStorage.removeItem(this.sessionKey);
+      console.log('✅ [AuthService] localStorage vidé lors du logout');
     }
     this.currentUserSubject.next(null);
     this.wsService.disconnect();
+    console.log('🔌 [AuthService] WebSocket déconnecté');
     this.router.navigate(['/login']);
+    console.log('🔄 [AuthService] Redirection vers /login');
   }
 
   getToken(): string | null {
@@ -84,8 +247,20 @@ export class AuthService {
     return localStorage.getItem(this.tokenKey);
   }
 
+  getSessionId(): string | null {
+    if (!this.isBrowser) return null;
+    return localStorage.getItem(this.sessionKey);
+  }
+
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
+  }
+
+  updateCurrentUser(user: User): void {
+    if (this.isBrowser) {
+      localStorage.setItem(this.userKey, JSON.stringify(user));
+    }
+    this.currentUserSubject.next(user);
   }
 
   isAuthenticated(): boolean {

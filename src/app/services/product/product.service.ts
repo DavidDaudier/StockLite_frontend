@@ -2,12 +2,14 @@ import { Injectable, Signal, WritableSignal, computed, signal, inject } from '@a
 import { ProductItem } from "./../../models/product-item.model";
 import { ProductsService } from '../../core/services/products.service';
 import { Product } from '../../core/models/product.model';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
   private productsService = inject(ProductsService);
+  private notificationService = inject(NotificationService);
 
   /** Stock global des produits */
   public readonly products: WritableSignal<ProductItem[]> = signal<ProductItem[]>([]);
@@ -65,10 +67,29 @@ export class ProductService {
       next: (products: Product[]) => {
         const productItems: ProductItem[] = products.map(p => this.toProductItem(p));
         this.products.set(productItems);
+
+        // Vérifier les niveaux de stock après le chargement
+        this.checkAllStockLevels();
       },
       error: (error) => {
         console.error('Erreur chargement produits:', error);
       }
+    });
+  }
+
+  /** Vérifie le niveau de stock d'un produit spécifique */
+  public checkStockLevel(productId: string): void {
+    const product = this.products().find(p => p.id === productId);
+    if (product) {
+      this.notificationService.checkStockLevel(product.id, product.name, product.stock);
+    }
+  }
+
+  /** Vérifie les niveaux de stock de tous les produits */
+  public checkAllStockLevels(): void {
+    const products = this.products();
+    products.forEach(product => {
+      this.notificationService.checkStockLevel(product.id, product.name, product.stock);
     });
   }
 

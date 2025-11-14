@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
 import { sellerGuard } from './core/guards/seller.guard';
+import { superAdminGuard } from './core/guards/super-admin.guard';
 
 export const routes: Routes = [
   // Public routes
@@ -41,7 +42,7 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/seller/seller-products/seller-products.component').then(m => m.SellerProductsComponent)
       },
       {
-        path: 'sales-history',
+        path: 'history',
         loadComponent: () => import('./pages/seller/sales-history/sales-history.component').then(m => m.SalesHistoryComponent)
       },
       {
@@ -78,6 +79,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/seller/pos/pos.component').then(m => m.PosComponent)
       },
       {
+        path: 'drafts',
+        loadComponent: () => import('./pages/seller/draft-list/draft-list.component').then(m => m.DraftListComponent)
+      },
+      {
         path: 'stocks',
         loadComponent: () => import('./pages/stocks/stocks.component').then(m => m.StocksComponent)
       },
@@ -106,6 +111,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/users/users.component').then(m => m.UsersComponent)
       },
       {
+        path: 'sessions',
+        loadComponent: () => import('./pages/sessions-admin/sessions-admin.component').then(m => m.SessionsAdminComponent)
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./pages/seller/profile/profile.component').then(m => m.ProfileComponent)
       },
@@ -116,6 +125,11 @@ export const routes: Routes = [
       {
         path: 'settings',
         loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent)
+      },
+      {
+        path: 'notifications',
+        canActivate: [superAdminGuard],
+        loadComponent: () => import('./pages/notifications/notifications.component').then(m => m.NotificationsComponent)
       }
     ]
   },

@@ -6,8 +6,12 @@
       <button
         (click)="toggleSidebar()"
         class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
-        title="Ouvrir/Fermer le menu">
-        <ng-icon name="hugeMenu01" class="text-xl" />
+        [title]="sidebarService.collapsed() ? 'Ouvrir le menu' : 'Fermer le menu'">
+        @if (sidebarService.collapsed()) {
+          <ng-icon name="hugeSidebarRight01" class="text-xl" />
+        } @else {
+          <ng-icon name="hugeSidebarLeft01" class="text-xl" />
+        }
       </button>
 
       <!-- Search Bar -->
@@ -40,14 +44,21 @@
 
     <!-- Right: Notifications + User Info -->
     <div class="flex items-center gap-4">
-      <!-- Notification Icon -->
-      <button
-        (click)="showNotifications()"
-        class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-        <ng-icon name="hugeNotification02" class="text-xl" />
-        <!-- Badge de notification (optionnel) -->
-        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-      </button>
+      <!-- Notification Icon (Super Admin uniquement) -->
+      @if (isSuperAdmin()) {
+        <button
+          (click)="showNotifications()"
+          [title]="notificationTooltip()"
+          class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+          <ng-icon name="hugeNotification02" class="text-xl" />
+          <!-- Badge de notification dynamique -->
+          @if (notificationBadge().hasUnread) {
+            <span class="absolute top-0 right-0 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-xs font-bold rounded-full">
+              {{ notificationBadge().count }}
+            </span>
+          }
+        </button>
+      }
 
       <!-- User Profile -->
       <div class="flex items-center gap-3">

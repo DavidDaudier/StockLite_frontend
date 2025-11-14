@@ -1,9 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { hugePlusSign, hugeNotebook01, hugeTimeSchedule } from '@ng-icons/huge-icons';
 import { ProductService } from '../../../services/product/product.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { SidebarComponent } from '../../../layouts/sidebar/sidebar.component';
 import { PosHeaderComponent } from '../../../components/pos-header/pos-header.component';
 // import { CategoryProductComponent } from '../../../components/category-product/category-product.component';
@@ -15,6 +16,7 @@ import { ProductReceiptComponent } from '../../../components/product-receipt/pro
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     NgIcon,
     SidebarComponent,
     PosHeaderComponent,
@@ -33,7 +35,7 @@ import { ProductReceiptComponent } from '../../../components/product-receipt/pro
   styleUrl: './pos.component.css'
 })
 export class PosComponent implements OnInit {
-  private router = inject(Router);
+  private authService = inject(AuthService);
 
   constructor(private productService: ProductService) {}
 
@@ -42,7 +44,11 @@ export class PosComponent implements OnInit {
     this.productService.loadFromBackend();
   }
 
-  goToDraftList(): void {
-    this.router.navigate(['/seller/drafts']);
+  get draftsRoute(): string {
+    return this.authService.isAdmin() ? '/admin/drafts' : '/seller/drafts';
+  }
+
+  get salesHistoryRoute(): string {
+    return this.authService.isAdmin() ? '/admin/history' : '/seller/history';
   }
 }

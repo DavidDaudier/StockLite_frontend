@@ -2,38 +2,62 @@
     <app-sidebar></app-sidebar>
 
     <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto">
-        <!-- Top Bar -->
-        <div class="bg-white border-b border-gray-200 px-6 py-4">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Dashboard Admin</h1>
-                    <p class="text-sm text-gray-500">Vue d'ensemble des statistiques</p>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="text-right">
-                        <p class="text-sm font-medium text-gray-700">{{ currentTime | date:'HH:mm:ss' }}</p>
-                        <p class="text-xs text-gray-500">{{ currentTime | date:'dd/MM/yyyy' }}</p>
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Header -->
+        <app-pos-header></app-pos-header>
+
+        <!-- Dashboard Content -->
+        <main class="flex-1 overflow-y-auto bg-gray-50">
+            <!-- Page Title -->
+            <div class="bg-white border-b border-gray-200 px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Dashboard Admin</h1>
+                        <p class="text-sm text-gray-500">Vue d'ensemble des statistiques</p>
                     </div>
-                    <button
-                        (click)="logout()"
-                        class="px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                        Déconnexion
+                    <!-- Period Filter -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm text-gray-600 font-medium">Période:</label>
+                        <select [(ngModel)]="selectedPeriod" (ngModelChange)="onPeriodChange($event)"
+                                class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                            <option value="today">Aujourd'hui</option>
+                            <option value="week">7 derniers jours</option>
+                            <option value="month">30 derniers jours</option>
+                            <option value="year">12 derniers mois</option>
+                            <option value="custom">Plage personnalisée</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Custom Date Range Picker -->
+                <div *ngIf="showCustomDatePicker" class="mt-4 flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm text-gray-600 font-medium">De:</label>
+                        <input type="date" [(ngModel)]="customDateRange.startDate"
+                               class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm text-gray-600 font-medium">À:</label>
+                        <input type="date" [(ngModel)]="customDateRange.endDate"
+                               class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                    </div>
+                    <button (click)="onCustomDateApply()"
+                            class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
+                        Appliquer
                     </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Loading State -->
-        <div *ngIf="loading" class="flex items-center justify-center h-64">
-            <div class="text-center">
-                <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-                <p class="mt-4 text-gray-600">Chargement des données...</p>
+            <!-- Loading State -->
+            <div *ngIf="loading" class="flex items-center justify-center h-64">
+                <div class="text-center">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent"></div>
+                    <p class="mt-4 text-gray-600">Chargement des données...</p>
+                </div>
             </div>
-        </div>
 
-        <!-- Dashboard Content -->
-        <div *ngIf="!loading" class="p-6 space-y-6">
+            <!-- Dashboard Content -->
+            <div *ngIf="!loading" class="p-6 space-y-6">
             <!-- Stats Cards -->
             <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Revenue Today -->
@@ -85,101 +109,94 @@
                 </div>
             </section>
 
-            <!-- Content Grid -->
+            <!-- Charts Row -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Recent Sales -->
-                <div class="lg:col-span-2 bg-white rounded-xl shadow-lg">
-                    <div class="p-6 border-b border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-lg font-bold text-gray-800">Ventes Récentes</h2>
-                            <button
-                                (click)="navigateToReports()"
-                                class="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                                Voir tout →
-                            </button>
+                <!-- Sales Trend Chart -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900">Évolution des ventes</h2>
+                            <p class="text-sm text-gray-500">
+                                <span *ngIf="selectedPeriod === 'today'">Aujourd'hui</span>
+                                <span *ngIf="selectedPeriod === 'week'">7 derniers jours</span>
+                                <span *ngIf="selectedPeriod === 'month'">30 derniers jours</span>
+                                <span *ngIf="selectedPeriod === 'year'">12 derniers mois</span>
+                                <span *ngIf="selectedPeriod === 'custom'">Période personnalisée</span>
+                            </p>
+                        </div>
+                        <div class="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-sm font-medium">
+                            Tendance
                         </div>
                     </div>
-                    <div class="p-6">
-                        <div *ngIf="recentSales.length === 0" class="text-center py-12 text-gray-500">
-                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                            </svg>
-                            <p>Aucune vente aujourd'hui</p>
-                        </div>
-
-                        <div class="space-y-3">
-                            <div *ngFor="let sale of recentSales"
-                                 class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="text-sm font-semibold text-gray-800">{{ formatCurrency(sale.total) }}</span>
-                                        <span class="px-2 py-0.5 text-xs rounded-full"
-                                              [ngClass]="{
-                                                'bg-green-100 text-green-700': sale.paymentMethod === 'cash',
-                                                'bg-blue-100 text-blue-700': sale.paymentMethod === 'card',
-                                                'bg-purple-100 text-purple-700': sale.paymentMethod === 'mobile_money',
-                                                'bg-gray-100 text-gray-700': sale.paymentMethod === 'bank_transfer'
-                                              }">
-                                            {{ getPaymentMethodLabel(sale.paymentMethod) }}
-                                        </span>
-                                    </div>
-                                    <p class="text-xs text-gray-500">
-                                        {{ sale.items.length || 0 }} article(s) • {{ formatDate(sale.createdAt) }}
-                                    </p>
-                                    <p *ngIf="sale.customerName" class="text-xs text-gray-600 mt-1">
-                                        Client: {{ sale.customerName }}
-                                    </p>
-                                </div>
-                                <div class="text-right">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        Payé
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Line Chart -->
+                    <div class="h-64">
+                        <canvas #salesTrendChart></canvas>
                     </div>
                 </div>
 
-                <!-- Top Products & Alerts -->
-                <div class="space-y-6">
-                    <!-- Top Products -->
-                    <div class="bg-white rounded-xl shadow-lg">
-                        <div class="p-6 border-b border-gray-200">
-                            <h2 class="text-lg font-bold text-gray-800">Top Produits</h2>
-                        </div>
-                        <div class="p-6">
-                            <div *ngIf="topProducts.length === 0" class="text-center py-8 text-gray-500">
-                                <p class="text-sm">Aucune donnée disponible</p>
-                            </div>
-                            <div class="space-y-3">
-                                <div *ngFor="let product of topProducts; let i = index"
-                                     class="flex items-start gap-3">
-                                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
-                                         [ngClass]="{
-                                           'bg-yellow-100 text-yellow-700': i === 0,
-                                           'bg-gray-100 text-gray-700': i === 1,
-                                           'bg-orange-100 text-orange-700': i === 2,
-                                           'bg-blue-100 text-blue-700': i > 2
-                                         }">
-                                        {{ i + 1 }}
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium text-gray-800 truncate">{{ product.productName }}</p>
-                                        <p class="text-xs text-gray-500">{{ product.totalQuantitySold }} vendus</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="text-sm font-semibold text-gray-800">{{ formatCurrency(product.totalRevenue) }}</p>
-                                    </div>
-                                </div>
-                            </div>
+                <!-- Payment Method Chart -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900">Méthodes de paiement</h2>
+                            <p class="text-sm text-gray-500">Répartition par montant</p>
                         </div>
                     </div>
+                    <!-- Doughnut Chart -->
+                    <div class="h-64 flex items-center justify-center">
+                        <canvas #paymentMethodChart></canvas>
+                    </div>
+                </div>
+            </div>
 
-                    <!-- Low Stock Alerts -->
-                    <div class="bg-white rounded-xl shadow-lg">
-                        <div class="p-6 border-b border-gray-200">
-                            <div class="flex items-center justify-between">
-                                <h2 class="text-lg font-bold text-gray-800">Alertes Stock Faible</h2>
+            <!-- Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Top Products Chart -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900">Top Produits</h2>
+                            <p class="text-sm text-gray-500">Par revenu généré</p>
+                        </div>
+                    </div>
+                    <!-- Horizontal Bar Chart -->
+                    <div class="h-64">
+                        <canvas #topProductsChart></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Sales - Polar Area Chart -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900">Ventes Récentes</h2>
+                            <p class="text-sm text-gray-500">5 dernières transactions</p>
+                        </div>
+                        <button
+                            (click)="navigateToReports()"
+                            class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                            Voir tout →
+                        </button>
+                    </div>
+                    <div class="h-80 flex items-center justify-center">
+                        <div *ngIf="recentSales.length === 0" class="text-center text-gray-500">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            <p>Aucune vente pour la période sélectionnée</p>
+                        </div>
+                        <!-- Polar Area Chart -->
+                        <canvas *ngIf="recentSales.length > 0" #recentSalesChart></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Low Stock Alerts Section -->
+            <div class="grid grid-cols-1 gap-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-bold text-gray-800">Alertes Stock Faible</h2>
                                 <button
                                     (click)="navigateToStocks()"
                                     class="text-sm text-blue-600 hover:text-blue-700 font-medium">
@@ -210,6 +227,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
 </div>

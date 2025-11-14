@@ -68,16 +68,23 @@ export class ReportsService {
 
   constructor(private http: HttpClient) {}
 
-  getDailyReport(): Observable<DailyReport> {
-    return this.http.get<DailyReport>(`${this.apiUrl}/daily`);
+  getDailyReport(date?: string): Observable<DailyReport> {
+    let params = new HttpParams();
+    if (date) params = params.set('date', date);
+    return this.http.get<DailyReport>(`${this.apiUrl}/daily`, { params });
   }
 
-  getWeeklyReport(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/weekly`);
+  getWeeklyReport(startDate?: string): Observable<any> {
+    let params = new HttpParams();
+    if (startDate) params = params.set('startDate', startDate);
+    return this.http.get<any>(`${this.apiUrl}/weekly`, { params });
   }
 
-  getMonthlyReport(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/monthly`);
+  getMonthlyReport(year?: number, month?: number): Observable<any> {
+    let params = new HttpParams();
+    if (year !== undefined) params = params.set('year', year.toString());
+    if (month !== undefined) params = params.set('month', month.toString());
+    return this.http.get<any>(`${this.apiUrl}/monthly`, { params });
   }
 
   getTopProducts(startDate?: string, endDate?: string, limit: number = 10): Observable<TopProduct[]> {

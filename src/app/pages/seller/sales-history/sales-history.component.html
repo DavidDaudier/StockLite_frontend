@@ -8,261 +8,734 @@
     <app-pos-header></app-pos-header>
 
     <!-- Titre de la page -->
-    <div class="px-6 pt-4 pb-3 bg-white border-b border-gray-200">
-      <div>
-        <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-          <ng-icon name="hugeInvoice01" size="24" class="text-blue-600"></ng-icon>
-          Historique des Ventes
-        </h1>
-        <p class="text-sm text-gray-500 mt-1">Dashboard > Historique des ventes</p>
-      </div>
-    </div>
-
-    <!-- Filtres et recherche -->
-    <div class="px-6 py-4 bg-white border-b border-gray-200">
-      <div class="flex flex-wrap gap-4">
-        <!-- Recherche -->
-        <div class="flex-1 min-w-[250px]">
-          <div class="relative">
-            <ng-icon name="hugeSearch01" size="20" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></ng-icon>
-            <input
-              type="text"
-              [(ngModel)]="searchTerm"
-              (input)="onSearch()"
-              placeholder="Rechercher par N°, client, téléphone..."
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-        </div>
-
-        <!-- Date début -->
+    <div class="px-6 pt-4 pb-3 bg-white">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <input
-            type="date"
-            [(ngModel)]="startDate"
-            (change)="onSearch()"
-            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
+          <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+            @if (isAdmin) {
+              Historique des Ventes
+            } @else {
+              Ventes du Jour
+            }
+          </h1>
+          <p class="text-sm text-gray-500 mt-1">
+            @if (isAdmin) {
+              Dashboard > Historique des ventes
+            } @else {
+              Dashboard > Ventes du jour
+            }
+          </p>
         </div>
-
-        <!-- Date fin -->
-        <div>
-          <input
-            type="date"
-            [(ngModel)]="endDate"
-            (change)="onSearch()"
-            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
+        <!-- Export Buttons -->
+        <div class="flex items-center gap-2">
+          @if (authService.canRead('reports')) {
+          <button
+            (click)="exportToPDF()"
+            [disabled]="loading() || filteredSales().length === 0"
+            class="px-4 py-2.5 bg-amber-400 text-white text-sm font-medium rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed shadow-md">
+            <ng-icon name="hugePdf01" size="18" />
+            <span class="hidden sm:inline">Export PDF</span>
+          </button>
+          }
+          @if (authService.canRead('reports')) {
+          <button
+            (click)="exportToExcel()"
+            [disabled]="loading() || filteredSales().length === 0"
+            class="px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed shadow-md">
+            <ng-icon name="hugeXls01" size="18" />
+            <span class="hidden sm:inline">Export Excel</span>
+          </button>
+          }
+          @if (authService.canRead('reports') && isAdmin) {
+          <button
+            (click)="openComparisonModal()"
+            [disabled]="loading()"
+            class="px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed shadow-md">
+            <ng-icon name="hugeGitCompare" size="18" />
+            <span class="hidden sm:inline">Comparer vente vendeur</span>
+          </button>
+          }
         </div>
       </div>
     </div>
 
     <!-- Contenu principal -->
-    <div class="flex-1 overflow-y-auto px-6 py-4 bg-gray-50">
-      <!-- Loading State -->
-      @if (loading()) {
-        <div class="flex justify-center items-center h-64">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      }
-
-      <!-- Empty State -->
-      @else if (filteredSales().length === 0) {
-        <div class="bg-white rounded-lg shadow-md p-12 text-center">
-          <ng-icon name="hugeInvoice01" size="64" class="text-gray-400 mx-auto mb-4"></ng-icon>
-          <h3 class="text-xl font-semibold text-gray-700 mb-2">Aucune vente trouvée</h3>
-          <p class="text-gray-500">
-            @if (searchTerm() || startDate() || endDate()) {
-              Aucune vente ne correspond à vos critères de recherche
-            } @else {
-              Vous n'avez pas encore effectué de vente.
-            }
-          </p>
-        </div>
-      }
-
-      <!-- Sales Table -->
-      @else {
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    N° Vente
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Client
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Montant
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Paiement
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                @for (sale of filteredSales(); track sale.id) {
-                  <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="font-medium text-gray-900">{{ sale.saleNumber }}</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm">
-                        <div class="font-medium text-gray-900">
-                          {{ sale.customerName || 'Client anonyme' }}
-                        </div>
-                        @if (sale.customerPhone) {
-                          <div class="text-gray-500">{{ sale.customerPhone }}</div>
-                        }
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div class="flex items-center gap-1">
-                        <ng-icon name="hugeCalendar03" size="16"></ng-icon>
-                        {{ formatDate(sale.createdAt) }}
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="text-lg font-bold text-blue-600">
-                        {{ formatCurrency(sale.total) }}
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="px-2 py-1 text-xs rounded-full font-medium bg-green-100 text-green-800 capitalize">
-                        {{ sale.paymentMethod }}
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      <div class="flex items-center gap-2">
-                        <button
-                          (click)="viewDetails(sale)"
-                          class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                          title="Voir détails"
-                        >
-                          <ng-icon name="hugeEye" size="16"></ng-icon>
-                          Détails
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+    <div class="flex-1 overflow-y-auto px-6 pb-4">
+      <div class="bg-gray-100 rounded-[15px] p-4 border border-gray-300">
+        <!-- Loading State -->
+        @if (loading()) {
+          <div class="flex items-center justify-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent"></div>
           </div>
-        </div>
-      }
+        }
+
+        <!-- Tableau des ventes -->
+        @else {
+          <div class="bg-white rounded-lg border border-gray-200 overflow-x-auto mb-15">
+            <div class="p-4 border-b border-gray-200 bg-gray-50">
+              <!-- Version simplifiée pour sellers ou complète pour admin -->
+              @if (!isAdmin) {
+                <!-- SELLER: Version simplifiée -->
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h3 class="text-base font-semibold text-gray-900">Ventes d'aujourd'hui</h3>
+                    <p class="text-xs text-gray-500 mt-1">{{ filteredSales().length }} vente(s) effectuée(s)</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-xs text-gray-500">Total du jour</p>
+                    <p class="text-lg font-bold text-teal-600" [innerHTML]="getTotalAmount() | gdesCurrency"></p>
+                  </div>
+                </div>
+              } @else {
+                <!-- ADMIN: Version complète avec tous les filtres -->
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                  <div>
+                    <h3 class="text-base font-semibold text-gray-900">Historique des Ventes</h3>
+                    <p class="text-xs text-gray-500 mt-1">{{ filteredSales().length }} vente(s) trouvée(s)</p>
+                  </div>
+
+                  <!-- Séparateur vertical -->
+                  <div class="hidden lg:block h-10 w-px bg-gray-300"></div>
+
+                  <!-- Filtres rapides de période -->
+                  <button
+                    (click)="setQuickRange('daily')"
+                    [class]="'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ' + (reportType() === 'daily' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
+                    Aujourd'hui
+                  </button>
+                  <button
+                    (click)="setQuickRange('weekly')"
+                    [class]="'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ' + (reportType() === 'weekly' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
+                    Semaine
+                  </button>
+                  <button
+                    (click)="setQuickRange('monthly')"
+                    [class]="'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ' + (reportType() === 'monthly' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
+                    Mois
+                  </button>
+                  <button
+                    (click)="setQuickRange('yearly')"
+                    [class]="'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ' + (reportType() === 'yearly' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
+                    Année
+                  </button>
+
+                  <!-- Séparateur vertical -->
+                  <div class="hidden lg:block h-10 w-px bg-gray-300"></div>
+
+                  <!-- Custom Date Range -->
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-500">De</span>
+                    <input
+                      type="date"
+                      [(ngModel)]="startDate"
+                      (change)="onDateRangeChange()"
+                      class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <span class="text-xs text-gray-500">à</span>
+                    <input
+                      type="date"
+                      [(ngModel)]="endDate"
+                      [min]="startDate()"
+                      (change)="onDateRangeChange()"
+                      class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  </div>
+
+                  <!-- Séparateur vertical -->
+                  <div class="hidden lg:block h-10 w-px bg-gray-300"></div>
+
+                  <!-- Total -->
+                  <div class="text-right ml-auto">
+                    <p class="text-xs text-gray-500">Total</p>
+                    <p class="text-sm font-semibold text-gray-900" [innerHTML]="getTotalAmount() | gdesCurrency"></p>
+                  </div>
+                </div>
+
+                <!-- Recherche, Filtre par vendeur et boutons d'action -->
+                <div class="flex flex-wrap items-center gap-3">
+                  <!-- Filtre par vendeur (pour les admins) -->
+                  <div class="flex items-center gap-3">
+                    <span class="text-sm font-medium text-gray-700">Recherche par Vendeur :</span>
+                    <select
+                      [(ngModel)]="selectedUserId"
+                      (change)="loadSales()"
+                      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                      <option value="all">Tous les vendeurs</option>
+                      @for (user of users(); track user.id) {
+                        <option [value]="user.id">{{ user.fullName }} ({{ '@' + user.username }})</option>
+                      }
+                    </select>
+                  </div>
+
+                  <!-- Boutons d'action à droite -->
+                  <div class="ml-auto flex items-center gap-3">
+                    <select
+                      (change)="onItemsPerPageChange($event)"
+                      [value]="itemsPerPage()"
+                      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white cursor-pointer">
+                      <option value="10">📄 10 par page</option>
+                      <option value="20">📄 20 par page</option>
+                      <option value="30">📄 30 par page</option>
+                      <option value="40">📄 40 par page</option>
+                      <option value="50">📄 50 par page</option>
+                    </select>
+
+                    <!-- Selection button -->
+                    @if (authService.canDelete('reports') && (authService.getCurrentUser()?.role === 'admin' || authService.getCurrentUser()?.isSuperAdmin)) {
+                    <button
+                      (click)="toggleSelectionMode()"
+                      [disabled]="loading() || filteredSales().length === 0"
+                      [class]="(selectionMode() && selectedSaleIds().size > 0)
+                        ? 'px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-50 disabled:cursor-not-allowed'
+                        : 'px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-50 disabled:cursor-not-allowed'">
+                      <ng-icon name="hugeDelete03" size="18" />
+                      @if (selectionMode()) {
+                        @if (selectedSaleIds().size > 0) {
+                          <span>Supprimer ({{ selectedSaleIds().size }})</span>
+                        } @else {
+                          <span>Annuler</span>
+                        }
+                      } @else {
+                        <span>Sélectionner</span>
+                      }
+                    </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Empty State -->
+            @if (filteredSales().length === 0) {
+              <div class="bg-white rounded-lg shadow-md p-12 text-center">
+                <ng-icon name="hugeInvoice01" size="64" class="text-gray-400 mx-auto mb-4"></ng-icon>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Aucune vente trouvée</h3>
+                <p class="text-gray-500">
+                  @if (searchTerm() || startDate() || endDate()) {
+                    Aucune vente ne correspond à vos critères de recherche
+                  } @else {
+                    Vous n'avez pas encore effectué de vente.
+                  }
+                </p>
+              </div>
+            } @else {
+              <div class="table-container-fixed">
+                <table class="min-w-full divide-y divide-gray-200 table-fixed">
+                  <thead class="bg-teal-600 text-white sticky top-0 z-10">
+                    <tr>
+                      @if (isAdmin && selectionMode()) {
+                        <th class="w-12 px-3 py-4 text-center">
+                          <input
+                            type="checkbox"
+                            [checked]="allSalesSelected()"
+                            (change)="toggleSelectAll()"
+                            class="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 cursor-pointer"
+                            title="Sélectionner tout">
+                        </th>
+                      }
+                      <th class="w-12 px-3 py-4"></th>
+                      <th class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Date</th>
+                      @if (isAdmin) {
+                        <th class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Vendeur</th>
+                      }
+                      <th class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Client</th>
+                      <th class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Nbs de Produits</th>
+                      <th class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Mode Paiement</th>
+                      <th class="px-3 md:px-6 py-4 text-right text-xs font-medium uppercase tracking-wider whitespace-nowrap">Montant</th>
+                      <th class="px-3 md:px-6 py-4 text-center text-xs font-medium uppercase tracking-wider whitespace-nowrap">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    @for (sale of paginatedSales(); track sale.id) {
+                      <!-- Main sale row -->
+                      <tr [class]="'transition-colors ' +
+                        (isSaleSelected(sale.id) ? 'bg-red-100 border-l-4 border-l-red-600' :
+                        (isAdmin && hasPendingDeletionRequest(sale.id) ? 'bg-orange-50 border-l-4 border-l-orange-500 hover:bg-orange-100' :
+                        'hover:bg-gray-50 odd:bg-white even:bg-gray-50'))"
+                        [style.cursor]="(isAdmin && selectionMode()) ? 'pointer' : 'default'"
+                        (click)="(isAdmin && selectionMode()) ? toggleSaleSelection(sale.id) : toggleSaleDetails(sale.id)">
+                        @if (isAdmin && selectionMode()) {
+                          <td class="px-3 py-4 whitespace-nowrap text-center" (click)="$event.stopPropagation()">
+                            <input
+                              type="checkbox"
+                              [checked]="isSaleSelected(sale.id)"
+                              (change)="toggleSaleSelection(sale.id)"
+                              [class]="isSaleSelected(sale.id) ? 'w-4 h-4 text-red-600 bg-gray-100 border-red-500 rounded focus:ring-red-500 cursor-pointer accent-red-600' : 'w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 cursor-pointer'">
+                          </td>
+                        }
+                        <td class="px-3 py-4 whitespace-nowrap text-center" (click)="$event.stopPropagation(); toggleSaleDetails(sale.id)">
+                          <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                            @if (expandedSaleId() === sale.id) {
+                              <ng-icon name="hugeArrowDownDouble" size="18" />
+                            } @else {
+                              <ng-icon name="hugeArrowRightDouble" size="18" />
+                            }
+                          </button>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {{ formatDate(sale.createdAt) }}
+                        </td>
+                        @if (isAdmin) {
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ sale.seller?.fullName || sale.seller?.username || 'Inconnu' }}
+                          </td>
+                        }
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <div class="font-medium">{{ sale.customerName || 'Client anonyme' }}</div>
+                          @if (sale.customerPhone) {
+                            <div class="text-gray-500 text-xs">{{ sale.customerPhone }}</div>
+                          }
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                          {{ getTotalItems(sale) }} produit(s)
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                          <span [class]="'px-2 py-1 text-xs rounded-full ' +
+                            (sale.paymentMethod === 'cash' ? 'bg-green-100 text-green-800' :
+                            sale.paymentMethod === 'card' ? 'bg-blue-100 text-blue-800' :
+                            sale.paymentMethod === 'mobile_money' ? 'bg-purple-100 text-purple-800' :
+                            sale.paymentMethod === 'bank_transfer' ? 'bg-amber-100 text-amber-800' :
+                            'bg-gray-100 text-gray-800')">
+                            {{ sale.paymentMethod === 'cash' ? 'Espèces' :
+                              sale.paymentMethod === 'card' ? 'Carte' :
+                              sale.paymentMethod === 'mobile_money' ? 'Mobile Money' :
+                              sale.paymentMethod === 'bank_transfer' ? 'Virement' :
+                              sale.paymentMethod }}
+                          </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900" [innerHTML]="sale.total | gdesCurrency">
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center" (click)="$event.stopPropagation()">
+                          @if (!isAdmin) {
+                            <!-- Bouton pour le vendeur -->
+                            <button
+                              (click)="openDeletionRequestModal(sale)"
+                              class="px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded hover:bg-orange-600 transition-colors flex items-center gap-1.5 mx-auto"
+                              title="Demander la suppression au super admin">
+                              <ng-icon name="hugeMessageDelay02" size="16" />
+                              <span>Demande</span>
+                            </button>
+                          } @else if (hasPendingDeletionRequest(sale.id)) {
+                            <!-- Bouton pour le super admin quand il y a une demande -->
+                            <button
+                              (click)="viewDeletionRequestFromHistory(sale.id)"
+                              class="px-3 py-1.5 bg-purple-500 text-white text-xs font-medium rounded hover:bg-purple-600 transition-colors flex items-center gap-1.5 mx-auto animate-pulse"
+                              title="Voir et traiter la demande de suppression">
+                              <ng-icon name="hugeMessageDelay02" size="16" />
+                              <span>Traiter</span>
+                            </button>
+                          } @else {
+                            <!-- Pas d'action disponible -->
+                            <span class="text-gray-400 text-xs">-</span>
+                          }
+                        </td>
+                      </tr>
+
+                      <!-- Expanded details row -->
+                      @if (expandedSaleId() === sale.id) {
+                        <tr>
+                          <td [attr.colspan]="isAdmin ? ((selectionMode() ? 1 : 0) + 9) : 9" class="px-0 py-0 bg-gray-50">
+                            <div class="px-6 py-4 flex justify-center">
+                              <table class="w-11/12 bg-white border border-gray-200 overflow-hidden rounded-lg shadow-sm">
+                                <thead class="bg-teal-300">
+                                  <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Nom Produit</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">Prix</th>
+                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Quantité</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">Total</th>
+                                  </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                  @if (sale.items && sale.items.length > 0) {
+                                    @for (item of sale.items; track $index) {
+                                      <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                                        <td class="px-4 py-3 text-sm text-gray-900">{{ item.productName }}</td>
+                                        <td class="px-4 py-3 text-sm text-right text-gray-900" [innerHTML]="item.unitPrice | gdesCurrency"></td>
+                                        <td class="px-4 py-3 text-sm text-center text-gray-900">{{ item.quantity }}</td>
+                                        <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900" [innerHTML]="item.subtotal | gdesCurrency"></td>
+                                      </tr>
+                                    }
+                                  } @else {
+                                    <tr>
+                                      <td colspan="4" class="px-4 py-3 text-sm text-center text-gray-500">Aucun produit</td>
+                                    </tr>
+                                  }
+                                </tbody>
+                              </table>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Pagination Controls -->
+              <div class="mt-0 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-200 px-4 py-3 rounded-b-lg">
+                <!-- Info Section -->
+                <div class="text-sm text-gray-900">
+                  Affichage des résultats {{ paginationInfo().startIndex }} à {{ paginationInfo().endIndex }} sur {{ paginationInfo().total }}
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex items-center gap-1">
+                  <!-- First Page Button -->
+                  <button
+                    (click)="goToPage(1)"
+                    [disabled]="currentPage() === 1"
+                    class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                    «
+                  </button>
+
+                  <!-- Previous Button -->
+                  <button
+                    (click)="goToPage(currentPage() - 1)"
+                    [disabled]="currentPage() === 1"
+                    class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                    ‹
+                  </button>
+
+                  <!-- Page Numbers -->
+                  @for (page of getPageNumbers(); track page) {
+                    <button
+                      (click)="goToPage(page)"
+                      [class]="page === currentPage()
+                        ? 'px-3 py-1.5 text-sm bg-gray-700 text-white rounded cursor-pointer'
+                        : 'px-3 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded cursor-pointer transition-colors'">
+                      {{ page }}
+                    </button>
+                  }
+
+                  <!-- Next Button -->
+                  <button
+                    (click)="goToPage(currentPage() + 1)"
+                    [disabled]="currentPage() === totalPages"
+                    class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                    ›
+                  </button>
+
+                  <!-- Last Page Button -->
+                  <button
+                    (click)="goToPage(totalPages)"
+                    [disabled]="currentPage() === totalPages"
+                    class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                    »
+                  </button>
+                </div>
+
+                <!-- Summary Info -->
+                <div class="text-sm text-gray-900 flex items-center gap-1">
+                  <span>Total ventes : </span>
+                  <strong class="text-teal-600 text-base">{{ paginationInfo().total }}</strong>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
     </div>
 
-    <!-- Details Modal -->
-    @if (showDetailsModal() && selectedSale()) {
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" (click)="closeModal()">
-        <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto m-4" (click)="$event.stopPropagation()">
+    <!-- Comparison Modal -->
+    @if (showComparisonModal()) {
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
           <!-- Modal Header -->
-          <div class="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
-            <h2 class="text-xl font-bold">Détails de la Vente - {{ selectedSale()!.saleNumber }}</h2>
-            <button (click)="closeModal()" class="text-white hover:text-gray-200">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
+          <div class="bg-blue-600 p-6 border-b border-gray-200 flex items-center justify-between">
+            <h2 class="text-xl font-bold text-white">Comparaison de Ventes entre Vendeurs</h2>
+            <button
+              (click)="closeComparisonModal()"
+              class="text-white hover:text-gray-400 transition-colors">
+              <span class="text-4xl font-light">&times;</span>
             </button>
           </div>
 
           <!-- Modal Body -->
           <div class="p-6">
-            <!-- Customer Info -->
-            <div class="mb-6 bg-gray-50 p-4 rounded-lg">
-              <h3 class="font-semibold text-gray-800 mb-2">Informations Client</h3>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <span class="text-sm text-gray-600">Nom:</span>
-                  <p class="font-medium">{{ selectedSale()!.customerName || 'N/A' }}</p>
-                </div>
-                <div>
-                  <span class="text-sm text-gray-600">Téléphone:</span>
-                  <p class="font-medium">{{ selectedSale()!.customerPhone || 'N/A' }}</p>
-                </div>
-                <div>
-                  <span class="text-sm text-gray-600">Date:</span>
-                  <p class="font-medium">{{ formatDate(selectedSale()!.createdAt) }}</p>
-                </div>
-                <div>
-                  <span class="text-sm text-gray-600">Paiement:</span>
-                  <p class="font-medium capitalize">{{ selectedSale()!.paymentMethod }}</p>
-                </div>
+            <!-- Date and Vendor Selectors -->
+            <div class="flex flex-wrap items-end gap-4 mb-6">
+              <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                <input
+                  type="date"
+                  [(ngModel)]="comparisonDate"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
               </div>
+              <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Premier Vendeur</label>
+                <select
+                  [(ngModel)]="comparisonSeller1Id"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                  <option value="">Sélectionner un vendeur</option>
+                  @for (user of users(); track user.id) {
+                    <option [value]="user.id">{{ user.fullName }} ({{ '@' + user.username }})</option>
+                  }
+                </select>
+              </div>
+              <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Deuxième Vendeur</label>
+                <select
+                  [(ngModel)]="comparisonSeller2Id"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                  <option value="">Sélectionner un vendeur</option>
+                  @for (user of users(); track user.id) {
+                    <option [value]="user.id">{{ user.fullName }} ({{ '@' + user.username }})</option>
+                  }
+                </select>
+              </div>
+              <button
+                (click)="compareVendorSales()"
+                [disabled]="!comparisonDate || !comparisonSeller1Id || !comparisonSeller2Id || loading()"
+                class="flex items-center justify-center px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
+                <ng-icon name="hugeGitCompare" size="18" class="mr-2"></ng-icon>
+                Comparer
+              </button>
             </div>
 
-            <!-- Items List -->
-            @if (selectedSale()!.items && selectedSale()!.items!.length > 0) {
-              <div class="mb-6">
-                <h3 class="font-semibold text-gray-800 mb-3">Articles</h3>
-                <div class="border rounded-lg overflow-hidden">
-                  <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                      <tr>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Produit</th>
-                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Qté</th>
-                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Prix Unit.</th>
-                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Sous-total</th>
-                      </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                      @for (item of selectedSale()!.items; track $index) {
-                        <tr>
-                          <td class="px-4 py-2">
-                            <div class="text-sm font-medium text-gray-900">{{ item.productName }}</div>
-                            <div class="text-xs text-gray-500">SKU: {{ item.productSku }}</div>
-                          </td>
-                          <td class="px-4 py-2 text-right">{{ item.quantity }}</td>
-                          <td class="px-4 py-2 text-right">{{ formatCurrency(item.unitPrice) }}</td>
-                          <td class="px-4 py-2 text-right font-medium">{{ formatCurrency(item.subtotal) }}</td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
+            <!-- Loading State -->
+            @if (loading()) {
+              <div class="mb-4 p-3 bg-blue-100 border border-blue-400 text-blue-700 rounded-lg flex items-center">
+                <svg class="animate-spin h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Chargement des données de comparaison...</span>
               </div>
             }
 
-            <!-- Total -->
-            <div class="border-t pt-4">
-              <div class="flex justify-end">
-                <div class="w-64">
-                  <div class="flex justify-between text-lg font-bold border-t pt-2">
-                    <span>Total:</span>
-                    <span class="text-blue-600">{{ formatCurrency(selectedSale()!.total) }}</span>
+            <!-- Comparison Results -->
+            @if (comparisonResults(); as results) {
+              <div class="space-y-4">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Résultats de la Comparaison</h3>
+
+                <!-- Comparison Table -->
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-blue-300">
+                      <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">Métrique</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-900 uppercase tracking-wider">
+                          {{ getVendorName(comparisonSeller1Id) }}
+                        </th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-900 uppercase tracking-wider">
+                          {{ getVendorName(comparisonSeller2Id) }}
+                        </th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-900 uppercase tracking-wider">Évolution</th>
+                      </tr>
+                    </thead>
+                      <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- Revenue Row -->
+                        <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Revenu Total</td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.revenue.value1 | gdesCurrency"></td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.revenue.value2 | gdesCurrency"></td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                            <div class="flex items-center justify-center gap-2">
+                              @if (results.revenue.diff > 0) {
+                                <ng-icon name="hugeArrowUp02" size="18" class="text-green-600" />
+                                <span class="text-green-600 font-semibold">+{{ results.revenue.percentChange.toFixed(2) }}%</span>
+                              } @else if (results.revenue.diff < 0) {
+                                <ng-icon name="hugeArrowDown02" size="18" class="text-red-600" />
+                                <span class="text-red-600 font-semibold">{{ results.revenue.percentChange.toFixed(2) }}%</span>
+                              } @else {
+                                <span class="text-gray-600">0%</span>
+                              }
+                            </div>
+                          </td>
+                        </tr>
+
+                        <!-- Sales Row -->
+                        <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Nombre de Ventes</td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.sales.value1 }}</td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.sales.value2 }}</td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                            <div class="flex items-center justify-center gap-2">
+                              @if (results.sales.diff > 0) {
+                                <ng-icon name="hugeArrowUp02" size="18" class="text-green-600" />
+                                <span class="text-green-600 font-semibold">+{{ results.sales.percentChange.toFixed(2) }}%</span>
+                              } @else if (results.sales.diff < 0) {
+                                <ng-icon name="hugeArrowDown02" size="18" class="text-red-600" />
+                                <span class="text-red-600 font-semibold">{{ results.sales.percentChange.toFixed(2) }}%</span>
+                              } @else {
+                                <span class="text-gray-600">0%</span>
+                              }
+                            </div>
+                          </td>
+                        </tr>
+
+                        <!-- Products Sold Row -->
+                        <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Nombre de Produits Vendus</td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.productsSold.value1 }}</td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.productsSold.value2 }}</td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                            <div class="flex items-center justify-center gap-2">
+                              @if (results.productsSold.diff > 0) {
+                                <ng-icon name="hugeArrowUp02" size="18" class="text-green-600" />
+                                <span class="text-green-600 font-semibold">+{{ results.productsSold.percentChange.toFixed(2) }}%</span>
+                              } @else if (results.productsSold.diff < 0) {
+                                <ng-icon name="hugeArrowDown02" size="18" class="text-red-600" />
+                                <span class="text-red-600 font-semibold">{{ results.productsSold.percentChange.toFixed(2) }}%</span>
+                              } @else {
+                                <span class="text-gray-600">0%</span>
+                              }
+                            </div>
+                          </td>
+                        </tr>
+
+                        <!-- Average Sale Row -->
+                        <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Panier Moyen</td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.averageSale.value1 | gdesCurrency"></td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.averageSale.value2 | gdesCurrency"></td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                            <div class="flex items-center justify-center gap-2">
+                              @if (results.averageSale.diff > 0) {
+                                <ng-icon name="hugeArrowUp02" size="18" class="text-green-600" />
+                                <span class="text-green-600 font-semibold">+{{ results.averageSale.percentChange.toFixed(2) }}%</span>
+                              } @else if (results.averageSale.diff < 0) {
+                                <ng-icon name="hugeArrowDown02" size="18" class="text-red-600" />
+                                <span class="text-red-600 font-semibold">{{ results.averageSale.percentChange.toFixed(2) }}%</span>
+                              } @else {
+                                <span class="text-gray-600">0%</span>
+                              }
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
-                </div>
               </div>
-            </div>
+            }
           </div>
 
           <!-- Modal Footer -->
-          <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3">
+          <div class="p-6 border-t border-gray-200 flex justify-end">
             <button
-              (click)="closeModal()"
-              class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-            >
+              (click)="closeComparisonModal()"
+              class="px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors">
               Fermer
-            </button>
-            <button
-              (click)="printReceipt(selectedSale()!)"
-              class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-2"
-            >
-              <ng-icon name="hugePrinter" size="18"></ng-icon>
-              Imprimer
             </button>
           </div>
         </div>
       </div>
     }
+
+    <!-- Modal Demande de Suppression -->
+    @if (showDeletionRequestModal()) {
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-auto">
+          <!-- Modal Header -->
+          <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <ng-icon name="hugeMessageDelay02" size="24" class="text-orange-500" />
+                Demande de Suppression
+              </h2>
+              <button
+                (click)="closeDeletionRequestModal()"
+                class="text-gray-400 hover:text-gray-600 transition-colors">
+                <ng-icon name="hugeCancel01" size="24" />
+              </button>
+            </div>
+            @if (selectedSaleForDeletion) {
+              <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                <p class="text-sm text-gray-600">Vente: <span class="font-semibold text-gray-900">{{ selectedSaleForDeletion.saleNumber }}</span></p>
+                <p class="text-sm text-gray-600 mt-1">Montant: <span class="font-semibold text-gray-900" [innerHTML]="selectedSaleForDeletion.total | gdesCurrency"></span></p>
+                <p class="text-sm text-gray-600 mt-1">Date: <span class="font-semibold text-gray-900">{{ formatDate(selectedSaleForDeletion.createdAt) }}</span></p>
+              </div>
+            }
+          </div>
+
+          <!-- Modal Body -->
+          <div class="p-6 space-y-6">
+            <!-- Error/Success Messages -->
+            @if (deletionRequestError()) {
+              <div class="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                <ng-icon name="hugeCancel01" size="20" class="text-red-600 mt-0.5" />
+                <p class="text-sm text-red-800">{{ deletionRequestError() }}</p>
+              </div>
+            }
+
+            @if (deletionRequestSuccess()) {
+              <div class="p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+                <ng-icon name="hugeSent" size="20" class="text-green-600 mt-0.5" />
+                <p class="text-sm text-green-800">{{ deletionRequestSuccess() }}</p>
+              </div>
+            }
+
+            <!-- Reasons -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">
+                Motifs <span class="text-red-500">*</span>
+                <span class="text-xs text-gray-500 font-normal ml-1">(Sélectionnez un ou plusieurs motifs)</span>
+              </label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                @for (reason of availableReasons; track reason.value) {
+                  <label class="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    [class.bg-orange-50]="isReasonSelected(reason.value)"
+                    [class.border-orange-500]="isReasonSelected(reason.value)">
+                    <input
+                      type="checkbox"
+                      [checked]="isReasonSelected(reason.value)"
+                      (change)="toggleDeletionReason(reason.value)"
+                      class="mt-1 w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 cursor-pointer">
+                    <span class="text-sm text-gray-900">{{ reason.label }}</span>
+                  </label>
+                }
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+              <label for="deletionDescription" class="block text-sm font-medium text-gray-700 mb-2">
+                Description détaillée <span class="text-red-500">*</span>
+              </label>
+              <textarea
+                id="deletionDescription"
+                [value]="deletionDescription()"
+                (input)="deletionDescription.set($any($event.target).value)"
+                rows="4"
+                placeholder="Décrivez en détail la raison pour laquelle cette vente doit être supprimée..."
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                [disabled]="submittingDeletionRequest()"></textarea>
+              <p class="mt-1 text-xs text-gray-500">Minimum 10 caractères. Soyez aussi précis que possible.</p>
+            </div>
+
+            <!-- Info -->
+            <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p class="text-sm text-blue-900">
+                <strong>Note:</strong> Cette demande sera envoyée au super administrateur. Vous pourrez modifier cette demande pendant les 5 prochaines minutes. Après ce délai, seul le super admin pourra approuver ou rejeter la demande.
+              </p>
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
+            <button
+              (click)="closeDeletionRequestModal()"
+              [disabled]="submittingDeletionRequest()"
+              class="px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              Annuler
+            </button>
+            <button
+              (click)="submitDeletionRequest()"
+              [disabled]="submittingDeletionRequest() || deletionReasons().size === 0 || !deletionDescription().trim()"
+              class="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+              @if (submittingDeletionRequest()) {
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Envoi en cours...</span>
+              } @else {
+                <ng-icon name="hugeSent" size="18" />
+                <span>Envoyer la demande</span>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
   </main>
 </div>

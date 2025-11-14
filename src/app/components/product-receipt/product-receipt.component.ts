@@ -140,6 +140,9 @@ export class ProductReceiptComponent {
           this.showSuccess('Vente enregistrée avec succès !');
           this.printReceipt(receiptData);
           this.resetCart();
+
+          // Recharger les produits pour mettre à jour les stocks et vérifier les niveaux
+          this.cart.loadFromBackend();
         },
         error: (error) => {
           console.error('❌ Erreur enregistrement vente:', error);
@@ -199,6 +202,49 @@ export class ProductReceiptComponent {
       this.errorMessage.set('Aucun reçu disponible pour impression');
       setTimeout(() => this.errorMessage.set(''), 3000);
     }
+  }
+
+  /** Sauvegarder comme brouillon */
+  saveDraft() {
+    if (this.cart.items().length === 0) {
+      this.errorMessage.set('Le panier est vide');
+      setTimeout(() => this.errorMessage.set(''), 3000);
+      return;
+    }
+
+    this.loading.set(true);
+    this.errorMessage.set('');
+
+    const draftDto: CreateSaleDto = {
+      items: this.cart.items().map(item => ({
+        productId: item.id,
+        quantity: item.qty,
+        unitPrice: item.price,
+        discount: 0
+      })),
+      discount: 0,
+      tax: this.tax(),
+      paymentMethod: this.paymentMethod(),
+      customerName: this.customerName() || undefined,
+      customerPhone: this.customerPhone() || undefined,
+      notes: this.notes() || undefined,
+      clientSaleId: `draft-${Date.now()}`
+    };
+
+    this.salesService.createDraft(draftDto).subscribe({
+      next: (draft) => {
+        console.log('✅ Brouillon créé:', draft);
+        this.successMessage.set('Commande ajoutée au brouillon avec succès !');
+        this.loading.set(false);
+        this.resetCart();
+        setTimeout(() => this.successMessage.set(''), 5000);
+      },
+      error: (error) => {
+        console.error('❌ Erreur création brouillon:', error);
+        this.errorMessage.set('Erreur lors de la création du brouillon');
+        this.loading.set(false);
+      }
+    });
   }
 }
 

@@ -57,7 +57,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   allMenuItems = [
     { icon: 'hugeDashboardBrowsing', label: 'Dashboard', route: '/seller/dashboard', active: false, key: 'dashboard' },
     { icon: 'hugeShoppingCart01', label: 'Point de Vente', route: '/seller/pos', active: true, key: 'pos' },
-    { icon: 'hugeInvoice01', label: 'Historique', route: '/seller/sales-history', active: false, key: 'history' },
+    { icon: 'hugeInvoice01', label: 'Historique', route: '/seller/history', active: false, key: 'history' },
     { icon: 'hugeFileDownload', label: 'Rapports', route: '/seller/reports', active: false, key: 'reports' },
     { icon: 'hugeUser', label: 'Profil', route: '/seller/profile', active: false, key: 'profile' }
   ];

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Sale, PaymentMethod } from '../models/sale.model';
 import { ProductItem } from '../../models/product-item.model';
+import { ReceiptConfigService } from './receipt-config.service';
 
 export interface PrintReceiptData {
   ticketNo: string;
@@ -16,12 +17,76 @@ export interface PrintReceiptData {
   cashierName?: string;
 }
 
+interface ReceiptConfig {
+  showLogo: boolean;
+  logoUrl: string;
+  companyName: string;
+  companyAddress: string;
+  companyPhone: string;
+  companyEmail: string;
+  taxId: string;
+  showProductDetails: boolean;
+  showPaymentMethod: boolean;
+  showTax: boolean;
+  footerMessage: string;
+  fontSize: number;
+  paperWidth: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class PrinterService {
+  private cachedConfig: ReceiptConfig | null = null;
 
-  constructor() { }
+  constructor(private receiptConfigService: ReceiptConfigService) {
+    // Charger la config au démarrage
+    this.loadConfig();
+  }
+
+  /**
+   * Charge la configuration depuis l'API et la met en cache
+   */
+  private loadConfig(): void {
+    this.receiptConfigService.getActive().subscribe({
+      next: (config) => {
+        this.cachedConfig = config;
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement de la configuration:', error);
+        // Utiliser la config par défaut en cas d'erreur
+        this.cachedConfig = this.getDefaultConfig();
+      }
+    });
+  }
+
+  /**
+   * Retourne la configuration par défaut
+   */
+  private getDefaultConfig(): ReceiptConfig {
+    return {
+      showLogo: true,
+      logoUrl: '',
+      companyName: 'StockLite',
+      companyAddress: 'Port-au-Prince, Haiti',
+      companyPhone: '+509 1234-5678',
+      companyEmail: 'contact@stocklite.com',
+      taxId: 'NIF: 123456789',
+      showProductDetails: true,
+      showPaymentMethod: true,
+      showTax: true,
+      footerMessage: 'Merci de votre visite ! À bientôt.',
+      fontSize: 12,
+      paperWidth: 80
+    };
+  }
+
+  /**
+   * Charge la configuration du reçu (depuis le cache ou par défaut)
+   */
+  private getReceiptConfig(): ReceiptConfig {
+    return this.cachedConfig || this.getDefaultConfig();
+  }
 
   /**
    * Imprime un reçu de vente
@@ -43,6 +108,7 @@ export class PrinterService {
    * Génère le HTML du reçu
    */
   private generateReceiptHtml(data: PrintReceiptData): string {
+    const config = this.getReceiptConfig();
     const paymentMethodLabel = this.getPaymentMethodLabel(data.paymentMethod);
     const dateStr = new Date(data.date).toLocaleString('fr-FR');
 
@@ -60,14 +126,23 @@ export class PrinterService {
           }
           body {
             font-family: 'Courier New', monospace;
-            font-size: 11px;
+            font-size: ${config.fontSize}px;
             line-height: 1.3;
             padding: 10px;
-            max-width: 280px;
+            max-width: ${config.paperWidth === 58 ? '200px' : config.paperWidth === 80 ? '280px' : '300px'};
             margin: 0 auto;
           }
           .receipt {
             width: 100%;
+          }
+          .logo-container {
+            text-align: center;
+            margin-bottom: 10px;
+          }
+          .logo-container img {
+            max-width: 120px;
+            max-height: 80px;
+            object-fit: contain;
           }
           .header {
             text-align: center;
@@ -178,18 +253,17 @@ export class PrinterService {
         <div class="receipt">
           <!-- Header -->
           <div class="header">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px;">
-              <div style="width: 30px; height: 30px; background: #14b8a6; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                  <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-              <div class="store-name">STOCKLITE</div>
+            ${config.showLogo && config.logoUrl ? `
+            <div class="logo-container">
+              <img src="${config.logoUrl}" alt="Logo">
             </div>
+            ` : ''}
+            <div class="store-name">${config.companyName}</div>
             <div class="store-info">
-              Système de Gestion de Stock<br>
-              Port-au-Prince, Haiti WI<br>
-              Tél: +509 XX XXX XX XX
+              ${config.companyAddress}<br>
+              ${config.companyPhone ? `Tél: ${config.companyPhone}<br>` : ''}
+              ${config.companyEmail ? `${config.companyEmail}<br>` : ''}
+              ${config.taxId ? config.taxId : ''}
             </div>
           </div>
 
@@ -240,10 +314,12 @@ export class PrinterService {
               <span>Sous-total:</span>
               <span>${data.subtotal.toFixed(0)} Gdes</span>
             </div>
+            ${config.showTax ? `
             <div class="total-row">
               <span>TVA (18%):</span>
               <span>${data.tax.toFixed(0)} Gdes</span>
             </div>
+            ` : ''}
             <div class="total-row grand-total">
               <span>TOTAL:</span>
               <span>${data.total.toFixed(0)} Gdes</span>
@@ -251,12 +327,14 @@ export class PrinterService {
           </div>
 
           <!-- Payment Info -->
+          ${config.showPaymentMethod ? `
           <div class="payment-info">
             <div style="display: flex; justify-content: space-between;">
               <span>Paiement:</span>
               <strong>${paymentMethodLabel}</strong>
             </div>
           </div>
+          ` : ''}
 
           <!-- Notes (if provided) -->
           ${data.notes ? `
@@ -267,9 +345,8 @@ export class PrinterService {
 
           <!-- Footer -->
           <div class="footer">
-            <div class="thank-you">Merci de votre visite !</div>
+            <div class="thank-you">${config.footerMessage}</div>
             <div>Conservez ce reçu</div>
-            <div style="margin-top: 10px;">www.stocklite.com</div>
           </div>
         </div>
       </body>
@@ -281,6 +358,7 @@ export class PrinterService {
    * Génère le HTML du reçu depuis un objet Sale
    */
   private generateSaleReceiptHtml(sale: Sale): string {
+    const config = this.getReceiptConfig();
     const paymentMethodLabel = this.getPaymentMethodLabel(sale.paymentMethod);
     const dateStr = new Date(sale.createdAt).toLocaleString('fr-FR');
     const ticketNo = `T-${sale.id.substring(0, 8).toUpperCase()}`;
@@ -299,14 +377,23 @@ export class PrinterService {
           }
           body {
             font-family: 'Courier New', monospace;
-            font-size: 11px;
+            font-size: ${config.fontSize}px;
             line-height: 1.3;
             padding: 10px;
-            max-width: 280px;
+            max-width: ${config.paperWidth === 58 ? '200px' : config.paperWidth === 80 ? '280px' : '300px'};
             margin: 0 auto;
           }
           .receipt {
             width: 100%;
+          }
+          .logo-container {
+            text-align: center;
+            margin-bottom: 10px;
+          }
+          .logo-container img {
+            max-width: 120px;
+            max-height: 80px;
+            object-fit: contain;
           }
           .header {
             text-align: center;
@@ -417,18 +504,17 @@ export class PrinterService {
         <div class="receipt">
           <!-- Header -->
           <div class="header">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px;">
-              <div style="width: 30px; height: 30px; background: #14b8a6; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                  <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-              <div class="store-name">STOCKLITE</div>
+            ${config.showLogo && config.logoUrl ? `
+            <div class="logo-container">
+              <img src="${config.logoUrl}" alt="Logo">
             </div>
+            ` : ''}
+            <div class="store-name">${config.companyName}</div>
             <div class="store-info">
-              Système de Gestion de Stock<br>
-              Port-au-Prince, Haiti WI<br>
-              Tél: +509 XX XXX XX XX
+              ${config.companyAddress}<br>
+              ${config.companyPhone ? `Tél: ${config.companyPhone}<br>` : ''}
+              ${config.companyEmail ? `${config.companyEmail}<br>` : ''}
+              ${config.taxId ? config.taxId : ''}
             </div>
           </div>
 
@@ -512,9 +598,8 @@ export class PrinterService {
 
           <!-- Footer -->
           <div class="footer">
-            <div class="thank-you">Merci de votre visite !</div>
+            <div class="thank-you">${config.footerMessage}</div>
             <div>Conservez ce reçu</div>
-            <div style="margin-top: 10px;">www.stocklite.com</div>
           </div>
         </div>
       </body>

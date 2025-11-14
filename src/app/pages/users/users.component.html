@@ -241,7 +241,7 @@
 
         <!-- Tableau des utilisateurs -->
         @else {
-          <div class="table-container-fixed">
+          <div [class]="showStats() ? 'table-container-fixed' : 'table-container-fixed-expanded'">
             <table class="min-w-full divide-y divide-gray-200 table-fixed">
               <thead class="bg-teal-600 text-white sticky top-0 z-10">
                 <tr>
@@ -322,7 +322,8 @@
                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                           Toujours actif
                         </span>
-                      } @else {
+                      } @else if (authService.canUpdate('users')) {
+                        <!-- L'utilisateur a la permission de modifier, afficher le toggle -->
                         <label class="inline-flex items-center cursor-pointer">
                           <input
                             type="checkbox"
@@ -334,6 +335,11 @@
                             <span class="hidden sm:inline">{{ user.isActive ? 'Actif' : 'Inactif' }}</span>
                           </span>
                         </label>
+                      } @else {
+                        <!-- L'utilisateur n'a pas la permission, afficher seulement le texte -->
+                        <span [class]="user.isActive ? 'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800' : 'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800'">
+                          {{ user.isActive ? 'Actif' : 'Inactif' }}
+                        </span>
                       }
                     </td>
                     <td class="px-3 md:px-6 py-3 whitespace-nowrap text-left text-sm text-gray-500 hidden lg:table-cell" (click)="$event.stopPropagation()">

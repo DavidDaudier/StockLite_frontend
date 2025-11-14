@@ -42,7 +42,7 @@
             [disabled]="loading() || selectionMode()"
             class="px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed">
             <ng-icon name="hugeGitCompare" size="18" />
-            <span class="hidden sm:inline">Comparer Profit</span>
+            <span class="hidden sm:inline">Comparer Profit par Dates</span>
           </button>
           }
         </div>
@@ -493,115 +493,117 @@
                 </div>
               </div>
             </div>
-            <table class="min-w-full divide-y divide-gray-200 table-fixed">
-              <thead class="bg-teal-600 text-white sticky top-0 z-10">
-                <tr>
-                  @if (selectionMode()) {
-                    <th class="w-12 px-3 py-4 text-center">
-                      <input
-                        type="checkbox"
-                        [checked]="allSalesSelected()"
-                        (change)="toggleSelectAll()"
-                        class="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 cursor-pointer"
-                        title="Sélectionner tout">
-                    </th>
-                  }
-                  <th class="w-12 px-3 py-4"></th>
-                  <th class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Date</th>
-                  <th class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Vendeur</th>
-                  <th class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Nbs de Produits</th>
-                  <th class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Mode Paiement</th>
-                  <th class="px-3 md:px-6 py-4 text-right text-xs font-medium uppercase tracking-wider whitespace-nowrap">Montant</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                @if (allSales().length === 0) {
+            <div class="table-container-fixed">
+              <table class="min-w-full divide-y divide-gray-200 table-fixed">
+                <thead class="bg-teal-600 text-white sticky top-0 z-10">
                   <tr>
-                    <td [attr.colspan]="selectionMode() ? 7 : 6" class="px-6 py-8 text-center text-gray-500">
-                      Aucune vente trouvée pour cette période
-                    </td>
-                  </tr>
-                }
-                @for (sale of paginatedSales(); track sale.id) {
-                  <!-- Main sale row -->
-                  <tr [class]="'transition-colors ' + (isSaleSelected(sale.id) ? 'bg-red-100 border-l-4 border-l-red-600' : 'hover:bg-gray-50 odd:bg-white even:bg-gray-50')" [style.cursor]="selectionMode() ? 'pointer' : 'default'" (click)="selectionMode() ? toggleSaleSelection(sale.id) : toggleSaleDetails(sale.id)">
                     @if (selectionMode()) {
-                      <td class="px-3 py-4 whitespace-nowrap text-center" (click)="$event.stopPropagation()">
+                      <th class="w-12 px-3 py-4 text-center">
                         <input
                           type="checkbox"
-                          [checked]="isSaleSelected(sale.id)"
-                          (change)="toggleSaleSelection(sale.id)"
-                          [class]="isSaleSelected(sale.id) ? 'w-4 h-4 text-red-600 bg-gray-100 border-red-500 rounded focus:ring-red-500 cursor-pointer accent-red-600' : 'w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 cursor-pointer'">
-                      </td>
+                          [checked]="allSalesSelected()"
+                          (change)="toggleSelectAll()"
+                          class="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 cursor-pointer"
+                          title="Sélectionner tout">
+                      </th>
                     }
-                    <td class="px-3 py-4 whitespace-nowrap text-center" (click)="$event.stopPropagation(); toggleSaleDetails(sale.id)">
-                      <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                        @if (expandedSaleId() === sale.id) {
-                          <ng-icon name="hugeArrowDownDouble" size="18" />
-                        } @else {
-                          <ng-icon name="hugeArrowRightDouble" size="18" />
-                        }
-                      </button>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {{ sale.createdAt | date:'dd/MM/yyyy hh:mm a' }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {{ sale.seller?.fullName || sale.seller?.username || 'Inconnu' }}
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500">
-                      {{ sale.items.length || 0 }} produit(s)
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      <span [class]="'px-2 py-1 text-xs rounded-full ' +
-                        (sale.paymentMethod === 'cash' ? 'bg-green-100 text-green-800' :
-                        sale.paymentMethod === 'card' ? 'bg-blue-100 text-blue-800' :
-                        sale.paymentMethod === 'mobile_money' ? 'bg-purple-100 text-purple-800' :
-                        sale.paymentMethod === 'bank_transfer' ? 'bg-amber-100 text-amber-800' :
-                        'bg-gray-100 text-gray-800')">
-                        {{ sale.paymentMethod === 'cash' ? 'Espèces' :
-                          sale.paymentMethod === 'card' ? 'Carte' :
-                          sale.paymentMethod === 'mobile_money' ? 'Mobile Money' :
-                          sale.paymentMethod === 'bank_transfer' ? 'Virement' :
-                          sale.paymentMethod }}
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900" [innerHTML]="sale.total | gdesCurrency">
-                    </td>
+                    <th class="w-12 px-3 py-4"></th>
+                    <th class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Date</th>
+                    <th class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Vendeur</th>
+                    <th class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Nbs de Produits</th>
+                    <th class="px-3 md:px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Mode Paiement</th>
+                    <th class="px-3 md:px-6 py-4 text-right text-xs font-medium uppercase tracking-wider whitespace-nowrap">Montant</th>
                   </tr>
-
-                  <!-- Expanded details row -->
-                  @if (expandedSaleId() === sale.id) {
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  @if (allSales().length === 0) {
                     <tr>
-                      <td [attr.colspan]="selectionMode() ? 7 : 6" class="px-0 py-0 bg-gray-50">
-                        <div class="px-6 py-4">
-                          <table class="min-w-full bg-white border border-gray-200 overflow-hidden">
-                            <thead class="bg-teal-300">
-                              <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Nom Produit</th>
-                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">Prix</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Quantité</th>
-                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">Total</th>
-                              </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                              @for (item of sale.items; track $index) {
-                                <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
-                                  <td class="px-4 py-3 text-sm text-gray-900">{{ item.productName }}</td>
-                                  <td class="px-4 py-3 text-sm text-right text-gray-900" [innerHTML]="item.unitPrice | gdesCurrency"></td>
-                                  <td class="px-4 py-3 text-sm text-center text-gray-900">{{ item.quantity }}</td>
-                                  <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900" [innerHTML]="item.subtotal | gdesCurrency"></td>
-                                </tr>
-                              }
-                            </tbody>
-                          </table>
-                        </div>
+                      <td [attr.colspan]="selectionMode() ? 7 : 6" class="px-6 py-8 text-center text-gray-500">
+                        Aucune vente trouvée pour cette période
                       </td>
                     </tr>
                   }
-                }
-              </tbody>
-            </table>
+                  @for (sale of paginatedSales(); track sale.id) {
+                    <!-- Main sale row -->
+                    <tr [class]="'transition-colors ' + (isSaleSelected(sale.id) ? 'bg-red-100 border-l-4 border-l-red-600' : 'hover:bg-gray-50 odd:bg-white even:bg-gray-50')" [style.cursor]="selectionMode() ? 'pointer' : 'default'" (click)="selectionMode() ? toggleSaleSelection(sale.id) : toggleSaleDetails(sale.id)">
+                      @if (selectionMode()) {
+                        <td class="px-3 py-4 whitespace-nowrap text-center" (click)="$event.stopPropagation()">
+                          <input
+                            type="checkbox"
+                            [checked]="isSaleSelected(sale.id)"
+                            (change)="toggleSaleSelection(sale.id)"
+                            [class]="isSaleSelected(sale.id) ? 'w-4 h-4 text-red-600 bg-gray-100 border-red-500 rounded focus:ring-red-500 cursor-pointer accent-red-600' : 'w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 cursor-pointer'">
+                        </td>
+                      }
+                      <td class="px-3 py-4 whitespace-nowrap text-center" (click)="$event.stopPropagation(); toggleSaleDetails(sale.id)">
+                        <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                          @if (expandedSaleId() === sale.id) {
+                            <ng-icon name="hugeArrowDownDouble" size="18" />
+                          } @else {
+                            <ng-icon name="hugeArrowRightDouble" size="18" />
+                          }
+                        </button>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ sale.createdAt | date:'dd/MM/yyyy hh:mm a' }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ sale.seller?.fullName || sale.seller?.username || 'Inconnu' }}
+                      </td>
+                      <td class="px-6 py-4 text-sm text-gray-500">
+                        {{ sale.items.length || 0 }} produit(s)
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span [class]="'px-2 py-1 text-xs rounded-full ' +
+                          (sale.paymentMethod === 'cash' ? 'bg-green-100 text-green-800' :
+                          sale.paymentMethod === 'card' ? 'bg-blue-100 text-blue-800' :
+                          sale.paymentMethod === 'mobile_money' ? 'bg-purple-100 text-purple-800' :
+                          sale.paymentMethod === 'bank_transfer' ? 'bg-amber-100 text-amber-800' :
+                          'bg-gray-100 text-gray-800')">
+                          {{ sale.paymentMethod === 'cash' ? 'Espèces' :
+                            sale.paymentMethod === 'card' ? 'Carte' :
+                            sale.paymentMethod === 'mobile_money' ? 'Mobile Money' :
+                            sale.paymentMethod === 'bank_transfer' ? 'Virement' :
+                            sale.paymentMethod }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900" [innerHTML]="sale.total | gdesCurrency">
+                      </td>
+                    </tr>
+
+                    <!-- Expanded details row -->
+                    @if (expandedSaleId() === sale.id) {
+                      <tr>
+                        <td [attr.colspan]="selectionMode() ? 7 : 6" class="px-0 py-0 bg-gray-50">
+                          <div class="px-6 py-4">
+                            <table class="min-w-full bg-white border border-gray-200 overflow-hidden">
+                              <thead class="bg-teal-300">
+                                <tr>
+                                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Nom Produit</th>
+                                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">Prix</th>
+                                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Quantité</th>
+                                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">Total</th>
+                                </tr>
+                              </thead>
+                              <tbody class="divide-y divide-gray-200">
+                                @for (item of sale.items; track $index) {
+                                  <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ item.productName }}</td>
+                                    <td class="px-4 py-3 text-sm text-right text-gray-900" [innerHTML]="item.unitPrice | gdesCurrency"></td>
+                                    <td class="px-4 py-3 text-sm text-center text-gray-900">{{ item.quantity }}</td>
+                                    <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900" [innerHTML]="item.subtotal | gdesCurrency"></td>
+                                  </tr>
+                                }
+                              </tbody>
+                            </table>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
 
             <!-- Pagination Controls -->
             <div class="mt-0 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-200 px-4 py-3 rounded-b-lg">
@@ -821,7 +823,7 @@
 
           <!-- Detailed Report Table -->
           @if (salesReport()) {
-            <div class="table-container-fixed">
+            <div [class]="showStats() ? 'table-container-fixed' : 'table-container-fixed-expanded'">
               <div class="p-4 border-b border-gray-200 bg-blue-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-30">
                 <h3 class="text-base font-semibold text-gray-900">Détails du Rapport de Ventes</h3>
               </div>

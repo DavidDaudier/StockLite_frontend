@@ -64,6 +64,7 @@ export interface LoginRequest {
 
 export interface AuthResponse {
   access_token: string;
+  sessionId: string | null;
   user: User;
 }
 

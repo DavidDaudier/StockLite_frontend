@@ -45,24 +45,35 @@ html{
 
 /* Tableaux avec en-tête fixe et défilement vertical */
 .table-container-fixed {
-    max-height: calc(100vh - 400px);
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+    /* border-radius: 0.5rem; */
+    /* border: 1px solid #e5e7eb; */
+}
+
+/* Quand les stats sont cachées, le tableau prend plus de hauteur */
+.table-container-fixed-expanded {
+    max-height: calc(100vh - 250px);
     overflow-y: auto;
     border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
 }
 
-.table-container-fixed table {
+.table-container-fixed table,
+.table-container-fixed-expanded table {
     width: 100%;
 }
 
-.table-container-fixed thead {
+.table-container-fixed thead,
+.table-container-fixed-expanded thead {
     position: sticky;
     top: 0;
     z-index: 10;
     background-color: #0d9488;
 }
 
-.table-container-fixed thead th {
+.table-container-fixed thead th,
+.table-container-fixed-expanded thead th {
     background-color: #0d9488 !important;
 }
 
