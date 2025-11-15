@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, interval } from 'rxjs';
 import { SidebarComponent } from '../../layouts/sidebar/sidebar.component';
 import { PosHeaderComponent } from '../../components/pos-header/pos-header.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { StatsCardComponent } from '../../shared/components/stats-card/stats-card.component';
 import { UsersService } from '../../core/services/users.service';
 import { SalesService } from '../../core/services/sales.service';
 import { SessionsService, Session } from '../../core/services/sessions.service';
@@ -42,7 +44,7 @@ interface SellerActivity {
 @Component({
   selector: 'app-zoom',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgIcon, SidebarComponent, PosHeaderComponent],
+  imports: [CommonModule, FormsModule, NgIcon, SidebarComponent, PosHeaderComponent, PageHeaderComponent, StatsCardComponent],
   viewProviders: [
     provideIcons({
       hugeVideoReplay,

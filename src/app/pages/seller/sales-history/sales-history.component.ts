@@ -17,6 +17,7 @@ import { DEFAULT_APP_INFO } from '../../../constants/app-defaults';
 import { GdesCurrencyPipe } from '../../../pipes/currency/currency.pipe';
 import { DeletionRequestService } from '../../../core/services/deletion-request.service';
 import { DeletionReason, CreateDeletionRequestDto } from '../../../core/models/deletion-request.model';
+import { TimeCheckerService } from '../../../core/services/time-checker.service';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   hugeInvoice01,
@@ -91,6 +92,7 @@ export class SalesHistoryComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   private appInfoService = inject(AppInfoService);
   private deletionRequestService = inject(DeletionRequestService);
+  private timeCheckerService = inject(TimeCheckerService);
   private destroy$ = new Subject<void>();
   private apiUrl = `${environment.apiUrl}/sales`;
   private usersApiUrl = `${environment.apiUrl}/users`;
@@ -195,15 +197,9 @@ export class SalesHistoryComponent implements OnInit, OnDestroy {
     // Load app info for exports
     this.loadAppInfo();
 
-    // Initialiser les dates pour le filtre "Aujourd'hui" SANS appeler onSearch
-    // car loadSales() appellera onSearch() à la fin
-    this.reportType.set('daily');
-    const today = new Date();
-    const start = new Date(today.setHours(0, 0, 0, 0));
-    this.startDate.set(start.toISOString().split('T')[0]);
-    this.endDate.set(new Date().toISOString().split('T')[0]);
-
-    this.loadSales();
+    // Initialiser les dates pour le filtre "Aujourd'hui"
+    // Utiliser la méthode setQuickRange pour avoir une logique cohérente
+    this.setQuickRange('daily');
   }
 
   loadUsersForFilter(): void {
@@ -347,29 +343,42 @@ export class SalesHistoryComponent implements OnInit, OnDestroy {
 
   setQuickRange(type: 'daily' | 'weekly' | 'monthly' | 'yearly'): void {
     this.reportType.set(type);
-    const today = new Date();
-    let start = new Date();
+    const now = new Date();
+    let start: Date;
+    let end: Date;
 
     switch(type) {
       case 'daily':
-        start = new Date(today.setHours(0, 0, 0, 0));
+        // Pour aujourd'hui : du début du jour à la fin du jour
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         break;
       case 'weekly':
-        const dayOfWeek = today.getDay();
-        start = new Date(today);
-        start.setDate(today.getDate() - dayOfWeek);
-        start.setHours(0, 0, 0, 0);
+        // Du début de la semaine (dimanche) à aujourd'hui
+        const dayOfWeek = now.getDay();
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek, 0, 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         break;
       case 'monthly':
-        start = new Date(today.getFullYear(), today.getMonth(), 1);
+        // Du début du mois à aujourd'hui
+        start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         break;
       case 'yearly':
-        start = new Date(today.getFullYear(), 0, 1);
+        // Du début de l'année à aujourd'hui
+        start = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         break;
     }
 
+    // Convertir en format YYYY-MM-DD pour les inputs et l'API
     this.startDate.set(start.toISOString().split('T')[0]);
-    this.endDate.set(new Date().toISOString().split('T')[0]);
+    this.endDate.set(end.toISOString().split('T')[0]);
+
+    console.log(`📅 [setQuickRange] Type: ${type}`);
+    console.log(`   - startDate: ${this.startDate()}`);
+    console.log(`   - endDate: ${this.endDate()}`);
+
     this.loadSales(); // Recharger depuis le backend avec les nouvelles dates
   }
 
@@ -993,5 +1002,45 @@ export class SalesHistoryComponent implements OnInit, OnDestroy {
         state: { openRequestId: request.id }
       });
     }
+  }
+
+  /**
+   * Vérifie si le bouton "Demande" doit être désactivé
+   *
+   * Le bouton est désactivé si:
+   * - Plus de 5 minutes se sont écoulées depuis la création de la vente
+   * - OU une demande de suppression existe déjà pour cette vente
+   *
+   * @param sale - La vente à vérifier
+   * @returns true si le bouton doit être désactivé, false sinon
+   */
+  isRequestButtonDisabled(sale: Sale): boolean {
+    // Désactiver si une demande existe déjà
+    if (this.hasPendingDeletionRequest(sale.id)) {
+      return true;
+    }
+
+    // Désactiver si plus de 5 minutes se sont écoulées
+    return this.timeCheckerService.isDelayExpired(sale.createdAt, 5);
+  }
+
+  /**
+   * Retourne le message tooltip pour le bouton "Demande"
+   *
+   * @param sale - La vente
+   * @returns Message expliquant pourquoi le bouton est désactivé ou comment l'utiliser
+   */
+  getRequestButtonTooltip(sale: Sale): string {
+    if (this.hasPendingDeletionRequest(sale.id)) {
+      return 'Une demande de suppression est déjà en attente pour cette vente';
+    }
+
+    if (this.timeCheckerService.isDelayExpired(sale.createdAt, 5)) {
+      const minutesElapsed = this.timeCheckerService.getMinutesElapsed(sale.createdAt);
+      return `Le délai de 5 minutes est dépassé (${minutesElapsed.toFixed(0)} minutes écoulées)`;
+    }
+
+    const remainingMinutes = this.timeCheckerService.getRemainingMinutes(sale.createdAt, 5);
+    return `Demander la suppression au super admin (${remainingMinutes.toFixed(1)} min restantes)`;
   }
 }

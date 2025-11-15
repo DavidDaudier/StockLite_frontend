@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../../layouts/sidebar/sidebar.component';
 import { PosHeaderComponent } from '../../components/pos-header/pos-header.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { AppInfoService } from '../../services/app-info.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ReceiptConfigService } from '../../core/services/receipt-config.service';
@@ -57,7 +58,7 @@ interface MobileConfig {
 @Component({
   selector: 'app-pos-printer',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgIcon, SidebarComponent, PosHeaderComponent],
+  imports: [CommonModule, FormsModule, NgIcon, SidebarComponent, PosHeaderComponent, PageHeaderComponent],
   viewProviders: [
     provideIcons({
       hugePrinter,

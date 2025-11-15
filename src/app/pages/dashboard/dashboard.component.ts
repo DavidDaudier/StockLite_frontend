@@ -6,6 +6,8 @@ import { Subject, takeUntil, interval, startWith, switchMap } from 'rxjs';
 
 import { SidebarComponent } from "./../../layouts/sidebar/sidebar.component";
 import { PosHeaderComponent } from '../../components/pos-header/pos-header.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { StatsCardComponent } from '../../shared/components/stats-card/stats-card.component';
 import { SalesService } from '../../core/services/sales.service';
 import { ProductsService } from '../../core/services/products.service';
 import { ReportsService, DailyReport, TopProduct, InventoryReport } from '../../core/services/reports.service';
@@ -34,7 +36,7 @@ interface DateRange {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, FormsModule, SidebarComponent, PosHeaderComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, PosHeaderComponent, PageHeaderComponent, StatsCardComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -144,9 +146,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         break;
       case 'custom':
         if (this.customDateRange.startDate && this.customDateRange.endDate) {
-          startDate = new Date(this.customDateRange.startDate);
-          endDate = new Date(this.customDateRange.endDate);
-          endDate.setHours(23, 59, 59, 999);
+          // Parser les dates en temps local pour éviter les problèmes de fuseau horaire
+          const [startYear, startMonth, startDay] = this.customDateRange.startDate.split('-').map(Number);
+          const [endYear, endMonth, endDay] = this.customDateRange.endDate.split('-').map(Number);
+
+          startDate = new Date(startYear, startMonth - 1, startDay, 0, 0, 0, 0);
+          endDate = new Date(endYear, endMonth - 1, endDay, 23, 59, 59, 999);
         }
         break;
     }
@@ -256,7 +261,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
         // Update stats
         this.stats.todaySales++;
-        this.stats.todayRevenue += sale.total;
+        const saleTotal = typeof sale.total === 'number' ? sale.total : parseFloat(sale.total) || 0;
+        this.stats.todayRevenue += saleTotal;
 
         // Show notification
         this.showNotification(`New sale: ${this.formatCurrency(sale.total)}`);
@@ -356,6 +362,26 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.router.navigate(['/login']);
   }
 
+  // Helper pour formater une date en YYYY-MM-DD en temps local
+  private getLocalDateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // Obtenir le label de période pour l'affichage
+  getPeriodLabel(): string {
+    switch (this.selectedPeriod) {
+      case 'today': return 'Aujourd\'hui';
+      case 'week': return 'Hebdomadaire';
+      case 'month': return 'Mensuel';
+      case 'year': return 'Annuel';
+      case 'custom': return 'Période personnalisée';
+      default: return 'Aujourd\'hui';
+    }
+  }
+
   initializeSalesTrendChart(): void {
     if (!this.salesTrendChartRef) return;
 
@@ -371,15 +397,17 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     const salesByDay = new Map<string, number>();
     this.recentSales.forEach(sale => {
       const saleDate = new Date(sale.createdAt);
-      const dateKey = saleDate.toISOString().split('T')[0];
-      salesByDay.set(dateKey, (salesByDay.get(dateKey) || 0) + sale.total);
+      const dateKey = this.getLocalDateKey(saleDate);
+      // Convertir sale.total en nombre pour éviter la concaténation de strings
+      const saleTotal = typeof sale.total === 'number' ? sale.total : parseFloat(sale.total) || 0;
+      salesByDay.set(dateKey, (salesByDay.get(dateKey) || 0) + saleTotal);
     });
 
     // Générer les labels et données pour le graphique
     for (let i = numPoints - 1; i >= 0; i--) {
       const date = new Date(endDate);
       date.setDate(date.getDate() - i);
-      const dateKey = date.toISOString().split('T')[0];
+      const dateKey = this.getLocalDateKey(date);
 
       days.push(date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }));
       revenues.push(salesByDay.get(dateKey) || 0);
@@ -425,6 +453,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           scales: {
             y: {
               beginAtZero: true,
+              min: 0, // Force l'axe Y à commencer à 0
               ticks: {
                 callback: (value) => {
                   return this.formatCurrency(Number(value));
@@ -444,7 +473,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     const paymentMethodMap = new Map<string, number>();
     this.recentSales.forEach(sale => {
       const method = sale.paymentMethod || 'cash';
-      paymentMethodMap.set(method, (paymentMethodMap.get(method) || 0) + sale.total);
+      // Convertir sale.total en nombre pour éviter la concaténation de strings
+      const saleTotal = typeof sale.total === 'number' ? sale.total : parseFloat(sale.total) || 0;
+      paymentMethodMap.set(method, (paymentMethodMap.get(method) || 0) + saleTotal);
     });
 
     // Préparer les données pour le graphique
@@ -580,7 +611,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       const labels = recentFive.map((sale, index) =>
         `Vente #${index + 1}`
       );
-      const data = recentFive.map(sale => sale.total);
+      // Convertir sale.total en nombre pour éviter les problèmes avec Chart.js
+      const data = recentFive.map(sale =>
+        typeof sale.total === 'number' ? sale.total : parseFloat(sale.total) || 0
+      );
       const backgroundColors = [
         'rgba(255, 99, 132, 0.7)',
         'rgba(54, 162, 235, 0.7)',

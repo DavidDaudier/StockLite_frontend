@@ -308,8 +308,11 @@
                             <!-- Bouton pour le vendeur -->
                             <button
                               (click)="openDeletionRequestModal(sale)"
-                              class="px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded hover:bg-orange-600 transition-colors flex items-center gap-1.5 mx-auto"
-                              title="Demander la suppression au super admin">
+                              [disabled]="isRequestButtonDisabled(sale)"
+                              [class]="isRequestButtonDisabled(sale)
+                                ? 'px-3 py-1.5 bg-gray-300 text-gray-500 text-xs font-medium rounded cursor-not-allowed flex items-center gap-1.5 mx-auto opacity-60'
+                                : 'px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded hover:bg-orange-600 transition-colors flex items-center gap-1.5 mx-auto'"
+                              [title]="getRequestButtonTooltip(sale)">
                               <ng-icon name="hugeMessageDelay02" size="16" />
                               <span>Demande</span>
                             </button>
