@@ -33,7 +33,10 @@ import {
   hugeArrowDown02,
   hugeMessageDelay02,
   hugeCancel01,
-  hugeSent
+  hugeSent,
+  hugeDollarCircle,
+  hugePackage,
+  hugeShoppingBasket01
 } from '@ng-icons/huge-icons';
 
 interface Sale {
@@ -80,7 +83,10 @@ interface UserForFilter {
       hugeArrowDown02,
       hugeMessageDelay02,
       hugeCancel01,
-      hugeSent
+      hugeSent,
+      hugeDollarCircle,
+      hugePackage,
+      hugeShoppingBasket01
     })
   ],
   templateUrl: './sales-history.component.html',
@@ -132,6 +138,34 @@ export class SalesHistoryComponent implements OnInit, OnDestroy {
   submittingDeletionRequest = signal(false);
   deletionRequestError = signal('');
   deletionRequestSuccess = signal('');
+
+  // Computed : Set des IDs de ventes avec demandes de suppression pending
+  salesWithPendingRequests = computed(() => {
+    const pendingRequests = this.deletionRequestService.getPendingRequests();
+    return new Set(pendingRequests.map(req => req.saleId));
+  });
+
+  // Computed : Statistics for display
+  totalRevenue = computed(() => {
+    return this.filteredSales().reduce((sum, sale) => sum + (sale.total || 0), 0);
+  });
+
+  totalSalesCount = computed(() => {
+    return this.filteredSales().length;
+  });
+
+  totalProductsSold = computed(() => {
+    return this.filteredSales().reduce((sum, sale) => {
+      if (!sale.items) return sum;
+      return sum + sale.items.reduce((itemSum, item) => itemSum + (item.quantity || 0), 0);
+    }, 0);
+  });
+
+  averageBasket = computed(() => {
+    const count = this.totalSalesCount();
+    const revenue = this.totalRevenue();
+    return count > 0 ? revenue / count : 0;
+  });
 
   // Available reasons enum
   readonly DeletionReason = DeletionReason;
@@ -196,6 +230,14 @@ export class SalesHistoryComponent implements OnInit, OnDestroy {
     }
     // Load app info for exports
     this.loadAppInfo();
+
+    // Charger les demandes de suppression depuis l'API
+    this.deletionRequestService.loadRequests();
+
+    // S'abonner aux changements de demandes (pas besoin de forcer le re-rendu car on utilise computed)
+    this.deletionRequestService.requests$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
 
     // Initialiser les dates pour le filtre "Aujourd'hui"
     // Utiliser la méthode setQuickRange pour avoir une logique cohérente
@@ -976,13 +1018,16 @@ export class SalesHistoryComponent implements OnInit, OnDestroy {
         this.deletionRequestSuccess.set('Demande envoyée au super admin avec succès !');
         this.submittingDeletionRequest.set(false);
 
+        // Recharger les demandes pour mettre à jour l'affichage
+        this.deletionRequestService.loadRequests();
+
         // Fermer le modal après 2 secondes
         setTimeout(() => {
           this.closeDeletionRequestModal();
         }, 2000);
       },
       error: (error) => {
-        this.deletionRequestError.set(error || 'Erreur lors de l\'envoi de la demande');
+        this.deletionRequestError.set(error.error?.message || error.message || 'Erreur lors de l\'envoi de la demande');
         this.submittingDeletionRequest.set(false);
       }
     });
@@ -990,15 +1035,23 @@ export class SalesHistoryComponent implements OnInit, OnDestroy {
 
   // Vérifier si une vente a une demande de suppression en attente
   hasPendingDeletionRequest(saleId: string): boolean {
-    return this.deletionRequestService.hasPendingRequestForSale(saleId);
+    const request = this.deletionRequestService.getPendingRequestForSale(saleId);
+    const hasPending = request !== undefined;
+
+    // Debug log
+    if (hasPending) {
+      console.log(`[DEBUG] Sale ${saleId} has pending deletion request:`, request);
+    }
+
+    return hasPending;
   }
 
   // Voir la demande de suppression depuis l'historique (pour super admin)
   viewDeletionRequestFromHistory(saleId: string): void {
     const request = this.deletionRequestService.getPendingRequestForSale(saleId);
     if (request) {
-      // Naviguer vers la page de notifications avec la demande
-      this.router.navigate(['/admin/notifications'], {
+      // Naviguer vers la page de messages avec la demande
+      this.router.navigate(['/admin/messages'], {
         state: { openRequestId: request.id }
       });
     }

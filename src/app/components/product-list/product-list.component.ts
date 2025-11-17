@@ -12,6 +12,7 @@ import { SidebarService } from '../../core/services/sidebar.service';
 
 @Component({
   selector: 'app-product-list',
+  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

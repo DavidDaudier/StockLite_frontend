@@ -56,6 +56,10 @@ export const routes: Routes = [
       {
         path: 'settings',
         loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent)
+      },
+      {
+        path: 'my-messages',
+        loadComponent: () => import('./pages/seller/seller-message-history/seller-message-history.component').then(m => m.SellerMessageHistoryComponent)
       }
     ]
   },
@@ -130,6 +134,11 @@ export const routes: Routes = [
         path: 'notifications',
         canActivate: [superAdminGuard],
         loadComponent: () => import('./pages/notifications/notifications.component').then(m => m.NotificationsComponent)
+      },
+      {
+        path: 'messages',
+        canActivate: [superAdminGuard],
+        loadComponent: () => import('./pages/messages/messages.component').then(m => m.MessagesComponent)
       }
     ]
   },

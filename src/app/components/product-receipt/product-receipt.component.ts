@@ -13,6 +13,7 @@ import { PaymentMethod, CreateSaleDto } from "../../core/models/sale.model";
 
 @Component({
   selector: 'app-product-receipt',
+  standalone: true,
   imports: [CommonModule, FormsModule],
   viewProviders: [
     provideIcons({

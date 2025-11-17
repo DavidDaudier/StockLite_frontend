@@ -71,6 +71,60 @@
 
         <!-- Tableau des ventes -->
         @else {
+          <!-- Cartes Statistiques -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <!-- Chiffre d'affaires -->
+            <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-green-600 font-medium">Chiffre d'affaires</p>
+                  <p class="text-2xl font-bold text-green-900 mt-1" [innerHTML]="totalRevenue() | gdesCurrency"></p>
+                </div>
+                <div class="p-3 bg-green-500 rounded-lg text-white">
+                  <ng-icon name="hugeDollarCircle" size="24" class="text-white"></ng-icon>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nombre de ventes -->
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-blue-600 font-medium">Nombre de ventes</p>
+                  <p class="text-2xl font-bold text-blue-900 mt-1">{{ totalSalesCount() }}</p>
+                </div>
+                <div class="p-3 bg-blue-500 rounded-lg text-white">
+                  <ng-icon name="hugeInvoice01" size="24" class="text-white"></ng-icon>
+                </div>
+              </div>
+            </div>
+
+            <!-- Produits vendus -->
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-purple-600 font-medium">Produits vendus</p>
+                  <p class="text-2xl font-bold text-purple-900 mt-1">{{ totalProductsSold() }}</p>
+                </div>
+                <div class="p-3 bg-purple-500 rounded-lg text-white">
+                  <ng-icon name="hugePackage" size="24" class="text-white"></ng-icon>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panier moyen -->
+            <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-orange-600 font-medium">Panier moyen</p>
+                  <p class="text-2xl font-bold text-orange-900 mt-1" [innerHTML]="averageBasket() | gdesCurrency"></p>
+                </div>
+                <div class="p-3 bg-orange-500 rounded-lg text-white">
+                  <ng-icon name="hugeShoppingBasket01" size="24" class="text-white"></ng-icon>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="bg-white rounded-lg border border-gray-200 overflow-x-auto mb-15">
             <div class="p-4 border-b border-gray-200 bg-gray-50">
               <!-- Version simplifiée pour sellers ou complète pour admin -->
@@ -180,23 +234,23 @@
 
                     <!-- Selection button -->
                     @if (authService.canDelete('reports') && (authService.getCurrentUser()?.role === 'admin' || authService.getCurrentUser()?.isSuperAdmin)) {
-                    <button
-                      (click)="toggleSelectionMode()"
-                      [disabled]="loading() || filteredSales().length === 0"
-                      [class]="(selectionMode() && selectedSaleIds().size > 0)
-                        ? 'px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-50 disabled:cursor-not-allowed'
-                        : 'px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-50 disabled:cursor-not-allowed'">
-                      <ng-icon name="hugeDelete03" size="18" />
-                      @if (selectionMode()) {
-                        @if (selectedSaleIds().size > 0) {
-                          <span>Supprimer ({{ selectedSaleIds().size }})</span>
+                      <button
+                        (click)="toggleSelectionMode()"
+                        [disabled]="loading() || filteredSales().length === 0"
+                        [class]="(selectionMode() && selectedSaleIds().size > 0)
+                          ? 'px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-50 disabled:cursor-not-allowed'
+                          : 'px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-50 disabled:cursor-not-allowed'">
+                        <ng-icon name="hugeDelete03" size="18" />
+                        @if (selectionMode()) {
+                          @if (selectedSaleIds().size > 0) {
+                            <span>Supprimer ({{ selectedSaleIds().size }})</span>
+                          } @else {
+                            <span>Annuler</span>
+                          }
                         } @else {
-                          <span>Annuler</span>
+                          <span>Sélectionner</span>
                         }
-                      } @else {
-                        <span>Sélectionner</span>
-                      }
-                    </button>
+                      </button>
                     }
                   </div>
                 </div>
@@ -248,7 +302,9 @@
                       <!-- Main sale row -->
                       <tr [class]="'transition-colors ' +
                         (isSaleSelected(sale.id) ? 'bg-red-100 border-l-4 border-l-red-600' :
-                        (isAdmin && hasPendingDeletionRequest(sale.id) ? 'bg-orange-50 border-l-4 border-l-orange-500 hover:bg-orange-100' :
+                        (salesWithPendingRequests().has(sale.id) ?
+                          (isAdmin ? 'bg-orange-50 border-l-4 border-l-orange-500 hover:bg-orange-100' :
+                          'bg-yellow-100 border-l-4 border-l-yellow-500 hover:bg-yellow-200') :
                         'hover:bg-gray-50 odd:bg-white even:bg-gray-50'))"
                         [style.cursor]="(isAdmin && selectionMode()) ? 'pointer' : 'default'"
                         (click)="(isAdmin && selectionMode()) ? toggleSaleSelection(sale.id) : toggleSaleDetails(sale.id)">
@@ -316,7 +372,7 @@
                               <ng-icon name="hugeMessageDelay02" size="16" />
                               <span>Demande</span>
                             </button>
-                          } @else if (hasPendingDeletionRequest(sale.id)) {
+                          } @else if (salesWithPendingRequests().has(sale.id)) {
                             <!-- Bouton pour le super admin quand il y a une demande -->
                             <button
                               (click)="viewDeletionRequestFromHistory(sale.id)"
@@ -524,89 +580,89 @@
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-900 uppercase tracking-wider">Évolution</th>
                       </tr>
                     </thead>
-                      <tbody class="bg-white divide-y divide-gray-200">
-                        <!-- Revenue Row -->
-                        <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
-                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Revenu Total</td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.revenue.value1 | gdesCurrency"></td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.revenue.value2 | gdesCurrency"></td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                            <div class="flex items-center justify-center gap-2">
-                              @if (results.revenue.diff > 0) {
-                                <ng-icon name="hugeArrowUp02" size="18" class="text-green-600" />
-                                <span class="text-green-600 font-semibold">+{{ results.revenue.percentChange.toFixed(2) }}%</span>
-                              } @else if (results.revenue.diff < 0) {
-                                <ng-icon name="hugeArrowDown02" size="18" class="text-red-600" />
-                                <span class="text-red-600 font-semibold">{{ results.revenue.percentChange.toFixed(2) }}%</span>
-                              } @else {
-                                <span class="text-gray-600">0%</span>
-                              }
-                            </div>
-                          </td>
-                        </tr>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                      <!-- Revenue Row -->
+                      <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Revenu Total</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.revenue.value1 | gdesCurrency"></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.revenue.value2 | gdesCurrency"></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                          <div class="flex items-center justify-center gap-2">
+                            @if (results.revenue.diff > 0) {
+                              <ng-icon name="hugeArrowUp02" size="18" class="text-green-600" />
+                              <span class="text-green-600 font-semibold">+{{ results.revenue.percentChange.toFixed(2) }}%</span>
+                            } @else if (results.revenue.diff < 0) {
+                              <ng-icon name="hugeArrowDown02" size="18" class="text-red-600" />
+                              <span class="text-red-600 font-semibold">{{ results.revenue.percentChange.toFixed(2) }}%</span>
+                            } @else {
+                              <span class="text-gray-600">0%</span>
+                            }
+                          </div>
+                        </td>
+                      </tr>
 
-                        <!-- Sales Row -->
-                        <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
-                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Nombre de Ventes</td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.sales.value1 }}</td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.sales.value2 }}</td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                            <div class="flex items-center justify-center gap-2">
-                              @if (results.sales.diff > 0) {
-                                <ng-icon name="hugeArrowUp02" size="18" class="text-green-600" />
-                                <span class="text-green-600 font-semibold">+{{ results.sales.percentChange.toFixed(2) }}%</span>
-                              } @else if (results.sales.diff < 0) {
-                                <ng-icon name="hugeArrowDown02" size="18" class="text-red-600" />
-                                <span class="text-red-600 font-semibold">{{ results.sales.percentChange.toFixed(2) }}%</span>
-                              } @else {
-                                <span class="text-gray-600">0%</span>
-                              }
-                            </div>
-                          </td>
-                        </tr>
+                      <!-- Sales Row -->
+                      <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Nombre de Ventes</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.sales.value1 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.sales.value2 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                          <div class="flex items-center justify-center gap-2">
+                            @if (results.sales.diff > 0) {
+                              <ng-icon name="hugeArrowUp02" size="18" class="text-green-600" />
+                              <span class="text-green-600 font-semibold">+{{ results.sales.percentChange.toFixed(2) }}%</span>
+                            } @else if (results.sales.diff < 0) {
+                              <ng-icon name="hugeArrowDown02" size="18" class="text-red-600" />
+                              <span class="text-red-600 font-semibold">{{ results.sales.percentChange.toFixed(2) }}%</span>
+                            } @else {
+                              <span class="text-gray-600">0%</span>
+                            }
+                          </div>
+                        </td>
+                      </tr>
 
-                        <!-- Products Sold Row -->
-                        <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
-                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Nombre de Produits Vendus</td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.productsSold.value1 }}</td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.productsSold.value2 }}</td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                            <div class="flex items-center justify-center gap-2">
-                              @if (results.productsSold.diff > 0) {
-                                <ng-icon name="hugeArrowUp02" size="18" class="text-green-600" />
-                                <span class="text-green-600 font-semibold">+{{ results.productsSold.percentChange.toFixed(2) }}%</span>
-                              } @else if (results.productsSold.diff < 0) {
-                                <ng-icon name="hugeArrowDown02" size="18" class="text-red-600" />
-                                <span class="text-red-600 font-semibold">{{ results.productsSold.percentChange.toFixed(2) }}%</span>
-                              } @else {
-                                <span class="text-gray-600">0%</span>
-                              }
-                            </div>
-                          </td>
-                        </tr>
+                      <!-- Products Sold Row -->
+                      <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Nombre de Produits Vendus</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.productsSold.value1 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.productsSold.value2 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                          <div class="flex items-center justify-center gap-2">
+                            @if (results.productsSold.diff > 0) {
+                              <ng-icon name="hugeArrowUp02" size="18" class="text-green-600" />
+                              <span class="text-green-600 font-semibold">+{{ results.productsSold.percentChange.toFixed(2) }}%</span>
+                            } @else if (results.productsSold.diff < 0) {
+                              <ng-icon name="hugeArrowDown02" size="18" class="text-red-600" />
+                              <span class="text-red-600 font-semibold">{{ results.productsSold.percentChange.toFixed(2) }}%</span>
+                            } @else {
+                              <span class="text-gray-600">0%</span>
+                            }
+                          </div>
+                        </td>
+                      </tr>
 
-                        <!-- Average Sale Row -->
-                        <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
-                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Panier Moyen</td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.averageSale.value1 | gdesCurrency"></td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.averageSale.value2 | gdesCurrency"></td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                            <div class="flex items-center justify-center gap-2">
-                              @if (results.averageSale.diff > 0) {
-                                <ng-icon name="hugeArrowUp02" size="18" class="text-green-600" />
-                                <span class="text-green-600 font-semibold">+{{ results.averageSale.percentChange.toFixed(2) }}%</span>
-                              } @else if (results.averageSale.diff < 0) {
-                                <ng-icon name="hugeArrowDown02" size="18" class="text-red-600" />
-                                <span class="text-red-600 font-semibold">{{ results.averageSale.percentChange.toFixed(2) }}%</span>
-                              } @else {
-                                <span class="text-gray-600">0%</span>
-                              }
-                            </div>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                      <!-- Average Sale Row -->
+                      <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Panier Moyen</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.averageSale.value1 | gdesCurrency"></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.averageSale.value2 | gdesCurrency"></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                          <div class="flex items-center justify-center gap-2">
+                            @if (results.averageSale.diff > 0) {
+                              <ng-icon name="hugeArrowUp02" size="18" class="text-green-600" />
+                              <span class="text-green-600 font-semibold">+{{ results.averageSale.percentChange.toFixed(2) }}%</span>
+                            } @else if (results.averageSale.diff < 0) {
+                              <ng-icon name="hugeArrowDown02" size="18" class="text-red-600" />
+                              <span class="text-red-600 font-semibold">{{ results.averageSale.percentChange.toFixed(2) }}%</span>
+                            } @else {
+                              <span class="text-gray-600">0%</span>
+                            }
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             }
           </div>

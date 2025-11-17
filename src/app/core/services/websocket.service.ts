@@ -18,6 +18,9 @@ export class WebSocketService {
   private productUpdate$ = new Subject<any>();
   private stockAlert$ = new Subject<any>();
   private lowStockAlert$ = new Subject<any>();
+  private newDeletionRequest$ = new Subject<any>();
+  private deletionRequestApproved$ = new Subject<any>();
+  private deletionRequestRejected$ = new Subject<any>();
 
   constructor() {}
 
@@ -86,6 +89,22 @@ export class WebSocketService {
         this.productUpdate$.next(data);
       });
 
+      // Événements de demandes de suppression
+      this.socket.on('new-deletion-request', (data: any) => {
+        console.log('📨 Nouvelle demande de suppression:', data);
+        this.newDeletionRequest$.next(data);
+      });
+
+      this.socket.on('deletion-request-approved', (data: any) => {
+        console.log('✅ Demande de suppression approuvée:', data);
+        this.deletionRequestApproved$.next(data);
+      });
+
+      this.socket.on('deletion-request-rejected', (data: any) => {
+        console.log('❌ Demande de suppression rejetée:', data);
+        this.deletionRequestRejected$.next(data);
+      });
+
       this.socket.on('error', (error: any) => {
         console.error('❌ Erreur WebSocket:', error);
       });
@@ -146,5 +165,18 @@ export class WebSocketService {
     if (this.socket && this.socket.connected) {
       this.socket.emit('stock-alert', data);
     }
+  }
+
+  // Événements de demandes de suppression
+  onNewDeletionRequest(): Observable<any> {
+    return this.newDeletionRequest$.asObservable();
+  }
+
+  onDeletionRequestApproved(): Observable<any> {
+    return this.deletionRequestApproved$.asObservable();
+  }
+
+  onDeletionRequestRejected(): Observable<any> {
+    return this.deletionRequestRejected$.asObservable();
   }
 }

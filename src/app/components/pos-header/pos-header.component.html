@@ -42,8 +42,24 @@
       </div>
     </div>
 
-    <!-- Right: Notifications + User Info -->
+    <!-- Right: Messages + Notifications + Message History + User Info -->
     <div class="flex items-center gap-4">
+      <!-- Messages Icon (Super Admin uniquement) -->
+      @if (isSuperAdmin()) {
+        <button
+          (click)="showMessages()"
+          [title]="messagesTooltip()"
+          class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+          <ng-icon name="hugeMailAtSign01" class="text-xl" />
+          <!-- Badge de messages dynamique -->
+          @if (messagesBadge().hasPending) {
+            <span class="absolute top-0 right-0 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-xs font-bold rounded-full">
+              {{ messagesBadge().count }}
+            </span>
+          }
+        </button>
+      }
+
       <!-- Notification Icon (Super Admin uniquement) -->
       @if (isSuperAdmin()) {
         <button
@@ -55,6 +71,22 @@
           @if (notificationBadge().hasUnread) {
             <span class="absolute top-0 right-0 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-xs font-bold rounded-full">
               {{ notificationBadge().count }}
+            </span>
+          }
+        </button>
+      }
+
+      <!-- Message History Icon (Seller uniquement) -->
+      @if (!isSuperAdmin()) {
+        <button
+          (click)="showMyMessages()"
+          [title]="myMessagesTooltip()"
+          class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+          <ng-icon name="hugeClock05" class="text-xl" />
+          <!-- Badge pour mes demandes -->
+          @if (myMessagesBadge().hasPending) {
+            <span class="absolute top-0 right-0 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-blue-500 text-white text-xs font-bold rounded-full">
+              {{ myMessagesBadge().count }}
             </span>
           }
         </button>

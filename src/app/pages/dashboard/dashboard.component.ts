@@ -36,6 +36,7 @@ interface DateRange {
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
   imports: [CommonModule, FormsModule, SidebarComponent, PosHeaderComponent, PageHeaderComponent, StatsCardComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'

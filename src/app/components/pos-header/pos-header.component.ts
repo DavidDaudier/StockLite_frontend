@@ -5,9 +5,10 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { SidebarService } from '../../services/sidebar/sidebar.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { DeletionRequestService } from '../../core/services/deletion-request.service';
 import { User } from '../../core/models/user.model';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { hugeSearch01, hugeNotification02, hugeCalendar03, hugeClock01, hugeMenu01, hugeSidebarLeft01, hugeSidebarRight01 } from '@ng-icons/huge-icons';
+import { hugeSearch01, hugeNotification02, hugeMailAtSign01, hugeCalendar03, hugeClock01, hugeMenu01, hugeSidebarLeft01, hugeSidebarRight01, hugeClock05 } from '@ng-icons/huge-icons';
 
 @Component({
   selector: 'app-pos-header',
@@ -17,11 +18,13 @@ import { hugeSearch01, hugeNotification02, hugeCalendar03, hugeClock01, hugeMenu
     provideIcons({
       hugeSearch01,
       hugeNotification02,
+      hugeMailAtSign01,
       hugeCalendar03,
       hugeClock01,
       hugeMenu01,
       hugeSidebarLeft01,
-      hugeSidebarRight01
+      hugeSidebarRight01,
+      hugeClock05
     })
   ],
   templateUrl: './pos-header.component.html',
@@ -32,6 +35,7 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   sidebarService = inject(SidebarService);
   notificationService = inject(NotificationService);
+  deletionRequestService = inject(DeletionRequestService);
 
   searchTerm = signal('');
   currentUser: User | null = null;
@@ -58,6 +62,48 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
     return latestNotification.title + ': ' + latestNotification.message;
   });
 
+  // Computed pour le badge de messages (demandes en attente)
+  messagesBadge = computed(() => {
+    const pendingRequests = this.deletionRequestService.getPendingRequests();
+    return {
+      count: pendingRequests.length,
+      hasPending: pendingRequests.length > 0
+    };
+  });
+
+  // Tooltip pour les messages
+  messagesTooltip = computed(() => {
+    const pendingRequests = this.deletionRequestService.getPendingRequests();
+    if (pendingRequests.length === 0) {
+      return 'Aucune demande en attente';
+    }
+    return `${pendingRequests.length} demande(s) de suppression en attente`;
+  });
+
+  // Computed pour le badge de mes messages (pour les sellers)
+  myMessagesBadge = computed(() => {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      return { count: 0, hasPending: false };
+    }
+    const allRequests = this.deletionRequestService.getAllRequests();
+    const myRequests = allRequests.filter(req => req.sellerId === currentUser.id);
+    const myPendingRequests = myRequests.filter(req => req.status === 'pending');
+    return {
+      count: myPendingRequests.length,
+      hasPending: myPendingRequests.length > 0
+    };
+  });
+
+  // Tooltip pour mes messages (pour les sellers)
+  myMessagesTooltip = computed(() => {
+    const badge = this.myMessagesBadge();
+    if (badge.count === 0) {
+      return 'Voir mes demandes de suppression';
+    }
+    return `${badge.count} demande(s) en attente`;
+  });
+
   constructor() {
     this.currentUser = this.authService.getCurrentUser();
     this.updateDateTime();
@@ -73,6 +119,10 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Charger les demandes de suppression depuis l'API pour le badge
+    // (Pour super admin et pour sellers)
+    this.deletionRequestService.loadRequests();
+
     // Mettre à jour l'heure toutes les secondes
     this.timeInterval = window.setInterval(() => {
       this.updateDateTime();
@@ -117,5 +167,23 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
   showNotifications(): void {
     // Navigation vers la page de notifications (super admin uniquement)
     this.router.navigate(['/admin/notifications']);
+  }
+
+  showMessages(): void {
+    // Navigation vers la page de messages (super admin uniquement)
+    console.log('[PosHeader] showMessages() appelé - navigation vers /admin/messages');
+    this.router.navigate(['/admin/messages']).then(
+      success => console.log('[PosHeader] Navigation réussie:', success),
+      error => console.error('[PosHeader] Erreur navigation:', error)
+    );
+  }
+
+  showMyMessages(): void {
+    // Navigation vers la page d'historique des messages (seller uniquement)
+    console.log('[PosHeader] showMyMessages() appelé - navigation vers /seller/my-messages');
+    this.router.navigate(['/seller/my-messages']).then(
+      success => console.log('[PosHeader] Navigation vers mes messages réussie:', success),
+      error => console.error('[PosHeader] Erreur navigation vers mes messages:', error)
+    );
   }
 }

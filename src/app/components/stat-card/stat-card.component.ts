@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-stat-card',
+  standalone: true,
   imports: [
     CommonModule,
   ],
