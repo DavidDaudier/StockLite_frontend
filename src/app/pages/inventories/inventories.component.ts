@@ -8,7 +8,7 @@ import { ProductsService } from '../../core/services/products.service';
 import { InventoriesService } from '../../core/services/inventories.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Product } from '../../core/models/product.model';
-import { Inventory, InventoryItem, InventoryStatus, InventoryItemStatus, CreateInventoryDto, UpdateInventoryItemDto } from '../../core/models/inventory.model';
+import { Inventory, InventoryItem, InventoryStatus, CreateInventoryDto, UpdateInventoryItemDto } from '../../core/models/inventory.model';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   hugeInvestigation,
@@ -51,6 +51,9 @@ import {
 export class InventoriesComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
+  // Expose enum to template
+  InventoryStatus = InventoryStatus;
+
   // Data
   products = signal<Product[]>([]);
   inventories = signal<Inventory[]>([]);
@@ -81,12 +84,17 @@ export class InventoriesComponent implements OnInit, OnDestroy {
     const inventory = this.currentInventory();
     if (!inventory) return { total: 0, pending: 0, counted: 0, discrepancy: 0, totalDifference: 0 };
 
+    const totalItems = inventory.totalItems || 0;
+    const countedItems = inventory.countedItems || 0;
+    const itemsWithDiscrepancy = inventory.itemsWithDiscrepancy || 0;
+    const totalDiscrepancy = inventory.totalDiscrepancy || 0;
+
     return {
-      total: inventory.totalItems,
-      pending: inventory.totalItems - inventory.countedItems,
-      counted: inventory.countedItems,
-      discrepancy: inventory.itemsWithDiscrepancy,
-      totalDifference: inventory.totalDiscrepancy
+      total: totalItems,
+      pending: totalItems - countedItems,
+      counted: countedItems,
+      discrepancy: itemsWithDiscrepancy,
+      totalDifference: totalDiscrepancy
     };
   });
 
@@ -101,8 +109,8 @@ export class InventoriesComponent implements OnInit, OnDestroy {
     if (this.searchTerm()) {
       const term = this.searchTerm().toLowerCase();
       items = items.filter(i =>
-        i.product.name.toLowerCase().includes(term) ||
-        i.product.sku.toLowerCase().includes(term)
+        i.product?.name.toLowerCase().includes(term) ||
+        i.product?.sku.toLowerCase().includes(term)
       );
     }
 
@@ -193,9 +201,9 @@ export class InventoriesComponent implements OnInit, OnDestroy {
       });
   }
 
-  editItem(itemId: string, currentQuantity: number | null): void {
+  editItem(itemId: string, currentQuantity: number | null | undefined): void {
     this.editingItemId.set(itemId);
-    this.tempPhysicalQuantity.set(currentQuantity);
+    this.tempPhysicalQuantity.set(currentQuantity || null);
   }
 
   saveItem(itemId: string): void {

@@ -4,6 +4,7 @@ export interface ProductItem {
     price: number;
     stock: number;
     qty: number;
+    minStock?: number;
     categoryId?: string;
     isActive: boolean;
 }

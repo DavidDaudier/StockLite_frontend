@@ -11,7 +11,9 @@ import {
   hugeShoppingCart01,
   hugePackageDelivered,
   hugeTradeUp,
-  hugeAlertCircle
+  hugeAlertCircle,
+  hugeEye,
+  hugeViewOff
 } from '@ng-icons/huge-icons';
 
 // Register Chart.js components
@@ -56,7 +58,9 @@ interface SalesByHour {
       hugeShoppingCart01,
       hugePackageDelivered,
       hugeTradeUp,
-      hugeAlertCircle
+      hugeAlertCircle,
+      hugeEye,
+      hugeViewOff
     })
   ],
   templateUrl: './seller-dashboard.component.html',
@@ -120,6 +124,7 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
   salesByHour: SalesByHour[] = [];
 
   loading = true;
+  showStats = true;
 
   ngOnInit(): void {
     this.loadDashboardData();

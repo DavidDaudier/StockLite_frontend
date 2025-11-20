@@ -81,7 +81,7 @@ export class ProductService {
   public checkStockLevel(productId: string): void {
     const product = this.products().find(p => p.id === productId);
     if (product) {
-      this.notificationService.checkStockLevel(product.id, product.name, product.stock);
+      this.notificationService.checkStockLevel(product.id, product.name, product.stock, product.minStock || 0);
     }
   }
 
@@ -89,7 +89,7 @@ export class ProductService {
   public checkAllStockLevels(): void {
     const products = this.products();
     products.forEach(product => {
-      this.notificationService.checkStockLevel(product.id, product.name, product.stock);
+      this.notificationService.checkStockLevel(product.id, product.name, product.stock, product.minStock || 0);
     });
   }
 
@@ -101,6 +101,7 @@ export class ProductService {
       price: typeof product.price === 'number' ? product.price : parseFloat(product.price),
       stock: typeof product.quantity === 'number' ? product.quantity : parseInt(product.quantity as any, 10),
       qty: 0,
+      minStock: typeof product.minStock === 'number' ? product.minStock : parseInt(product.minStock as any, 10) || 0,
       categoryId: product.category,
       isActive: product.isActive
     };

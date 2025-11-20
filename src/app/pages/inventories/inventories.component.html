@@ -122,7 +122,7 @@
                               <ng-icon name="hugeEye" size="18"></ng-icon>
                             </button>
                             }
-                            @if (authService.canDelete('inventories') && inventory.status !== 'in_progress' && (authService.getCurrentUser()?.role === 'admin' || authService.getCurrentUser()?.isSuperAdmin)) {
+                            @if (authService.canDelete('inventories') && inventory.status !== InventoryStatus.IN_PROGRESS && (authService.getCurrentUser()?.role === 'admin' || authService.getCurrentUser()?.isSuperAdmin)) {
                               <button
                                 (click)="deleteInventory(inventory.id)"
                                 class="text-red-600 hover:text-red-900"
@@ -170,7 +170,7 @@
           @if (showStats()) {
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
             <!-- Total -->
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 border border-blue-200 shadow-sm rounded-lg">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-blue-600 font-medium">Total</p>
@@ -183,7 +183,7 @@
             </div>
 
             <!-- En attente -->
-            <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200 shadow-sm">
+            <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-4 border border-gray-200 shadow-sm rounded-lg">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-gray-600 font-medium">En attente</p>
@@ -196,7 +196,7 @@
             </div>
 
             <!-- Comptés -->
-            <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
+            <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 border border-green-200 shadow-sm rounded-lg">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-green-600 font-medium">Comptés</p>
@@ -209,7 +209,7 @@
             </div>
 
             <!-- Écarts -->
-            <div class="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-xl border border-red-200 shadow-sm">
+            <div class="bg-gradient-to-br from-red-50 to-red-100 p-4 border border-red-200 shadow-sm rounded-lg">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-red-600 font-medium">Écarts</p>
@@ -222,7 +222,7 @@
             </div>
 
             <!-- Écart total -->
-            <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200 shadow-sm">
+            <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 border border-orange-200 shadow-sm rounded-lg">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-orange-600 font-medium">Écart total</p>
@@ -268,40 +268,38 @@
 
               <!-- Actions buttons -->
               <div class="flex flex-wrap items-center gap-2">
-                @if (currentInventory()?.status === 'in_progress') {
-                  @if (authService.canUpdate('inventories')) {
+                @if (currentInventory()?.status === InventoryStatus.IN_PROGRESS) {
                   <button
                     (click)="completeInventory()"
-                    [disabled]="loading()"
-                    class="px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2 shadow-md">
+                    [disabled]="loading() || !authService.canUpdate('inventories')"
+                    [title]="!authService.canUpdate('inventories') ? 'Vous n\'avez pas les permissions pour finaliser cet inventaire' : 'Finaliser l\'inventaire'"
+                    class="px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 shadow-md">
                     <ng-icon name="hugeCheckmarkCircle04" size="20"></ng-icon>
                     Finaliser
                   </button>
-                  }
 
-                  @if (authService.canDelete('inventories')) {
                   <button
                     (click)="cancelInventory()"
-                    [disabled]="loading()"
-                    class="px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2 shadow-md">
+                    [disabled]="loading() || !authService.canDelete('inventories')"
+                    [title]="!authService.canDelete('inventories') ? 'Vous n\'avez pas les permissions pour annuler cet inventaire' : 'Annuler l\'inventaire'"
+                    class="px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 shadow-md">
                     <ng-icon name="hugeCancel01" size="20"></ng-icon>
                     Annuler
                   </button>
-                  }
-                } @else {
-                  <button
-                    (click)="closeInventoryView()"
-                    class="px-4 py-2.5 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 shadow-md">
-                    <ng-icon name="hugeCancel01" size="20"></ng-icon>
-                    Fermer
-                  </button>
                 }
+
+                <button
+                  (click)="closeInventoryView()"
+                  class="px-4 py-2.5 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 shadow-md">
+                  <ng-icon name="hugeCancel01" size="20"></ng-icon>
+                  Fermer
+                </button>
               </div>
             </div>
           </div>
 
           <!-- Inventory table -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div class="bg-white shadow-sm border border-gray-200 overflow-hidden">
             <div class="table-container-fixed">
               <table class="min-w-full divide-y divide-gray-200 table-fixed">
                 <thead class="bg-teal-600 text-white sticky top-0 z-10">
@@ -315,13 +313,13 @@
                   </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                  @for (item of filteredItems(); track item.product.id) {
+                  @for (item of filteredItems(); track item.id) {
                     <tr [class]="'transition-colors ' + (item.status === 'discrepancy' ? 'bg-red-50 hover:bg-red-100' : item.status === 'counted' ? 'bg-green-50 hover:bg-green-100' : 'hover:bg-gray-50 odd:bg-white even:bg-gray-50')">
                       <!-- Product -->
                       <td class="px-3 md:px-6 py-3 whitespace-nowrap">
                         <div>
-                          <div class="text-sm font-medium text-gray-900">{{ item.product.name }}</div>
-                          <div class="text-xs text-gray-500">SKU: {{ item.product.sku }}</div>
+                          <div class="text-sm font-medium text-gray-900">{{ item.product?.name || item.productName }}</div>
+                          <div class="text-xs text-gray-500">SKU: {{ item.product?.sku || item.productBarcode }}</div>
                         </div>
                       </td>
 
@@ -362,14 +360,14 @@
 
                       <!-- Status -->
                       <td class="px-3 md:px-6 py-3 text-center">
-                        <span [class]="'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getStatusColor(item.status)">
-                          {{ getStatusLabel(item.status) }}
+                        <span [class]="'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getStatusColor(item.status || 'pending')">
+                          {{ getStatusLabel(item.status || 'pending') }}
                         </span>
                       </td>
 
                       <!-- Actions -->
                       <td class="px-3 md:px-6 py-3 text-center">
-                        @if (currentInventory()?.status === 'in_progress' && authService.canUpdate('inventories')) {
+                        @if (currentInventory()?.status === InventoryStatus.IN_PROGRESS && authService.canUpdate('inventories')) {
                         @if (!isEditing(item.id)) {
                           <button
                             (click)="editItem(item.id, item.physicalQuantity)"

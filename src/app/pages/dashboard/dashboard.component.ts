@@ -6,8 +6,9 @@ import { Subject, takeUntil, interval, startWith, switchMap } from 'rxjs';
 
 import { SidebarComponent } from "./../../layouts/sidebar/sidebar.component";
 import { PosHeaderComponent } from '../../components/pos-header/pos-header.component';
-import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-import { StatsCardComponent } from '../../shared/components/stats-card/stats-card.component';
+import { GdesCurrencyPipe } from '../../pipes/currency/currency.pipe';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { hugeMoneyBag02, hugeShoppingCart01, hugePackage, hugeAlert02, hugeEye, hugeViewOff } from '@ng-icons/huge-icons';
 import { SalesService } from '../../core/services/sales.service';
 import { ProductsService } from '../../core/services/products.service';
 import { ReportsService, DailyReport, TopProduct, InventoryReport } from '../../core/services/reports.service';
@@ -37,7 +38,17 @@ interface DateRange {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, PosHeaderComponent, PageHeaderComponent, StatsCardComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, PosHeaderComponent, GdesCurrencyPipe, NgIcon],
+  viewProviders: [
+    provideIcons({
+      hugeMoneyBag02,
+      hugeShoppingCart01,
+      hugePackage,
+      hugeAlert02,
+      hugeEye,
+      hugeViewOff
+    })
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -61,6 +72,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     totalProducts: 0,
     lowStockCount: 0
   };
+
+  // Toggle stats visibility
+  showStats = true;
 
   // Data
   recentSales: Sale[] = [];

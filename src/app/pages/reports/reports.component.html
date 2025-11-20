@@ -89,74 +89,74 @@
 
     <!-- Statistiques -->
     @if (showStats()) {
-    <div class="px-6 pb-4">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <!-- Revenu Total -->
-        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-green-600 font-medium">Revenu Total</p>
-              <p class="text-2xl font-bold text-green-900 mt-1" [innerHTML]="stats().totalRevenue | gdesCurrency"></p>
-            </div>
-            <div class="p-3 bg-green-500 rounded-lg text-white">
-              <ng-icon name="hugeMoneyBag02" size="24" class="text-white"></ng-icon>
-            </div>
-          </div>
-        </div>
-
-        <!-- Profit Total -->
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-blue-600 font-medium">Profit Total</p>
-              <p class="text-2xl font-bold text-blue-900 mt-1" [innerHTML]="stats().totalProfit | gdesCurrency"></p>
-            </div>
-            <div class="p-3 bg-blue-500 rounded-lg text-white">
-              <ng-icon name="hugeChartColumn" size="24" class="text-white"></ng-icon>
+      <div class="px-6 pb-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <!-- Revenu Total -->
+          <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-green-600 font-medium">Revenu Total</p>
+                <p class="text-2xl font-bold text-green-900 mt-1" [innerHTML]="stats().totalRevenue | gdesCurrency"></p>
+              </div>
+              <div class="p-3 bg-green-500 rounded-lg text-white">
+                <ng-icon name="hugeMoneyBag02" size="24" class="text-white"></ng-icon>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Nombre de Ventes -->
-        <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200 shadow-sm">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-purple-600 font-medium">Nombre de Ventes</p>
-              <p class="text-2xl font-bold text-purple-900 mt-1">{{ stats().totalSales }}</p>
-            </div>
-            <div class="p-3 bg-purple-500 rounded-lg text-white">
-              <ng-icon name="hugeSafeDelivery01" size="24" class="text-white"></ng-icon>
+          <!-- Profit Total -->
+          <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-blue-600 font-medium">Profit Total</p>
+                <p class="text-2xl font-bold text-blue-900 mt-1" [innerHTML]="stats().totalProfit | gdesCurrency"></p>
+              </div>
+              <div class="p-3 bg-blue-500 rounded-lg text-white">
+                <ng-icon name="hugeChartColumn" size="24" class="text-white"></ng-icon>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Panier Moyen -->
-        <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200 shadow-sm">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-orange-600 font-medium">Panier Moyen</p>
-              <p class="text-2xl font-bold text-orange-900 mt-1" [innerHTML]="stats().averageSaleValue | gdesCurrency"></p>
-            </div>
-            <div class="p-3 bg-orange-500 rounded-lg text-white">
-              <ng-icon name="hugeChartMedium" size="24" class="text-white"></ng-icon>
+          <!-- Nombre de Ventes -->
+          <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-purple-600 font-medium">Nombre de Ventes</p>
+                <p class="text-2xl font-bold text-purple-900 mt-1">{{ stats().totalSales }}</p>
+              </div>
+              <div class="p-3 bg-purple-500 rounded-lg text-white">
+                <ng-icon name="hugeSafeDelivery01" size="24" class="text-white"></ng-icon>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Marge Bénéficiaire -->
-        <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 rounded-xl border border-indigo-200 shadow-sm">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-indigo-600 font-medium">Marge Bénéficiaire</p>
-              <p class="text-2xl font-bold text-indigo-900 mt-1">{{ formatPercent(stats().profitMargin) }}</p>
+          <!-- Panier Moyen -->
+          <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-orange-600 font-medium">Panier Moyen</p>
+                <p class="text-2xl font-bold text-orange-900 mt-1" [innerHTML]="stats().averageSaleValue | gdesCurrency"></p>
+              </div>
+              <div class="p-3 bg-orange-500 rounded-lg text-white">
+                <ng-icon name="hugeChartMedium" size="24" class="text-white"></ng-icon>
+              </div>
             </div>
-            <div class="p-3 bg-indigo-500 rounded-lg text-white">
-              <ng-icon name="hugeChartHistogram" size="24" class="text-white"></ng-icon>
+          </div>
+
+          <!-- Marge Bénéficiaire -->
+          <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 rounded-xl border border-indigo-200 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-indigo-600 font-medium">Marge Bénéficiaire</p>
+                <p class="text-2xl font-bold text-indigo-900 mt-1">{{ formatPercent(stats().profitMargin) }}</p>
+              </div>
+              <div class="p-3 bg-indigo-500 rounded-lg text-white">
+                <ng-icon name="hugeChartHistogram" size="24" class="text-white"></ng-icon>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
     }
 
     <!-- Comparison Modal -->

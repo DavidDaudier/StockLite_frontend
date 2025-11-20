@@ -48,11 +48,11 @@ export class PrinterService {
    * Charge la configuration depuis l'API et la met en cache
    */
   private loadConfig(): void {
-    this.receiptConfigService.getActive().subscribe({
-      next: (config) => {
+    this.receiptConfigService.getConfig().subscribe({
+      next: (config: any) => {
         this.cachedConfig = config;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Erreur lors du chargement de la configuration:', error);
         // Utiliser la config par défaut en cas d'erreur
         this.cachedConfig = this.getDefaultConfig();

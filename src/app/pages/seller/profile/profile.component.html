@@ -4,20 +4,23 @@
 
   <!-- Main Content -->
   <main class="relative flex-1 flex flex-col overflow-hidden bg-white">
-    <!-- Header -->
     <app-pos-header></app-pos-header>
 
-    <!-- ✨ Page Header Uniforme -->
-    <app-page-header
-      title="Mon Profil"
-      breadcrumb="Dashboard > Profil vendeur"
-      icon="hugeUser"
-      iconColor="blue-600"
-    ></app-page-header>
+    <!-- Titre de la page -->
+    <div class="px-6 pt-4 pb-3 bg-white">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+            Mon Profil
+          </h1>
+          <p class="text-sm text-gray-500 mt-1">Dashboard > Profil vendeur</p>
+        </div>
+      </div>
+    </div>
 
-    <!-- Contenu principal avec grey container -->
+    <!-- Contenu principal (scrollable) -->
     <div class="flex-1 overflow-y-auto px-6 pb-6 bg-white">
-      <div class="grey-container">
+      <div class="bg-gray-100 rounded-[15px] p-4 border border-gray-300">
         <div class="max-w-4xl mx-auto space-y-6">
         <!-- Success Message -->
         @if (successMessage()) {

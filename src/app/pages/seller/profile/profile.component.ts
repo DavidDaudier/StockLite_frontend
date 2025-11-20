@@ -5,7 +5,6 @@ import { AuthService } from '../../../core/services/auth.service';
 import { UsersService } from '../../../core/services/users.service';
 import { SidebarComponent } from '../../../layouts/sidebar/sidebar.component';
 import { PosHeaderComponent } from '../../../components/pos-header/pos-header.component';
-import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   hugeUser,
@@ -18,7 +17,7 @@ import {
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgIcon, SidebarComponent, PosHeaderComponent, PageHeaderComponent],
+  imports: [CommonModule, FormsModule, NgIcon, SidebarComponent, PosHeaderComponent],
   viewProviders: [
     provideIcons({
       hugeUser,

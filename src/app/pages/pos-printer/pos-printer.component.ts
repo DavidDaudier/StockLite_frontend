@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../../layouts/sidebar/sidebar.component';
 import { PosHeaderComponent } from '../../components/pos-header/pos-header.component';
-import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { AppInfoService } from '../../services/app-info.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ReceiptConfigService } from '../../core/services/receipt-config.service';
@@ -58,7 +57,7 @@ interface MobileConfig {
 @Component({
   selector: 'app-pos-printer',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgIcon, SidebarComponent, PosHeaderComponent, PageHeaderComponent],
+  imports: [CommonModule, FormsModule, NgIcon, SidebarComponent, PosHeaderComponent],
   viewProviders: [
     provideIcons({
       hugePrinter,
@@ -160,7 +159,7 @@ export class PosPrinterComponent implements OnInit {
   loadReceiptConfig(): void {
     this.loading.set(true);
     this.receiptConfigService.getActive().subscribe({
-      next: (config) => {
+      next: (config: any) => {
         this.configId.set(config.id || null);
         this.receiptConfig.set({
           showLogo: config.showLogo,
@@ -190,7 +189,7 @@ export class PosPrinterComponent implements OnInit {
 
         this.loading.set(false);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Erreur lors du chargement de la configuration:', error);
         this.loading.set(false);
         alert('Erreur lors du chargement de la configuration');
@@ -281,12 +280,12 @@ export class PosPrinterComponent implements OnInit {
     const config = this.receiptConfig();
 
     this.receiptConfigService.updateActive(config).subscribe({
-      next: (savedConfig) => {
+      next: (savedConfig: any) => {
         this.configId.set(savedConfig.id || null);
         this.loading.set(false);
         alert('Configuration du reçu sauvegardée avec succès!');
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Erreur lors de la sauvegarde:', error);
         this.loading.set(false);
         alert('Erreur lors de la sauvegarde de la configuration');
@@ -428,7 +427,7 @@ export class PosPrinterComponent implements OnInit {
           this.closeLogoModal();
           alert('Logo ajouté avec succès! Configuration sauvegardée.');
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Erreur lors de la sauvegarde du logo:', error);
           this.loading.set(false);
           alert('Erreur lors de la sauvegarde du logo');
@@ -475,7 +474,7 @@ export class PosPrinterComponent implements OnInit {
           this.logoFile = null;
           alert('Logo supprimé! Configuration sauvegardée.');
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Erreur lors de la suppression du logo:', error);
           this.loading.set(false);
           alert('Erreur lors de la suppression du logo');
@@ -515,7 +514,7 @@ export class PosPrinterComponent implements OnInit {
         this.loading.set(false);
         alert('Configuration POS Mobile sauvegardée avec succès!');
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Erreur lors de la sauvegarde:', error);
         this.loading.set(false);
         alert('Erreur lors de la sauvegarde de la configuration');

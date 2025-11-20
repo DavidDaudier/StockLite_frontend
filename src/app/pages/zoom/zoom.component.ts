@@ -4,8 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, interval } from 'rxjs';
 import { SidebarComponent } from '../../layouts/sidebar/sidebar.component';
 import { PosHeaderComponent } from '../../components/pos-header/pos-header.component';
-import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-import { StatsCardComponent } from '../../shared/components/stats-card/stats-card.component';
+import { GdesCurrencyPipe } from '../../pipes/currency/currency.pipe';
 import { UsersService } from '../../core/services/users.service';
 import { SalesService } from '../../core/services/sales.service';
 import { SessionsService, Session } from '../../core/services/sessions.service';
@@ -24,7 +23,9 @@ import {
   hugeEye,
   hugeArrowDown01,
   hugeArrowUp01,
-  hugeUserMultiple
+  hugeUserMultiple,
+  hugeRefresh,
+  hugeViewOff
 } from '@ng-icons/huge-icons';
 
 interface SellerActivity {
@@ -44,7 +45,7 @@ interface SellerActivity {
 @Component({
   selector: 'app-zoom',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgIcon, SidebarComponent, PosHeaderComponent, PageHeaderComponent, StatsCardComponent],
+  imports: [CommonModule, FormsModule, NgIcon, SidebarComponent, PosHeaderComponent, GdesCurrencyPipe],
   viewProviders: [
     provideIcons({
       hugeVideoReplay,
@@ -58,7 +59,9 @@ interface SellerActivity {
       hugeEye,
       hugeArrowDown01,
       hugeArrowUp01,
-      hugeUserMultiple
+      hugeUserMultiple,
+      hugeRefresh,
+      hugeViewOff
     })
   ],
   templateUrl: './zoom.component.html',
@@ -83,6 +86,7 @@ export class ZoomComponent implements OnInit, OnDestroy {
   loading = signal<boolean>(false);
   expandedSellerId = signal<string | null>(null);
   autoRefresh = signal<boolean>(true);
+  showStats = signal<boolean>(true);
 
   // Computed
   filteredActivities = computed(() => {
@@ -176,11 +180,11 @@ export class ZoomComponent implements OnInit, OnDestroy {
           this.sessionsService.getActiveSessions()
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-              next: (activeSessions) => {
+              next: (activeSessions: any) => {
                 console.log('✅ [Zoom] Active sessions loaded:', activeSessions.length, activeSessions);
                 this.activeSessions.set(activeSessions);
               },
-              error: (error) => {
+              error: (error: any) => {
                 console.error('Error loading active sessions:', error);
               }
             });
@@ -189,7 +193,7 @@ export class ZoomComponent implements OnInit, OnDestroy {
           this.sessionsService.getByDateRange(startDateStr, endDateStr)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-              next: (sessions) => {
+              next: (sessions: any) => {
                 console.log('✅ [Zoom] Historical sessions loaded:', sessions.length, sessions);
                 this.sessions.set(sessions);
 
@@ -203,13 +207,13 @@ export class ZoomComponent implements OnInit, OnDestroy {
                       this.calculateActivities(sellers, sales, sessions, this.activeSessions());
                       this.loading.set(false);
                     },
-                    error: (error) => {
+                    error: (error: any) => {
                       console.error('Error loading sales:', error);
                       this.loading.set(false);
                     }
                   });
               },
-              error: (error) => {
+              error: (error: any) => {
                 console.error('Error loading sessions:', error);
                 // Continue without sessions data
                 this.salesService.getAll(undefined, startDateStr, endDateStr)
@@ -220,7 +224,7 @@ export class ZoomComponent implements OnInit, OnDestroy {
                       this.calculateActivities(sellers, sales, [], this.activeSessions());
                       this.loading.set(false);
                     },
-                    error: (error) => {
+                    error: (error: any) => {
                       console.error('Error loading sales:', error);
                       this.loading.set(false);
                     }
@@ -238,7 +242,7 @@ export class ZoomComponent implements OnInit, OnDestroy {
                 this.calculateActivities(sellers, sales, [], []);
                 this.loading.set(false);
               },
-              error: (error) => {
+              error: (error: any) => {
                 console.error('Error loading sales:', error);
                 this.loading.set(false);
               }
@@ -275,7 +279,7 @@ export class ZoomComponent implements OnInit, OnDestroy {
       const userSessions = sessions.filter(s => s.userId === seller.id);
       const latestSession = userSessions.length > 0
         ? userSessions.reduce((latest, current) =>
-            new Date(current.startTime) > new Date(latest.startTime) ? current : latest
+            new Date(current.startTime || current.createdAt) > new Date(latest.startTime || latest.createdAt) ? current : latest
           )
         : null;
 
@@ -337,7 +341,7 @@ export class ZoomComponent implements OnInit, OnDestroy {
       // Calculate total online time in minutes
       let totalOnlineTime = 0;
       if (latestSession) {
-        const start = new Date(latestSession.startTime);
+        const start = new Date(latestSession.startTime || latestSession.createdAt);
         const end = latestSession.endTime ? new Date(latestSession.endTime) : new Date(latestSession.lastActivity);
         totalOnlineTime = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
       } else if (connectionTime && disconnectionTime) {

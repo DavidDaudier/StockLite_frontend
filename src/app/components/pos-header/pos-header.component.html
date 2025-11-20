@@ -29,7 +29,7 @@
       </div>
     </div>
 
-    <!-- Center: Date & Time -->
+    <!-- Center: Date & Time & Auto-refresh -->
     <div class="flex items-center gap-3 mx-6 text-sm text-gray-600">
       <div class="flex items-center gap-2">
         <ng-icon name="hugeCalendar03" class="text-gray-500" />
@@ -40,10 +40,43 @@
         <ng-icon name="hugeClock01" class="text-gray-500" />
         <span>{{ currentTime() }}</span>
       </div>
+      <span class="text-gray-400">|</span>
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          [(ngModel)]="autoRefreshEnabled"
+          (change)="toggleAutoRefresh()"
+          class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer" />
+        <span class="text-xs font-medium">Auto-refresh 30s</span>
+      </label>
     </div>
 
-    <!-- Right: Messages + Notifications + Message History + User Info -->
+    <!-- Right: Sync + Messages + Notifications + Message History + User Info -->
     <div class="flex items-center gap-4">
+      <!-- Sync Button (Super Admin uniquement) -->
+      @if (isSuperAdmin()) {
+        <div class="flex items-center gap-2">
+          <!-- Network Status -->
+          <span [class]="isOnline() ? 'text-xs text-green-600 font-medium' : 'text-xs text-red-600 font-medium'">
+            {{ isOnline() ? 'En ligne' : 'Pas de réseau' }}
+          </span>
+
+          <!-- Sync Button -->
+          <button
+            (click)="forceSync()"
+            [disabled]="syncInProgress() || !isOnline()"
+            [title]="syncTooltip()"
+            class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50">
+            <ng-icon name="hugeRefresh" class="text-xl" [class.animate-spin]="syncInProgress()" />
+            @if (unsyncedCount() > 0) {
+              <span class="absolute top-0 right-0 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-orange-500 text-white text-xs font-bold rounded-full">
+                {{ unsyncedCount() }}
+              </span>
+            }
+          </button>
+        </div>
+      }
+
       <!-- Messages Icon (Super Admin uniquement) -->
       @if (isSuperAdmin()) {
         <button

@@ -36,7 +36,9 @@ import {
   hugeSent,
   hugeDollarCircle,
   hugePackage,
-  hugeShoppingBasket01
+  hugeShoppingBasket01,
+  hugeEye,
+  hugeViewOff
 } from '@ng-icons/huge-icons';
 
 interface Sale {
@@ -86,7 +88,9 @@ interface UserForFilter {
       hugeSent,
       hugeDollarCircle,
       hugePackage,
-      hugeShoppingBasket01
+      hugeShoppingBasket01,
+      hugeEye,
+      hugeViewOff
     })
   ],
   templateUrl: './sales-history.component.html',
@@ -111,6 +115,7 @@ export class SalesHistoryComponent implements OnInit, OnDestroy {
   loading = signal<boolean>(false);
   expandedSaleId = signal<string | null>(null);
   reportType = signal<'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom'>('daily');
+  showStats = signal<boolean>(true);
 
   // Pagination
   currentPage = signal<number>(1);

@@ -2,111 +2,130 @@
     <app-sidebar></app-sidebar>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- Header -->
+    <main class="relative flex-1 flex flex-col overflow-hidden bg-white">
         <app-pos-header></app-pos-header>
 
-        <!-- Dashboard Content -->
-        <main class="flex-1 overflow-y-auto bg-white">
-            <!-- Page Header -->
-            <app-page-header
-                title="Dashboard Admin"
-                breadcrumb="Dashboard > Vue d'ensemble"
-                icon="hugeChartHistogram"
-                iconColor="teal-600"
-            >
-                <!-- Period Filter in header slot -->
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        <label class="text-sm text-gray-600 font-medium">Période:</label>
-                        <select [(ngModel)]="selectedPeriod" (ngModelChange)="onPeriodChange($event)"
-                                class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
-                            <option value="today">Aujourd'hui</option>
-                            <option value="week">7 derniers jours</option>
-                            <option value="month">30 derniers jours</option>
-                            <option value="year">12 derniers mois</option>
-                            <option value="custom">Plage personnalisée</option>
-                        </select>
-                    </div>
+        <!-- Titre de la page -->
+        <div class="px-6 pt-4 pb-3 bg-white">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        Dashboard Admin
+                    </h1>
+                    <p class="text-sm text-gray-500 mt-1">Dashboard > Vue d'ensemble</p>
                 </div>
-            </app-page-header>
-
-            <!-- Custom Date Range Picker (kept outside header) -->
-            <div *ngIf="showCustomDatePicker" class="px-6 pb-4">
-                <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                    <div class="flex items-center gap-2">
-                        <label class="text-sm text-gray-600 font-medium">De:</label>
-                        <input type="date" [(ngModel)]="customDateRange.startDate"
-                               class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-sm text-gray-600 font-medium">À:</label>
-                        <input type="date" [(ngModel)]="customDateRange.endDate"
-                               class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
-                    </div>
-                    <button (click)="onCustomDateApply()"
-                            class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
-                        Appliquer
-                    </button>
+                <!-- Period Filter -->
+                <div class="flex items-center gap-2">
+                    <label class="text-sm text-gray-600 font-medium">Période:</label>
+                    <select [(ngModel)]="selectedPeriod" (ngModelChange)="onPeriodChange($event)"
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                        <option value="today">Aujourd'hui</option>
+                        <option value="week">7 derniers jours</option>
+                        <option value="month">30 derniers jours</option>
+                        <option value="year">12 derniers mois</option>
+                        <option value="custom">Plage personnalisée</option>
+                    </select>
                 </div>
             </div>
+        </div>
 
-            <!-- Loading State -->
-            <div *ngIf="loading" class="flex items-center justify-center h-64">
-                <div class="text-center">
-                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent"></div>
-                    <p class="mt-4 text-gray-600">Chargement des données...</p>
+        <!-- Custom Date Range Picker -->
+        <div *ngIf="showCustomDatePicker" class="px-6 pb-4">
+            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                <div class="flex items-center gap-2">
+                    <label class="text-sm text-gray-600 font-medium">De:</label>
+                    <input type="date" [(ngModel)]="customDateRange.startDate"
+                           class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
                 </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-sm text-gray-600 font-medium">À:</label>
+                    <input type="date" [(ngModel)]="customDateRange.endDate"
+                           class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                </div>
+                <button (click)="onCustomDateApply()"
+                        class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
+                    Appliquer
+                </button>
             </div>
+        </div>
 
-            <!-- Dashboard Content -->
-            <div *ngIf="!loading" class="px-6 pb-6 space-y-6">
-                <div class="grey-container">
-                    <!-- Stats Cards -->
-                    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                        <!-- Revenue Today -->
-                        <app-stats-card
-                            label="Chiffre d'Affaires"
-                            [value]="formatCurrency(stats.todayRevenue)"
-                            icon="hugeMoneyBag02"
-                            color="blue"
-                            valueType="text"
-                            [gradient]="true"
-                        ></app-stats-card>
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex items-center justify-center h-64">
+            <div class="text-center">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent"></div>
+                <p class="mt-4 text-gray-600">Chargement des données...</p>
+            </div>
+        </div>
 
-                        <!-- Sales Count -->
-                        <app-stats-card
-                            label="Ventes"
-                            [value]="stats.todaySales"
-                            icon="hugeShoppingCart01"
-                            color="green"
-                            valueType="number"
-                            [gradient]="true"
-                        ></app-stats-card>
+        <!-- Bouton flottant Toggle Stats -->
+        <button
+          (click)="showStats = !showStats"
+          class="fixed -right-2 z-50 p-3 bg-blue-600/70 text-white rounded-l-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 cursor-pointer"
+          [style.top]="showStats ? '175px' : '45px'"
+          [title]="showStats ? 'Masquer les statistiques' : 'Afficher les statistiques'">
+          <ng-icon [name]="showStats ? 'hugeViewOff' : 'hugeEye'" size="20" strokeWidth="2"></ng-icon>
+        </button>
 
-                        <!-- Total Products -->
-                        <app-stats-card
-                            label="Produits"
-                            [value]="stats.totalProducts"
-                            icon="hugePackage"
-                            color="purple"
-                            valueType="number"
-                            [gradient]="true"
-                        ></app-stats-card>
-
-                        <!-- Low Stock Alerts -->
-                        <div (click)="navigateToStocks()">
-                            <app-stats-card
-                                label="Alertes Stock"
-                                [value]="stats.lowStockCount"
-                                icon="hugeAlert02"
-                                color="orange"
-                                valueType="number"
-                                [gradient]="true"
-                            ></app-stats-card>
+        <!-- Statistiques (FIXES hors scroll) -->
+        <div *ngIf="!loading && showStats" class="px-6 pb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Chiffre d'Affaires -->
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-blue-600 font-medium">Chiffre d'Affaires</p>
+                            <p class="text-2xl font-bold text-blue-900 mt-1" [innerHTML]="stats.todayRevenue | gdesCurrency"></p>
                         </div>
-                    </section>
+                        <div class="p-3 bg-blue-500 rounded-lg text-white">
+                            <ng-icon name="hugeMoneyBag02" size="24" class="text-white"></ng-icon>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Ventes -->
+                <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-green-600 font-medium">Ventes</p>
+                            <p class="text-2xl font-bold text-green-900 mt-1">{{ stats.todaySales }}</p>
+                        </div>
+                        <div class="p-3 bg-green-500 rounded-lg text-white">
+                            <ng-icon name="hugeShoppingCart01" size="24" class="text-white"></ng-icon>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Produits -->
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-purple-600 font-medium">Produits</p>
+                            <p class="text-2xl font-bold text-purple-900 mt-1">{{ stats.totalProducts }}</p>
+                        </div>
+                        <div class="p-3 bg-purple-500 rounded-lg text-white">
+                            <ng-icon name="hugePackage" size="24" class="text-white"></ng-icon>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alertes Stock -->
+                <div (click)="navigateToStocks()" class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-orange-600 font-medium">Alertes Stock</p>
+                            <p class="text-2xl font-bold text-orange-900 mt-1">{{ stats.lowStockCount }}</p>
+                        </div>
+                        <div class="p-3 bg-orange-500 rounded-lg text-white">
+                            <ng-icon name="hugeAlert02" size="24" class="text-white"></ng-icon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenu principal (scrollable) -->
+        <div *ngIf="!loading" class="flex-1 overflow-y-auto px-6 pb-6 bg-white">
+            <div class="bg-gray-100 rounded-[15px] p-4 border border-gray-300">
                     <!-- Charts Row -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <!-- Sales Trend Chart -->
@@ -224,8 +243,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </main>
-    </div>
+            </div> <!-- Fermeture grey-container -->
+        </div> <!-- Fermeture contenu scrollable -->
+    </main>
 </div>
