@@ -30,8 +30,8 @@
     </div>
   </div>
 
-  <!-- Grille de produits -->
-  <div class="grid gap-3" [ngClass]="gridCols() === 5 ? 'grid-cols-5' : 'grid-cols-4'">
+  <!-- Grille de produits avec auto-fill pour garder la taille des cartes constante -->
+  <div class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));">
   <ng-container *ngFor="let p of filteredProducts()">
     <div
       *ngIf="p.stock > 0"

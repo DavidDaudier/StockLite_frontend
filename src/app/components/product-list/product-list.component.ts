@@ -45,7 +45,12 @@ export class ProductListComponent implements OnInit {
   categories = signal<Category[]>([]);
 
   // Nombre de colonnes dynamique basé sur l'état du sidebar
+  // Sidebar ouvert (isCollapsed = false) = 4 colonnes
+  // Sidebar fermé/réduit (isCollapsed = true) = 5 colonnes
   gridCols = computed(() => this.sidebarService.isCollapsed() ? 5 : 4);
+
+  // Map de couleurs par catégorie
+  private categoryColors: { [key: string]: string } = {};
 
   // Produits filtrés (computed) - filtre directement depuis cartProduct.products
   filteredProducts = computed(() => {
@@ -97,13 +102,63 @@ export class ProductListComponent implements OnInit {
     return this.cartProduct.products;
   }
 
+  // Obtenir la couleur de fond basée sur la catégorie
+  getCategoryBgColor(categoryId: string | undefined): string {
+    if (!categoryId) return 'bg-white';
+    
+    // Si la couleur est déjà définie dans la map, l'utiliser
+    if (this.categoryColors[categoryId]) {
+      return this.categoryColors[categoryId];
+    }
+    
+    // Sinon, générer une couleur basée sur le hash du categoryId
+    const colors = [
+      'bg-blue-100',
+      'bg-purple-100',
+      'bg-pink-100',
+      'bg-orange-100',
+      'bg-yellow-100',
+      'bg-green-100',
+      'bg-teal-100',
+      'bg-cyan-100',
+      'bg-indigo-100',
+      'bg-rose-100',
+      'bg-amber-100',
+      'bg-lime-100',
+      'bg-emerald-100',
+      'bg-sky-100',
+      'bg-violet-100'
+    ];
+    
+    // Générer un index basé sur le categoryId
+    let hash = 0;
+    for (let i = 0; i < categoryId.length; i++) {
+      hash = categoryId.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colors.length;
+    
+    // Sauvegarder pour la prochaine fois
+    this.categoryColors[categoryId] = colors[index];
+    return colors[index];
+  }
+
   // Classes CSS pour le card
   cardClasses(id: string): string {
     const qty = this.cartProduct.items().find(i => i.id === id)?.qty || 0;
     const selected = qty > 0;
+    
+    // Trouver le produit pour obtenir sa catégorie
+    const product = this.cartProduct.products().find(p => p.id === id);
+    const categoryBg = product ? this.getCategoryBgColor(product.categoryId) : 'bg-white';
+    
+    // Convertir bg-color-200 en border-color-500 pour la bordure
+    const categoryBorder = categoryBg.replace('bg-', 'border-').replace('-200', '-300');
+    
+    // Si sélectionné : fond blanc avec bordure de la couleur de la catégorie
+    // Sinon : couleur de la catégorie avec bordure grise
     return selected
-      ? 'bg-green-100 border-green-300'
-      : 'bg-white border-gray-200 hover:border-gray-400';
+      ? `bg-white ${categoryBorder} border`
+      : `${categoryBg} border-gray-200 hover:border-gray-400`;
   }
 
   /** Sélection d'un produit (ajout au panier) */

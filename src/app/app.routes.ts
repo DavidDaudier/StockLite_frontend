@@ -130,6 +130,12 @@ export const routes: Routes = [
         path: 'settings',
         loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent)
       },
+      // Audit page – accessible to admins (and super‑admin via guard)
+      {
+        path: 'audit',
+        canActivate: [authGuard, adminGuard],
+        loadComponent: () => import('./pages/audit/audit.component').then(m => m.AuditComponent)
+      },
       {
         path: 'notifications',
         canActivate: [superAdminGuard],

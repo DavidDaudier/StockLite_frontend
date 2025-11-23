@@ -1,0 +1,22 @@
+/* Grille avec 4 colonnes (sidebar ouvert) */
+.grid-cols-4-fixed {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Grille avec 5 colonnes (sidebar fermé) */
+.grid-cols-5-fixed {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+/* Alternative: Si vous voulez une taille fixe pour les cartes */
+.product-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.product-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}

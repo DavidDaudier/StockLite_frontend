@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit, OnDestroy, computed } from '@angular
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, interval } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { SidebarService } from '../../services/sidebar/sidebar.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -10,6 +10,8 @@ import { NotificationSoundService } from '../../core/services/notification-sound
 import { LowStockMonitorService } from '../../core/services/low-stock-monitor.service';
 import { DeletionRequestService } from '../../core/services/deletion-request.service';
 import { OfflineSyncService } from '../../core/services/offline-sync.service';
+import { SessionsService } from '../../core/services/sessions.service';
+import { UsersService } from '../../core/services/users.service';
 import { User } from '../../core/models/user.model';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { hugeSearch01, hugeNotification02, hugeMailAtSign01, hugeCalendar03, hugeClock01, hugeMenu01, hugeSidebarLeft01, hugeSidebarRight01, hugeClock05, hugeRefresh } from '@ng-icons/huge-icons';
@@ -44,6 +46,8 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
   lowStockMonitorService = inject(LowStockMonitorService);
   deletionRequestService = inject(DeletionRequestService);
   offlineSyncService = inject(OfflineSyncService);
+  private sessionsService = inject(SessionsService);
+  private usersService = inject(UsersService);
   private destroy$ = new Subject<void>();
 
   searchTerm = signal('');
@@ -58,6 +62,20 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
   networkStatus = signal(true);
   autoRefreshEnabled = false;
   private autoRefreshInterval?: number;
+
+  // Utilisateurs en ligne
+  onlineUsers = signal<User[]>([]);
+  
+  // Computed pour afficher les utilisateurs en ligne (max 3, puis +X)
+  displayedOnlineUsers = computed(() => {
+    const users = this.onlineUsers();
+    const maxDisplay = 3;
+    return {
+      users: users.slice(0, maxDisplay),
+      remaining: Math.max(0, users.length - maxDisplay),
+      total: users.length
+    };
+  });
 
   // Computed pour le badge de notifications
   notificationBadge = computed(() => {
@@ -232,6 +250,18 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
     // Charger le nombre d'éléments non synchronisés
     this.loadUnsyncedCount();
 
+    // Charger les utilisateurs en ligne (pour Super Admin uniquement)
+    if (this.isSuperAdmin()) {
+      this.loadOnlineUsers();
+      
+      // Rafraîchir les utilisateurs en ligne toutes les 30 secondes
+      interval(30000)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          this.loadOnlineUsers();
+        });
+    }
+
     // Mettre à jour l'heure toutes les secondes
     this.timeInterval = window.setInterval(() => {
       this.updateDateTime();
@@ -374,5 +404,73 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
       success => console.log('[PosHeader] Navigation vers mes messages réussie:', success),
       error => console.error('[PosHeader] Erreur navigation vers mes messages:', error)
     );
+  }
+
+  // Charger les utilisateurs en ligne
+  loadOnlineUsers(): void {
+    console.log('[PosHeader] 🔄 Chargement des utilisateurs en ligne...');
+    this.sessionsService.getActiveSessions()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (activeSessions) => {
+          console.log('[PosHeader] ✅ Sessions actives récupérées:', activeSessions.length);
+          console.log('[PosHeader] 📋 Détails des sessions actives:', activeSessions);
+          
+          // Récupérer les IDs des utilisateurs avec sessions actives
+          const activeUserIds = activeSessions.map(s => s.userId);
+          console.log('[PosHeader] 👥 IDs des utilisateurs avec sessions actives:', activeUserIds);
+          
+          // Charger tous les utilisateurs
+          this.usersService.getAll()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (allUsers) => {
+                console.log('[PosHeader] 👤 Tous les utilisateurs récupérés:', allUsers.length);
+                console.log('[PosHeader] 📋 Liste des utilisateurs:', allUsers.map(u => ({ id: u.id, username: u.username, role: u.role, isSuperAdmin: u.isSuperAdmin })));
+                
+                // Filtrer pour ne garder que les utilisateurs en ligne (sellers et admins non super admin)
+                const onlineUsers = allUsers.filter(user => {
+                  const isActive = activeUserIds.includes(user.id);
+                  const isSellerOrAdmin = user.role === 'seller' || (user.role === 'admin' && !user.isSuperAdmin);
+                  console.log(`[PosHeader] 🔍 User ${user.username}: isActive=${isActive}, isSellerOrAdmin=${isSellerOrAdmin}`);
+                  return isActive && isSellerOrAdmin;
+                });
+                
+                this.onlineUsers.set(onlineUsers);
+                console.log('[PosHeader] ✅ Utilisateurs en ligne filtrés:', onlineUsers.length, onlineUsers.map(u => u.username));
+              },
+              error: (error) => {
+                console.error('[PosHeader] ❌ Erreur lors du chargement des utilisateurs:', error);
+              }
+            });
+        },
+        error: (error) => {
+          console.error('[PosHeader] ❌ Erreur lors du chargement des sessions actives:', error);
+        }
+      });
+  }
+
+  // Obtenir les initiales d'un nom
+  getInitials(name: string | null | undefined): string {
+    if (!name) return '?';
+    const names = name.split(' ');
+    if (names.length === 1) return names[0].charAt(0).toUpperCase();
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+  }
+
+  // Obtenir une couleur d'avatar basée sur le nom
+  getAvatarColor(name: string): string {
+    const colors = [
+      'bg-blue-500',
+      'bg-green-500',
+      'bg-purple-500',
+      'bg-pink-500',
+      'bg-indigo-500',
+      'bg-cyan-500',
+      'bg-orange-500',
+      'bg-teal-500'
+    ];
+    const index = name.length % colors.length;
+    return colors[index];
   }
 }

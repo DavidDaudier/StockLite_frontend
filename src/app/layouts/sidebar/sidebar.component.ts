@@ -20,7 +20,9 @@ import {
   hugeVideoReplay,
   hugePrinter,
   hugeClock05,
-  hugeTime04
+  hugeTime04,
+  hugeFileDownload,
+  hugeAudit01
 } from '@ng-icons/huge-icons';
 
 @Component({
@@ -48,7 +50,9 @@ import {
       hugeVideoReplay,
       hugePrinter,
       hugeClock05,
-      hugeTime04
+      hugeTime04,
+      hugeFileDownload,
+      hugeAudit01,
     })
   ],
   templateUrl: './sidebar.component.html',
@@ -81,11 +85,13 @@ export class SidebarComponent implements OnInit {
       // 'report-vendor': { icon: 'hugeAnalyticsUp', label: 'Rapports Vendeur', route: `${prefix}/report-vendor`, page: 'report-vendor' },
       inventories: { icon: 'hugeInvestigation', label: 'Inventaires', route: `${prefix}/inventories`, page: 'inventories' },
       zoom: { icon: 'hugeVideoReplay', label: 'Zoom', route: `${prefix}/zoom`, page: 'zoom' },
+      audit: { icon: 'hugeAudit01', label: 'Audit Logs', route: `${prefix}/audit`, page: 'audit' },
       users: { icon: 'hugeUserMultiple', label: 'Utilisateurs', route: `${prefix}/users`, page: 'users' },
       sessions: { icon: 'hugeTime04', label: 'Sessions', route: `${prefix}/sessions`, page: 'sessions' },
       profile: { icon: 'hugeUser', label: 'Profil', route: `${prefix}/profile`, page: 'profile' },
       'pos-printer': { icon: 'hugePrinter', label: 'POS/Printer', route: `${prefix}/pos-printer`, page: 'pos-printer' },
-      settings: { icon: 'hugeSettings01', label: 'Paramètre', route: `${prefix}/settings`, page: 'settings' }
+      settings: { icon: 'hugeSettings01', label: 'Paramètre', route: `${prefix}/settings`, page: 'settings' },
+      
     };
 
     // SEULEMENT Super Admin : afficher toutes les pages
@@ -104,7 +110,8 @@ export class SidebarComponent implements OnInit {
         allMenus.sessions,
         allMenus.profile,
         allMenus['pos-printer'],
-        allMenus.settings
+        allMenus.settings,
+        allMenus.audit
       ].map(item => ({ ...item, active: false }));
       return;
     }

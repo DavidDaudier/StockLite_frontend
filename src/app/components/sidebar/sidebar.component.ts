@@ -58,22 +58,33 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { icon: 'hugeDashboardBrowsing', label: 'Dashboard', route: '/seller/dashboard', active: false, key: 'dashboard' },
     { icon: 'hugeShoppingCart01', label: 'Point de Vente', route: '/seller/pos', active: true, key: 'pos' },
     { icon: 'hugeInvoice01', label: 'Historique', route: '/seller/history', active: false, key: 'history' },
-    { icon: 'hugeFileDownload', label: 'Rapports', route: '/seller/reports', active: false, key: 'reports' },
-    { icon: 'hugeUser', label: 'Profil', route: '/seller/profile', active: false, key: 'profile' }
+    { icon: 'hugeFileDownload', label: 'Audit', route: '/audit', active: false, key: 'audit' },
   ];
 
   // Menu items filtrés selon les permissions
   menuItems = computed(() => {
     const user = this.currentUser();
-    if (!user || !user.permissions) {
-      // Si pas de permissions définies, afficher tous les items
+    if (!user) {
+      // Pas d'utilisateur – on ne montre rien
+      return [];
+    }
+
+    // Super admin voit tout, même si les permissions sont absentes
+    if (user.isSuperAdmin) {
       return this.allMenuItems;
     }
 
-    // Filtrer les items selon les permissions
+    // Si l'utilisateur n'a pas de permissions définies, on montre tout (fallback)
+    if (!user.permissions) {
+      return this.allMenuItems;
+    }
+
+    // Filtrer les items selon les permissions (false = hidden)
     return this.allMenuItems.filter(item => {
       const permissionKey = item.key as keyof typeof user.permissions;
-      return user.permissions[permissionKey] !== false;
+      // Si la permission n'existe pas, on considère qu'elle est autorisée
+      const permValue = user.permissions[permissionKey];
+      return permValue !== false;
     });
   });
 

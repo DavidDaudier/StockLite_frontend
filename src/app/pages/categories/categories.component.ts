@@ -10,7 +10,7 @@ import {
   hugeDelete03,
   hugePlusSign,
   hugeSearch01,
-  hugeXClose
+  hugeCancel01
 } from '@ng-icons/huge-icons';
 
 @Component({
@@ -23,7 +23,7 @@ import {
       hugeDelete03,
       hugePlusSign,
       hugeSearch01,
-      hugeXClose
+      hugeCancel01
     })
   ],
   templateUrl: './categories.component.html',

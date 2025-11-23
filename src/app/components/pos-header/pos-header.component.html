@@ -1,6 +1,6 @@
 <header class="bg-white border-b border-gray-200 px-6 py-4">
   <div class="flex items-center justify-between">
-    <!-- Left: Menu Button + Search Bar -->
+    <!-- Left: Menu Button + Online Users -->
     <div class="flex items-center gap-3 flex-1 max-w-md">
       <!-- Toggle Sidebar Button -->
       <button
@@ -14,8 +14,36 @@
         }
       </button>
 
-      <!-- Search Bar -->
-      <div class="relative flex-1">
+      <!-- Online Users Avatars (Super Admin uniquement) -->
+      @if (isSuperAdmin() && displayedOnlineUsers().total > 0) {
+        <div class="flex items-center gap-3" title="{{ displayedOnlineUsers().total }} utilisateur(s) en ligne">
+          <!-- Avatars des utilisateurs (max 3) -->
+          <div class="flex -space-x-3">
+            @for (user of displayedOnlineUsers().users; track user.id) {
+              <div 
+                [class]="'w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold border-2 border-white shadow-md ' + getAvatarColor(user.fullName || user.username)"
+                [title]="user.fullName || user.username">
+                {{ getInitials(user.fullName || user.username) }}
+              </div>
+            }
+            <!-- Badge +X pour les utilisateurs restants -->
+            @if (displayedOnlineUsers().remaining > 0) {
+              <div 
+                class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-600 text-white text-sm font-semibold border-2 border-white shadow-md"
+                [title]="displayedOnlineUsers().remaining + ' autre(s) utilisateur(s)'">
+                +{{ displayedOnlineUsers().remaining }}
+              </div>
+            }
+          </div>
+          <!-- Texte "X on work" -->
+          <span class="text-sm text-gray-700 font-medium">
+            {{ displayedOnlineUsers().total }} on work
+          </span>
+        </div>
+      }
+
+      <!-- Search Bar (Commentée) -->
+      <!-- <div class="relative flex-1">
         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
           <ng-icon name="hugeSearch01" class="text-gray-400 text-lg" />
         </div>
@@ -26,55 +54,60 @@
           placeholder="Search menu, orders and more"
           class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
         />
-      </div>
+      </div> -->
     </div>
 
-    <!-- Center: Date & Time & Auto-refresh -->
+    <!-- Center: Date & Time & Auto-refresh & Network Status -->
     <div class="flex items-center gap-3 mx-6 text-sm text-gray-600">
-      <div class="flex items-center gap-2">
-        <ng-icon name="hugeCalendar03" class="text-gray-500" />
-        <span>{{ currentDate() }}</span>
+      <!-- Date et Heure en colonne -->
+      <div class="flex flex-col gap-1">
+        <div class="flex items-center gap-2">
+          <ng-icon name="hugeCalendar03" class="text-gray-500" />
+          <span>{{ currentDate() }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <ng-icon name="hugeClock01" class="text-gray-500" />
+          <span>{{ currentTime() }}</span>
+        </div>
       </div>
-      <span class="text-gray-400">—</span>
-      <div class="flex items-center gap-2">
-        <ng-icon name="hugeClock01" class="text-gray-500" />
-        <span>{{ currentTime() }}</span>
+      <!-- <span class="text-gray-400">|</span> -->
+       <div class="w-5"></div>
+      <!-- Auto-refresh et Network Status en colonne -->
+      <div class="flex flex-col gap-1">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            [(ngModel)]="autoRefreshEnabled"
+            (change)="toggleAutoRefresh()"
+            class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer" />
+          <span class="text-xs font-medium">Auto-refresh 30s</span>
+        </label>
+        @if (isSuperAdmin()) {
+          <!-- Network Status -->
+          <span [class]="isOnline() ? 'text-xs text-green-600 font-medium' : 'text-xs text-red-600 font-medium'">
+            {{ isOnline() ? 'Acces a internet' : 'Pas d\'accès a internet' }}
+          </span>
+        }
       </div>
-      <span class="text-gray-400">|</span>
-      <label class="flex items-center gap-2 cursor-pointer">
-        <input
-          type="checkbox"
-          [(ngModel)]="autoRefreshEnabled"
-          (change)="toggleAutoRefresh()"
-          class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer" />
-        <span class="text-xs font-medium">Auto-refresh 30s</span>
-      </label>
     </div>
 
     <!-- Right: Sync + Messages + Notifications + Message History + User Info -->
     <div class="flex items-center gap-4">
       <!-- Sync Button (Super Admin uniquement) -->
       @if (isSuperAdmin()) {
-        <div class="flex items-center gap-2">
-          <!-- Network Status -->
-          <span [class]="isOnline() ? 'text-xs text-green-600 font-medium' : 'text-xs text-red-600 font-medium'">
-            {{ isOnline() ? 'En ligne' : 'Pas de réseau' }}
-          </span>
-
-          <!-- Sync Button -->
-          <button
-            (click)="forceSync()"
-            [disabled]="syncInProgress() || !isOnline()"
-            [title]="syncTooltip()"
-            class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50">
-            <ng-icon name="hugeRefresh" class="text-xl" [class.animate-spin]="syncInProgress()" />
-            @if (unsyncedCount() > 0) {
-              <span class="absolute top-0 right-0 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-orange-500 text-white text-xs font-bold rounded-full">
-                {{ unsyncedCount() }}
-              </span>
-            }
-          </button>
-        </div>
+        <!-- Sync Button -->
+        <button
+          (click)="forceSync()"
+          [disabled]="syncInProgress() || !isOnline()"
+          [title]="syncTooltip()"
+          class="relative p-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 flex items-center justify-center cursor-pointer">
+          <ng-icon name="hugeRefresh" class="text-xl text-gray-700" [class.animate-spin]="syncInProgress()" />
+          @if (unsyncedCount() > 0) {
+            <span class="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-orange-500 text-white text-xs font-bold rounded-full">
+              {{ unsyncedCount() }}
+            </span>
+          }
+        </button>
       }
 
       <!-- Messages Icon (Super Admin uniquement) -->
@@ -82,11 +115,11 @@
         <button
           (click)="showMessages()"
           [title]="messagesTooltip()"
-          class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-          <ng-icon name="hugeMailAtSign01" class="text-xl" />
+          class="relative p-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center cursor-pointer">
+          <ng-icon name="hugeMailAtSign01" class="text-xl text-gray-700" />
           <!-- Badge de messages dynamique -->
           @if (messagesBadge().hasPending) {
-            <span class="absolute top-0 right-0 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-xs font-bold rounded-full">
+            <span class="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-xs font-bold rounded-full">
               {{ messagesBadge().count }}
             </span>
           }
@@ -98,11 +131,11 @@
         <button
           (click)="showNotifications()"
           [title]="notificationTooltip()"
-          class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-          <ng-icon name="hugeNotification02" class="text-xl" />
+          class="relative p-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center cursor-pointer">
+          <ng-icon name="hugeNotification02" class="text-xl text-gray-700" />
           <!-- Badge de notification dynamique -->
           @if (notificationBadge().hasUnread) {
-            <span class="absolute top-0 right-0 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-xs font-bold rounded-full">
+            <span class="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-xs font-bold rounded-full">
               {{ notificationBadge().count }}
             </span>
           }
