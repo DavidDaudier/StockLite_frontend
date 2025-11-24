@@ -157,11 +157,11 @@ export class ProductListComponent implements OnInit {
     // Si sélectionné : fond blanc avec bordure de la couleur de la catégorie
     // Sinon : couleur de la catégorie avec bordure grise
     return selected
-      ? `bg-white ${categoryBorder} border`
+      ? `bg-white ${categoryBorder} border-gray-300`
       : `${categoryBg} border-gray-200 hover:border-gray-400`;
   }
 
-  /** Sélection d'un produit (ajout au panier) */
+  /** Sélection d'un produit (ajout au panier) **/
   select(product: ProductItem) {
     if (product.stock === 0) return;
     
@@ -185,7 +185,7 @@ export class ProductListComponent implements OnInit {
     );
   }
 
-  /** Changement de quantité via les boutons + et - */
+  /** Changement de quantité via les boutons + et - **/
   changeQty(id: string, delta: number): void {
     // Vérifie si on peut effectuer le changement
     const product = this.products().find(p => p.id === id);
@@ -213,7 +213,7 @@ export class ProductListComponent implements OnInit {
     }
   }
 
-  /** Restauration du stock */
+  /** Restauration du stock **/
   restoreStock(productId: string, qty: number) {
     this.cartProduct.restoreStock(productId, qty);
   }

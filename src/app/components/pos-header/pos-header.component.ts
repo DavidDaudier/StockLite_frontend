@@ -216,11 +216,14 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
 
         // Si de nouveaux produits en stock faible sont détectés, jouer le son
         if (currentCount > this.previousLowStockCount && currentCount > 0) {
-          console.log(`[PosHeader] 🔔 Alerte: ${currentCount} produit(s) en stock faible`);
+          console.log(`[PosHeader] 🔔 Alerte déclenchée: ${currentCount} produit(s) en stock faible (précédent: ${this.previousLowStockCount})`);
           this.notificationSoundService.playLowStockAlert();
 
           // Créer une notification pour chaque nouveau produit
-          lowStockItems.slice(this.previousLowStockCount).forEach((item) => {
+          const newItems = lowStockItems.slice(this.previousLowStockCount);
+          console.log(`[PosHeader] 📝 Création de notifications pour ${newItems.length} nouveaux items`);
+          
+          newItems.forEach((item) => {
             this.notificationService.checkStockLevel(
               item.id,
               item.name,
@@ -428,16 +431,17 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
                 console.log('[PosHeader] 👤 Tous les utilisateurs récupérés:', allUsers.length);
                 console.log('[PosHeader] 📋 Liste des utilisateurs:', allUsers.map(u => ({ id: u.id, username: u.username, role: u.role, isSuperAdmin: u.isSuperAdmin })));
                 
-                // Filtrer pour ne garder que les utilisateurs en ligne (sellers et admins non super admin)
+                // Filtrer pour ne garder que les utilisateurs en ligne
+                // On inclut tout le monde (Sellers, Admins, Super Admins) pour que le Super Admin puisse voir tout le monde
                 const onlineUsers = allUsers.filter(user => {
                   const isActive = activeUserIds.includes(user.id);
-                  const isSellerOrAdmin = user.role === 'seller' || (user.role === 'admin' && !user.isSuperAdmin);
-                  console.log(`[PosHeader] 🔍 User ${user.username}: isActive=${isActive}, isSellerOrAdmin=${isSellerOrAdmin}`);
-                  return isActive && isSellerOrAdmin;
+                  // const isSellerOrAdmin = user.role === 'seller' || (user.role === 'admin' && !user.isSuperAdmin);
+                  // console.log(`[PosHeader] 🔍 User ${user.username}: isActive=${isActive}, isSellerOrAdmin=${isSellerOrAdmin}`);
+                  return isActive;
                 });
                 
                 this.onlineUsers.set(onlineUsers);
-                console.log('[PosHeader] ✅ Utilisateurs en ligne filtrés:', onlineUsers.length, onlineUsers.map(u => u.username));
+                console.log('[PosHeader] ✅ Utilisateurs en ligne affichés:', onlineUsers.length, onlineUsers.map(u => u.username));
               },
               error: (error) => {
                 console.error('[PosHeader] ❌ Erreur lors du chargement des utilisateurs:', error);

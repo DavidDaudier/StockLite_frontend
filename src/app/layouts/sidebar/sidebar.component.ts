@@ -106,12 +106,12 @@ export class SidebarComponent implements OnInit {
         // allMenus['report-vendor'],
         allMenus.inventories,
         allMenus.zoom,
+        allMenus.audit,
         allMenus.users,
         allMenus.sessions,
         allMenus.profile,
         allMenus['pos-printer'],
         allMenus.settings,
-        allMenus.audit
       ].map(item => ({ ...item, active: false }));
       return;
     }

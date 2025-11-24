@@ -19,12 +19,12 @@
     <a
       *ngFor="let item of menuItems"
       [routerLink]="item.route"
-      routerLinkActive="bg-teal-50 text-teal-600 border-teal-500"
+      routerLinkActive="bg-teal-100 text-teal-600 border-teal-500 border-l-4 border-l-teal-500 font-bold"
       [routerLinkActiveOptions]="{exact: true}"
       [ngClass]="isCollapsed() ? 'justify-center px-2' : 'px-4'"
       [title]="isCollapsed() ? item.label : ''"
-      class="flex items-center gap-3 py-3 rounded-lg transition-colors hover:bg-gray-50 border border-transparent group">
-      <ng-icon [name]="item.icon" class="text-xl flex-shrink-0" />
+      class="flex items-center gap-3 py-3 rounded-r-lg transition-colors hover:bg-gray-100 border border-transparent group">
+      <ng-icon [name]="item.icon"  class="text-xl flex-shrink-0 font-bold" />
       <span *ngIf="!isCollapsed()" class="font-medium overflow-hidden">{{ item.label }}</span>
     </a>
   </nav>

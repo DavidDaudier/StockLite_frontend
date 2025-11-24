@@ -19,7 +19,7 @@
     <a
       *ngFor="let item of menuItems()"
       [routerLink]="item.route"
-      routerLinkActive="bg-teal-50 text-teal-600 border-teal-500"
+      routerLinkActive="bg-teal-50 text-teal-600 border-teal-500 border-l-4"
       [routerLinkActiveOptions]="{exact: true}"
       [ngClass]="isCollapsed() ? 'justify-center px-2' : 'px-4'"
       [title]="isCollapsed() ? item.label : ''"
