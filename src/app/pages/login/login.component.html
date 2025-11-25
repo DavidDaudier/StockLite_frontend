@@ -3,13 +3,14 @@
     <!-- Logo et titre -->
     <div class="">
       <div class="flex items-center justify-center gap-4">
-        <div class="h-14 w-14 bg-teal-500 rounded-lg flex items-center justify-center">
-          <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="h-14 w-14 bg-teal-500 rounded-lg flex items-center justify-center overflow-hidden">
+          <img *ngIf="appInfoService.appInfo().logo_app" [src]="appInfoService.appInfo().logo_app" alt="Logo" class="w-full h-full object-cover">
+          <svg *ngIf="!appInfoService.appInfo().logo_app" class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
           </svg>
         </div>
         <div class="flex flex-col">
-          <h2 class="text-2xl font-extrabold text-gray-900">StockLite</h2>
+          <h2 class="text-2xl font-extrabold text-gray-900">{{ appInfoService.appInfo().nom_app }}</h2>
           <p class="text-sm text-gray-500">POS System</p>
         </div>
       </div>
@@ -141,7 +142,7 @@
     <!-- Footer -->
     <div class="text-center text-sm text-gray-500">
       <p>Version 1.0.0</p>
-      <p class="mt-1">© 2025 StockLite. Tous droits réservés.</p>
+      <p class="mt-1">© 2025 {{ appInfoService.appInfo().nom_app }}. Tous droits réservés.</p>
     </div>
   </div>
 </div>

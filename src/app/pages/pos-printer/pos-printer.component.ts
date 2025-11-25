@@ -146,7 +146,7 @@ export class PosPrinterComponent implements OnInit {
   );
 
   constructor(
-    private appInfoService: AppInfoService,
+    public appInfoService: AppInfoService,
     public authService: AuthService,
     private receiptConfigService: ReceiptConfigService
   ) {}

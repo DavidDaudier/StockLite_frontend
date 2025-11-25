@@ -1,8 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { RouterModule, Router } from "@angular/router";
 import { SidebarService } from '../../core/services/sidebar.service';
 import { AuthService } from '../../core/services/auth.service';
+import { AppInfoService } from '../../services/app-info.service';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   hugeDashboardBrowsing,
@@ -61,6 +62,7 @@ import {
 export class SidebarComponent implements OnInit {
   private sidebarService = inject(SidebarService);
   private authService = inject(AuthService);
+  appInfoService = inject(AppInfoService);
   private router = inject(Router);
 
   // Desktop collapsed state

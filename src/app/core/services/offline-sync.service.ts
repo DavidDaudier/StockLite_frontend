@@ -283,14 +283,24 @@ export class OfflineSyncService {
     synced: number;
     failed: number;
   }> {
-    const allItems = await this.indexedDB.getAll<SyncQueueItem>('syncQueue');
+    try {
+      const allItems = await this.indexedDB.getAll<SyncQueueItem>('syncQueue');
 
-    return {
-      total: allItems.length,
-      pending: allItems.filter(i => !i.synced && i.attempts < this.maxRetries).length,
-      synced: allItems.filter(i => i.synced).length,
-      failed: allItems.filter(i => !i.synced && i.attempts >= this.maxRetries).length
-    };
+      return {
+        total: allItems.length,
+        pending: allItems.filter(i => !i.synced && i.attempts < this.maxRetries).length,
+        synced: allItems.filter(i => i.synced).length,
+        failed: allItems.filter(i => !i.synced && i.attempts >= this.maxRetries).length
+      };
+    } catch (error) {
+      console.warn('Database not ready for queue status:', error);
+      return {
+        total: 0,
+        pending: 0,
+        synced: 0,
+        failed: 0
+      };
+    }
   }
 
   /**

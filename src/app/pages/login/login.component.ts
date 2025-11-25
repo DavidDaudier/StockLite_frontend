@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { OfflineSyncService } from '../../core/services/offline-sync.service';
+import { AppInfoService } from '../../services/app-info.service';
 
 @Component({
   selector: 'app-login',
@@ -25,6 +26,7 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private offlineSyncService: OfflineSyncService,
+    public appInfoService: AppInfoService,
     private router: Router,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
