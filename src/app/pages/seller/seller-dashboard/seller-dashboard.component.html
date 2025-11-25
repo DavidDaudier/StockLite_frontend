@@ -48,7 +48,7 @@
                 <span class="text-xs text-gray-500">vs hier</span>
               </div>
             </div>
-            <div class="p-3 bg-green-500 rounded-lg text-white">
+            <div class="p-3 bg-green-500 rounded-lg text-white flex items-center justify-center">
               <ng-icon name="hugeDollarCircle" size="24" class="text-white"></ng-icon>
             </div>
           </div>
@@ -65,7 +65,7 @@
                 <span class="text-xs text-gray-500">vs hier</span>
               </div>
             </div>
-            <div class="p-3 bg-blue-500 rounded-lg text-white">
+            <div class="p-3 bg-blue-500 rounded-lg text-white flex items-center justify-center">
               <ng-icon name="hugeShoppingCart01" size="24" class="text-white"></ng-icon>
             </div>
           </div>
@@ -82,7 +82,7 @@
                 <span class="text-xs text-gray-500">vs hier</span>
               </div>
             </div>
-            <div class="p-3 bg-purple-500 rounded-lg text-white">
+            <div class="p-3 bg-purple-500 rounded-lg text-white flex items-center justify-center">
               <ng-icon name="hugePackageDelivered" size="24" class="text-white"></ng-icon>
             </div>
           </div>
@@ -99,7 +99,7 @@
                 <span class="text-xs text-gray-500">vs hier</span>
               </div>
             </div>
-            <div class="p-3 bg-orange-500 rounded-lg text-white">
+            <div class="p-3 bg-orange-500 rounded-lg text-white flex items-center justify-center">
               <ng-icon name="hugeTradeUp" size="24" class="text-white"></ng-icon>
             </div>
           </div>
@@ -216,7 +216,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200">
-                <tr *ngFor="let product of lowStockProducts" class="hover:bg-gray-50 transition-colors">
+                <tr *ngFor="let product of lowStockProducts" class="table-row-hover transition-colors">
                   <td class="px-4 py-3">
                     <p class="font-semibold text-gray-900">{{ product.name }}</p>
                   </td>

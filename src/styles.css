@@ -5,14 +5,64 @@
    🎨 STYLES DE BASE
    ═══════════════════════════════════════════════════════════════ */
 
-html{
+html {
     scroll-behavior: smooth;
     font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   🎨 STYLES COMMUNS - Design System (CSS pur)
-   ═══════════════════════════════════════════════════════════════ */
+/* Dark Mode Base Styles */
+html.dark body {
+    background-color: #111827; /* gray-900 */
+    color: #f3f4f6; /* gray-100 */
+}
+
+html.dark .bg-white {
+    background-color: #1f2937; /* gray-800 */
+}
+
+html.dark .text-gray-900 {
+    color: #f3f4f6; /* gray-100 */
+}
+
+html.dark .text-gray-800 {
+    color: #e5e7eb; /* gray-200 */
+}
+
+html.dark .text-gray-700 {
+    color: #d1d5db; /* gray-300 */
+}
+
+html.dark .text-gray-600 {
+    color: #d1d5db; /* gray-300 */
+}
+
+html.dark .text-gray-500 {
+    color: #9ca3af; /* gray-400 */
+}
+
+html.dark .border-gray-200 {
+    border-color: #374151; /* gray-700 */
+}
+
+html.dark .border-gray-300 {
+    border-color: #4b5563; /* gray-600 */
+}
+
+html.dark .bg-gray-50 {
+    background-color: #111827; /* gray-900 */
+}
+
+html.dark .bg-gray-100 {
+    background-color: #374151; /* gray-700 */
+}
+
+html.dark .hover\:bg-gray-50:hover {
+    background-color: #374151; /* gray-700 */
+}
+
+html.dark .hover\:bg-gray-100:hover {
+    background-color: #4b5563; /* gray-600 */
+}
 
 /* ═══════════════════════════════════════════════════════════════
    📦 CONTENEUR GRIS STANDARD
@@ -23,6 +73,11 @@ html{
   border-radius: 15px;
   padding: 1rem;
   border: 1px solid #d1d5db;
+}
+
+html.dark .grey-container {
+  background-color: #1f2937; /* gray-800 */
+  border-color: #374151; /* gray-700 */
 }
 
 .grey-container-sm {
@@ -44,10 +99,20 @@ html{
   margin-bottom: 3.75rem;
 }
 
+html.dark .table-container {
+  background-color: #1f2937; /* gray-800 */
+  border-color: #374151; /* gray-700 */
+}
+
 .table-header {
   padding: 1rem;
   border-bottom: 1px solid #e5e7eb;
   background-color: #f9fafb;
+}
+
+html.dark .table-header {
+  background-color: #374151; /* gray-700 */
+  border-color: #4b5563; /* gray-600 */
 }
 
 .table-thead-primary {
@@ -74,8 +139,20 @@ html{
   background-color: white;
 }
 
+html.dark .table-row-hover:nth-child(odd) {
+  background-color: #1f2937; /* gray-800 */
+}
+
 .table-row-hover:nth-child(even) {
   background-color: #f9fafb;
+}
+
+html.dark .table-row-hover:nth-child(even) {
+  background-color: #111827; /* gray-900 */
+}
+
+html.dark .table-row-hover:hover {
+  background-color: #374151; /* gray-700 */
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -301,6 +378,15 @@ html{
   background-color: #e5e7eb;
 }
 
+html.dark .period-filter-btn-inactive {
+  background-color: #374151; /* gray-700 */
+  color: #f3f4f6; /* gray-100 */
+}
+
+html.dark .period-filter-btn-inactive:hover {
+  background-color: #4b5563; /* gray-600 */
+}
+
 /* ═══════════════════════════════════════════════════════════════
    ⚠️ MESSAGES (Success, Error, Warning)
    ═══════════════════════════════════════════════════════════════ */
@@ -451,31 +537,6 @@ html{
 
 .inset-shadow-gray-400 {
     box-shadow: inset 0 2px 4px 0 rgba(156, 163, 175, 0.5);
-}
-
-.hover\:inset-shadow-none:hover {
-    box-shadow: none;
-}
-
-/* Tableaux avec en-tête fixe et défilement vertical */
-.table-container-fixed {
-    max-height: calc(100vh - 250px);
-    overflow-y: auto;
-    /* border-radius: 0.5rem; */
-    /* border: 1px solid #e5e7eb; */
-}
-
-/* Quand les stats sont cachées, le tableau prend plus de hauteur */
-.table-container-fixed-expanded {
-    max-height: calc(100vh - 250px);
-    overflow-y: auto;
-    border-radius: 0.5rem;
-    border: 1px solid #e5e7eb;
-}
-
-.table-container-fixed table,
-.table-container-fixed-expanded table {
-    width: 100%;
 }
 
 .table-container-fixed thead,

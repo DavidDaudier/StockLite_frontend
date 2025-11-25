@@ -38,7 +38,7 @@
       <div *ngFor="let item of cart.items()" class="bg-white rounded-lg px-2 py-1.5 border border-gray-200">
         <!-- Item header avec nom et bouton supprimer -->
         <div class="flex justify-between items-start">
-          <h6 class="font-semibold text-gray-900 text-sm">{{ item.name }}</h6>
+          <h6 class="font-semibold text-gray-900 dark:text-black text-sm">{{ item.name }}</h6>
           <button
             (click)="removeItem(item.id)"
             class="w-5 h-5 bg-red-500 hover:bg-red-600 rounded-sm flex items-center justify-center text-white text-xs transition-colors">

@@ -2,10 +2,18 @@
   <div class="flex items-center justify-between">
     <!-- Left: Menu Button + Online Users -->
     <div class="flex items-center gap-3 flex-1 max-w-md">
-      <!-- Toggle Sidebar Button -->
+      <!-- Mobile Menu Button -->
+      <button
+        (click)="sidebarService.toggleMobile()"
+        class="md:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+        title="Ouvrir le menu">
+        <ng-icon name="hugeMenu01" class="text-xl" />
+      </button>
+
+      <!-- Desktop Toggle Sidebar Button -->
       <button
         (click)="toggleSidebar()"
-        class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+        class="hidden md:block p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
         [title]="sidebarService.collapsed() ? 'Ouvrir le menu' : 'Fermer le menu'">
         @if (sidebarService.collapsed()) {
           <ng-icon name="hugeSidebarRight01" class="text-xl" />
@@ -82,12 +90,10 @@
             class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer" />
           <span class="text-xs font-medium">Auto-refresh 30s</span>
         </label>
-        @if (isSuperAdmin()) {
-          <!-- Network Status -->
-          <span [class]="isOnline() ? 'text-xs text-green-600 font-medium' : 'text-xs text-red-600 font-medium'">
-            {{ isOnline() ? 'Acces a internet' : 'Pas d\'accès a internet' }}
-          </span>
-        }
+        <!-- Network Status -->
+        <span [class]="isOnline() ? 'text-xs text-green-600 font-medium' : 'text-xs text-red-600 font-medium'">
+          {{ isOnline() ? 'Acces a internet' : 'Pas d\'accès a internet' }}
+        </span>
       </div>
     </div>
 
@@ -147,8 +153,8 @@
         <button
           (click)="showMyMessages()"
           [title]="myMessagesTooltip()"
-          class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-          <ng-icon name="hugeClock05" class="text-xl" />
+          class="relative p-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center cursor-pointer">
+          <ng-icon name="hugeMailAtSign01" class="text-xl text-gray-600 " />
           <!-- Badge pour mes demandes -->
           @if (myMessagesBadge().hasPending) {
             <span class="absolute top-0 right-0 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-blue-500 text-white text-xs font-bold rounded-full">
@@ -157,6 +163,18 @@
           }
         </button>
       }
+
+      <!-- Theme Toggle -->
+      <button
+        (click)="themeService.toggleTheme()"
+        [title]="themeService.isDark() ? 'Passer en mode clair' : 'Passer en mode sombre'"
+        class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 rounded-lg transition-colors flex items-center justify-center cursor-pointer">
+        @if (themeService.isDark()) {
+          <ng-icon name="hugeSun03" class="text-xl text-yellow-500" />
+        } @else {
+          <ng-icon name="hugeMoon02" class="text-xl" />
+        }
+      </button>
 
       <!-- User Profile -->
       <div class="flex items-center gap-3">

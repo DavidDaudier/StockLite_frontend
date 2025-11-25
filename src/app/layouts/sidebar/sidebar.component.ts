@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { RouterModule, Router } from "@angular/router";
-import { SidebarService } from '../../services/sidebar/sidebar.service';
+import { SidebarService } from '../../core/services/sidebar.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -63,8 +63,19 @@ export class SidebarComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
 
-  isCollapsed = this.sidebarService.collapsed;
+  // Desktop collapsed state
+  collapsed = this.sidebarService.collapsed;
+  // Mobile open state
+  mobileOpen = this.sidebarService.mobileOpen;
+
   menuItems: Array<{ icon: string; label: string; route: string; active: boolean }> = [];
+
+  constructor() {
+    // Close mobile sidebar on route change
+    this.router.events.subscribe(() => {
+      this.sidebarService.closeMobile();
+    });
+  }
 
   ngOnInit() {
     // Initialiser les items du menu selon le rôle et les permissions
@@ -151,6 +162,10 @@ export class SidebarComponent implements OnInit {
 
   toggleSidebar() {
     this.sidebarService.toggle();
+  }
+  
+  closeMobileSidebar() {
+    this.sidebarService.closeMobile();
   }
 
   logout(): void {

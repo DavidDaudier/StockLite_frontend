@@ -1,14 +1,19 @@
 <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 sm:px-6 lg:px-8">
   <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-2xl">
     <!-- Logo et titre -->
-    <div class="text-center">
-      <div class="mx-auto h-16 w-16 bg-blue-600 rounded-full flex items-center justify-center mb-4">
-        <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-        </svg>
+    <div class="">
+      <div class="flex items-center justify-center gap-4">
+        <div class="h-14 w-14 bg-teal-500 rounded-lg flex items-center justify-center">
+          <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <h2 class="text-2xl font-extrabold text-gray-900">StockLite</h2>
+          <p class="text-sm text-gray-500">POS System</p>
+        </div>
       </div>
-      <h2 class="text-3xl font-extrabold text-gray-900">StockLite</h2>
-      <p class="mt-2 text-sm text-gray-600">Connectez-vous à votre compte</p>
+      <p class="text-center mt-4 text-sm text-gray-600">Connectez-vous à votre compte</p>
     </div>
 
     <!-- Indicateur de connexion -->
@@ -33,7 +38,7 @@
         <!-- Username -->
         <div>
           <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
-            Nom d'utilisateur
+            Nom d'utilisateur <span class="text-red-600">*</span>
           </label>
           <input
             id="username"
@@ -41,7 +46,7 @@
             type="text"
             formControlName="username"
             required
-            class="appearance-none relative block w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            class="appearance-none relative block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
             [class.border-red-300]="username?.invalid && username?.touched"
             [class.border-gray-300]="!username?.invalid || !username?.touched"
             placeholder="Entrez votre nom d'utilisateur"
@@ -54,7 +59,7 @@
         <!-- Password -->
         <div>
           <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-            Mot de passe
+            Mot de passe <span class="text-red-600">*</span>
           </label>
           <div class="relative">
             <input
@@ -63,7 +68,7 @@
               [type]="showPassword ? 'text' : 'password'"
               formControlName="password"
               required
-              class="appearance-none relative block w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              class="appearance-none relative block w-full px-4 py-2 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               [class.border-red-300]="password?.invalid && password?.touched"
               [class.border-gray-300]="!password?.invalid || !password?.touched"
               placeholder="Entrez votre mot de passe"
@@ -115,9 +120,9 @@
         <button
           type="submit"
           [disabled]="loading || !isOnline || loginForm.invalid"
-          class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white transition-all duration-200"
-          [class.bg-blue-600]="!loading && isOnline && loginForm.valid"
-          [class.hover:bg-blue-700]="!loading && isOnline && loginForm.valid"
+          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white transition-all duration-200"
+          [class.bg-teal-500]="!loading && isOnline && loginForm.valid"
+          [class.hover:bg-teal-600]="!loading && isOnline && loginForm.valid"
           [class.bg-gray-400]="loading || !isOnline || loginForm.invalid"
           [class.cursor-not-allowed]="loading || !isOnline || loginForm.invalid"
         >

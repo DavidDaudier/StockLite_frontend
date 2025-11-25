@@ -278,7 +278,7 @@
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 @for (user of paginatedUsers(); track user.id) {
-                  <tr [class]="'transition-colors ' + (isUserSelected(user.id) ? 'bg-red-100 border-l-4 border-l-red-600' : 'hover:bg-gray-50 odd:bg-white even:bg-gray-50')" [style.cursor]="selectionMode() ? 'pointer' : 'default'" (click)="selectionMode() ? toggleUserSelection(user.id) : null">
+                  <tr [class]="'table-row-hover transition-colors ' + (isUserSelected(user.id) ? 'bg-red-100 border-l-4 border-l-red-600' : '')" [style.cursor]="selectionMode() ? 'pointer' : 'default'" (click)="selectionMode() ? toggleUserSelection(user.id) : null">
                     @if (selectionMode()) {
                       <td class="px-3 md:px-6 py-3 whitespace-nowrap text-center" (click)="$event.stopPropagation()">
                         <input

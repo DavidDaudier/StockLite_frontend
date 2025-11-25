@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil, interval } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
-import { SidebarService } from '../../services/sidebar/sidebar.service';
+import { SidebarService } from '../../core/services/sidebar.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { NotificationSoundService } from '../../core/services/notification-sound.service';
 import { LowStockMonitorService } from '../../core/services/low-stock-monitor.service';
@@ -14,7 +15,7 @@ import { SessionsService } from '../../core/services/sessions.service';
 import { UsersService } from '../../core/services/users.service';
 import { User } from '../../core/models/user.model';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { hugeSearch01, hugeNotification02, hugeMailAtSign01, hugeCalendar03, hugeClock01, hugeMenu01, hugeSidebarLeft01, hugeSidebarRight01, hugeClock05, hugeRefresh } from '@ng-icons/huge-icons';
+import { hugeSearch01, hugeNotification02, hugeMailAtSign01, hugeCalendar03, hugeClock01, hugeMenu01, hugeSidebarLeft01, hugeSidebarRight01, hugeClock05, hugeRefresh, hugeMoon02, hugeSun03 } from '@ng-icons/huge-icons';
 
 @Component({
   selector: 'app-pos-header',
@@ -31,7 +32,9 @@ import { hugeSearch01, hugeNotification02, hugeMailAtSign01, hugeCalendar03, hug
       hugeSidebarLeft01,
       hugeSidebarRight01,
       hugeClock05,
-      hugeRefresh
+      hugeRefresh,
+      hugeMoon02,
+      hugeSun03
     })
   ],
   templateUrl: './pos-header.component.html',
@@ -41,6 +44,7 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
   sidebarService = inject(SidebarService);
+  themeService = inject(ThemeService);
   notificationService = inject(NotificationService);
   notificationSoundService = inject(NotificationSoundService);
   lowStockMonitorService = inject(LowStockMonitorService);

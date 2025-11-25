@@ -4,10 +4,21 @@ import { Injectable, signal } from '@angular/core';
   providedIn: 'root'
 })
 export class SidebarService {
-  // État du sidebar (ouvert/fermé)
-  isCollapsed = signal(false);
+  // État du sidebar desktop (réduit/étendu)
+  collapsed = signal(false);
+  
+  // État du sidebar mobile (ouvert/fermé)
+  mobileOpen = signal(false);
 
   toggle(): void {
-    this.isCollapsed.update(value => !value);
+    this.collapsed.update(value => !value);
+  }
+
+  toggleMobile(): void {
+    this.mobileOpen.update(value => !value);
+  }
+
+  closeMobile(): void {
+    this.mobileOpen.set(false);
   }
 }

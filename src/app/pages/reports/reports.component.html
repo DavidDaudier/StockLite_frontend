@@ -248,7 +248,7 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                       <!-- Revenue Row -->
-                      <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                      <tr class="table-row-hover">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Revenu Total</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.revenue.value1 | gdesCurrency"></td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.revenue.value2 | gdesCurrency"></td>
@@ -268,7 +268,7 @@
                       </tr>
 
                       <!-- Profit Row -->
-                      <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                      <tr class="table-row-hover">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Profit Total</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.profit.value1 | gdesCurrency"></td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.profit.value2 | gdesCurrency"></td>
@@ -288,7 +288,7 @@
                       </tr>
 
                       <!-- Sales Row -->
-                      <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                      <tr class="table-row-hover">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Nombre de Ventes</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.sales.value1 }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.sales.value2 }}</td>
@@ -308,7 +308,7 @@
                       </tr>
 
                       <!-- Products Sold Row -->
-                      <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                      <tr class="table-row-hover">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Nombre de Produits Vendus</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.productsSold.value1 }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{{ results.productsSold.value2 }}</td>
@@ -328,7 +328,7 @@
                       </tr>
 
                       <!-- Average Sale Row -->
-                      <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                      <tr class="table-row-hover">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Panier Moyen</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.averageSale.value1 | gdesCurrency"></td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900" [innerHTML]="results.averageSale.value2 | gdesCurrency"></td>
@@ -587,7 +587,7 @@
                               </thead>
                               <tbody class="divide-y divide-gray-200">
                                 @for (item of sale.items; track $index) {
-                                  <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                                  <tr class="table-row-hover">
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ item.productName }}</td>
                                     <td class="px-4 py-3 text-sm text-right text-gray-900" [innerHTML]="item.unitPrice | gdesCurrency"></td>
                                     <td class="px-4 py-3 text-sm text-center text-gray-900">{{ item.quantity }}</td>
@@ -715,7 +715,7 @@
                   </tr>
                 }
                 @for (product of topProductsDetailed(); track product.productId; let i = $index) {
-                  <tr class="hover:bg-gray-50">
+                  <tr class="table-row-hover">
                     <td class="px-6 py-4 whitespace-nowrap text-center">
                       <div class="inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold"
                           [class]="i < 3 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white' : 'bg-gray-100 text-gray-600'">
@@ -790,7 +790,7 @@
                   </tr>
                 }
                 @for (seller of topSellersDetailed(); track seller.sellerId; let i = $index) {
-                  <tr class="hover:bg-gray-50">
+                  <tr class="table-row-hover">
                     <td class="px-6 py-4 whitespace-nowrap text-center">
                       <div class="inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold"
                           [class]="i < 3 ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white' : 'bg-gray-100 text-gray-600'">

@@ -97,7 +97,7 @@
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
                     @for (inventory of inventories(); track inventory.id) {
-                      <tr>
+                      <tr class="table-row-hover">
                         <td class="px-6 py-4">
                           <span class="font-medium text-gray-900">{{ inventory.inventoryNumber }}</span>
                         </td>
@@ -314,7 +314,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                   @for (item of filteredItems(); track item.id) {
-                    <tr [class]="'transition-colors ' + (item.status === 'discrepancy' ? 'bg-red-50 hover:bg-red-100' : item.status === 'counted' ? 'bg-green-50 hover:bg-green-100' : 'hover:bg-gray-50 odd:bg-white even:bg-gray-50')">
+                    <tr [class]="'table-row-hover transition-colors ' + (item.status === 'discrepancy' ? 'bg-red-50 hover:bg-red-100' : item.status === 'counted' ? 'bg-green-50 hover:bg-green-100' : '')">
                       <!-- Product -->
                       <td class="px-3 md:px-6 py-3 whitespace-nowrap">
                         <div>

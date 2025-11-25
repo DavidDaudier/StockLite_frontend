@@ -42,7 +42,7 @@
       <div class="p-3 flex flex-col flex-1">
         <!-- Nom et infos (hauteur fixe) -->
         <div class="mb-3">
-          <p class="font-semibold line-clamp-2 min-h-[2.5rem]">{{ p.name }}</p>
+          <p class="font-semibold line-clamp-2 min-h-[2.5rem] dark:text-black">{{ p.name }}</p>
           <p class="text-sm text-slate-600">${{ p.price.toFixed(2) }}</p>
           <p class="text-sm text-slate-600">Stocks: {{ p.stock }}</p>
         </div>
@@ -53,10 +53,10 @@
             (click)="$event.stopPropagation(); changeQty(p.id, -1)"
             [disabled]="(cartProduct.items() | quantity:p.id) <= 0"
             class="bg-red-200 rounded-full w-10 h-10 flex items-center justify-center cursor-pointer inset-shadow-sm inset-shadow-gray-400 hover:inset-shadow-none disabled:opacity-50">
-            <ng-icon name="hugeMinusSign" class="text-sm" />
+            <ng-icon name="hugeMinusSign" class="text-sm dark:text-black" />
           </button>
 
-          <span class="text-sm font-bold w-5 text-center">
+          <span class="text-sm font-bold w-5 text-center dark:text-black">
             {{ cartProduct.items() | quantity:p.id }}
           </span>
 
@@ -64,7 +64,7 @@
             (click)="$event.stopPropagation(); changeQty(p.id, 1)"
             [disabled]="p.stock === 0"
             class="bg-blue-200 rounded-full w-10 h-10 flex items-center justify-center cursor-pointer inset-shadow-sm inset-shadow-gray-400 disabled:opacity-50">
-            <ng-icon name="hugePlusSign" class="text-sm" />
+            <ng-icon name="hugePlusSign" class="text-sm dark:text-black" />
           </button>
         </div>
       </div>

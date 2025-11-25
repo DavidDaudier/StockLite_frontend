@@ -7,27 +7,27 @@
         <!-- Header -->
         <app-pos-header></app-pos-header>
 
-        <div class="flex-1 flex overflow-hidden">
+        <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
             <!-- Center: Product Categories and List -->
-            <div class="flex-1 flex flex-col overflow-hidden bg-white">
+            <div class="flex-1 flex flex-col overflow-hidden bg-white min-h-0">
                 <!-- Titre de la page et boutons d'action -->
-                <div class="px-6 pt-4 pb-3 bg-white flex items-center justify-between">
+                <div class="px-4 md:px-6 pt-4 pb-3 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <h1 class="text-xl font-bold text-gray-900">Point de vente</h1>
                         <p class="text-sm text-gray-500">Dashboard > Pos</p>
                     </div>
 
                     <!-- Boutons d'action -->
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
                         <!-- <button type="button" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors cursor-pointer">
                             <ng-icon name="hugePlusSign" class="text-base" />
                             New
                         </button> -->
-                        <a [routerLink]="draftsRoute" class="px-4 py-2 bg-lime-400 hover:bg-lime-500 text-white rounded-lg font-medium text-sm flex items-center gap-2 border transition-colors cursor-pointer" style="pointer-events: auto;">
+                        <a [routerLink]="draftsRoute" class="px-4 py-2 bg-lime-400 hover:bg-lime-500 text-white rounded-lg font-medium text-sm flex items-center gap-2 border transition-colors cursor-pointer whitespace-nowrap" style="pointer-events: auto;">
                             <ng-icon name="hugeNotebook01" class="text-base" style="pointer-events: none;" />
                             Draft List
                         </a>
-                        <a [routerLink]="salesHistoryRoute" class="px-4 py-2 bg-emerald-400 hover:bg-emerald-500 text-white rounded-lg font-medium text-sm flex items-center gap-2 border transition-colors cursor-pointer" style="pointer-events: auto;">
+                        <a [routerLink]="salesHistoryRoute" class="px-4 py-2 bg-emerald-400 hover:bg-emerald-500 text-white rounded-lg font-medium text-sm flex items-center gap-2 border transition-colors cursor-pointer whitespace-nowrap" style="pointer-events: auto;">
                             <ng-icon name="hugeTimeSchedule" class="text-base" style="pointer-events: none;" />
                             Sales History
                         </a>
@@ -35,13 +35,14 @@
                 </div>
 
                 <!-- Product List -->
-                <div class="flex-1 overflow-y-auto pl-6 pr-4 pt-0 pb-6 bg-white">
+                <div class="flex-1 overflow-y-auto px-4 md:pl-6 md:pr-4 pt-0 pb-6 bg-white">
                     <app-product-list></app-product-list>
                 </div>
             </div>
 
             <!-- Right: Cart/Receipt -->
-            <aside class="w-80 bg-gray-100 border border-gray-300 overflow-y-auto rounded-[15px] mt-[22px] mb-4 mr-6">
+            <!-- Mobile: Fixed at bottom or stacked? Stacked for now, but maybe collapsible later -->
+            <aside class="w-full lg:w-80 bg-gray-100 border-t lg:border-t-0 lg:border-l border-gray-300 overflow-y-auto lg:rounded-[15px] lg:mt-[22px] lg:mb-4 lg:mr-6 h-[40vh] lg:h-auto">
                 <app-product-receipt></app-product-receipt>
             </aside>
         </div>

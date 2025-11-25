@@ -45,9 +45,9 @@ export class ProductListComponent implements OnInit {
   categories = signal<Category[]>([]);
 
   // Nombre de colonnes dynamique basé sur l'état du sidebar
-  // Sidebar ouvert (isCollapsed = false) = 4 colonnes
-  // Sidebar fermé/réduit (isCollapsed = true) = 5 colonnes
-  gridCols = computed(() => this.sidebarService.isCollapsed() ? 5 : 4);
+  // Sidebar ouvert (collapsed = false) = 4 colonnes
+  // Sidebar fermé/réduit (collapsed = true) = 5 colonnes
+  gridCols = computed(() => this.sidebarService.collapsed() ? 5 : 4);
 
   // Map de couleurs par catégorie
   private categoryColors: { [key: string]: string } = {};

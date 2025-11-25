@@ -262,7 +262,7 @@
                           </thead>
                           <tbody class="bg-white divide-y divide-gray-200">
                             @for (sale of activity.sales; track sale.id) {
-                              <tr class="hover:bg-gray-50 odd:bg-white even:bg-gray-50">
+                              <tr class="table-row-hover">
                                 <!-- Heure -->
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                   {{ formatDateTime(sale.createdAt) }}

@@ -248,7 +248,7 @@
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 @for (product of paginatedProducts(); track product.id) {
-                  <tr class="hover:bg-gray-50 transition-colors odd:bg-white even:bg-gray-50">
+                  <tr class="table-row-hover hover:bg-gray-50 transition-colors">
                     <td scope="row" class="px-3 md:px-6 py-3 whitespace-nowrap">
                       <div>
                         <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>

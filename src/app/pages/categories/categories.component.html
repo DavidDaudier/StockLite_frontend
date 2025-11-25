@@ -111,7 +111,7 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngIf="loading()" class="hover:bg-gray-50">
+          <tr *ngIf="loading()" class="table-row-hover">
             <td colspan="5" class="px-6 py-12 text-center text-gray-500">
               <div class="flex items-center justify-center gap-2">
                 <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -123,7 +123,7 @@
             </td>
           </tr>
 
-          <tr *ngIf="!loading() && filteredCategories().length === 0" class="hover:bg-gray-50">
+          <tr *ngIf="!loading() && filteredCategories().length === 0" class="table-row-hover">
             <td colspan="5" class="px-6 py-12 text-center text-gray-500">
               <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
@@ -132,7 +132,7 @@
             </td>
           </tr>
 
-          <tr *ngFor="let category of filteredCategories()" class="hover:bg-gray-50">
+          <tr *ngFor="let category of filteredCategories()" class="table-row-hover">
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div *ngIf="category.icon" class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
