@@ -99,22 +99,22 @@
 
     <!-- Right: Sync + Messages + Notifications + Message History + User Info -->
     <div class="flex items-center gap-4">
-      <!-- Sync Button (Super Admin uniquement) -->
-      @if (isSuperAdmin()) {
-        <!-- Sync Button -->
-        <button
-          (click)="forceSync()"
-          [disabled]="syncInProgress() || !isOnline()"
-          [title]="syncTooltip()"
-          class="relative p-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 flex items-center justify-center cursor-pointer">
-          <ng-icon name="hugeRefresh" class="text-xl text-gray-700" [class.animate-spin]="syncInProgress()" />
-          @if (unsyncedCount() > 0) {
-            <span class="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-orange-500 text-white text-xs font-bold rounded-full">
-              {{ unsyncedCount() }}
-            </span>
-          }
-        </button>
-      }
+      <!-- Sync Button (Tous les utilisateurs avec accès POS) -->
+      <button
+        (click)="forceSync()"
+        [disabled]="syncInProgress() || !isOnline()"
+        [title]="syncTooltip()"
+        [class]="'relative p-2 border border-gray-200 rounded-lg transition-all disabled:opacity-50 flex items-center justify-center cursor-pointer ' + syncButtonState().bgClass + ' ' + syncButtonState().textClass">
+        <ng-icon 
+          [name]="syncInProgress() ? 'hugeRefresh' : syncButtonState().icon" 
+          class="text-xl" 
+          [class.animate-spin]="syncInProgress()" />
+        @if (unsyncedCount() > 0) {
+          <span class="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-orange-500 text-white text-xs font-bold rounded-full">
+            {{ unsyncedCount() }}
+          </span>
+        }
+      </button>
 
       <!-- Messages Icon (Super Admin uniquement) -->
       @if (isSuperAdmin()) {

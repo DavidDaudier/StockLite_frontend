@@ -75,12 +75,18 @@ export class SettingsComponent implements OnInit {
     this.appInfoForm = this.fb.group({
       logo_app: [''],
       nom_app: ['StockLite', Validators.required],
+      sous_titre_app: ['POS System'],
+      logo_size: [100, [Validators.min(20), Validators.max(150)]],
+      color_nom_app: ['#000000', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]],
+      color_sous_titre_app: ['#6B7280', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]],
+      logo_bg_color: ['#0d9488'],
       email_app: ['', [Validators.email]],
       adresse_app: [''],
       phone_app: [''],
       color_primary: ['#0d9488', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]],
       color_secondary: ['#14b8a6', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]],
-      color_tertiary: ['#2dd4bf', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]]
+      color_tertiary: ['#2dd4bf', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]],
+      currency: ['HTG']
     });
   }
 
@@ -110,12 +116,18 @@ export class SettingsComponent implements OnInit {
     this.appInfoForm.patchValue({
       logo_app: data.logo_app || '',
       nom_app: data.nom_app,
+      sous_titre_app: data.sous_titre_app || 'POS System',
+      logo_size: data.logo_size || 100,
+      color_nom_app: data.color_nom_app || '#000000',
+      color_sous_titre_app: data.color_sous_titre_app || '#6B7280',
+      logo_bg_color: data.logo_bg_color || '#0d9488',
       email_app: data.email_app || '',
       adresse_app: data.adresse_app || '',
       phone_app: data.phone_app || '',
       color_primary: data.color_primary || '#0d9488',
       color_secondary: data.color_secondary || '#14b8a6',
-      color_tertiary: data.color_tertiary || '#2dd4bf'
+      color_tertiary: data.color_tertiary || '#2dd4bf',
+      currency: data.currency || 'HTG'
     });
     
     // Set logo preview if exists
@@ -181,6 +193,7 @@ export class SettingsComponent implements OnInit {
    */
   selectCurrency(currency: Currency): void {
     this.currencyService.setCurrency(currency);
+    this.appInfoForm.patchValue({ currency });
     this.showSuccess('Monnaie mise à jour avec succès');
   }
 
@@ -248,12 +261,18 @@ export class SettingsComponent implements OnInit {
     this.appInfoForm.patchValue({
       logo_app: '',
       nom_app: 'StockLite',
+      sous_titre_app: 'POS System',
+      logo_size: 100,
+      color_nom_app: '#000000',
+      color_sous_titre_app: '#6B7280',
+      logo_bg_color: '#0d9488',
       email_app: 'contact@stocklite.com',
       adresse_app: 'Port-au-Prince, Haïti',
       phone_app: '+509 1234-5678',
       color_primary: '#0d9488',
       color_secondary: '#14b8a6',
-      color_tertiary: '#2dd4bf'
+      color_tertiary: '#2dd4bf',
+      currency: 'HTG'
     });
 
     this.showSuccess('Formulaire réinitialisé aux valeurs par défaut');

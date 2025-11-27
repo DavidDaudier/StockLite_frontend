@@ -10,6 +10,7 @@ import { provideIcons } from "@ng-icons/core";
 import { hugeDelete03, hugeNote } from "@ng-icons/huge-icons";
 import { ProductItem } from "./../../models/product-item.model";
 import { PaymentMethod, CreateSaleDto } from "../../core/models/sale.model";
+import { CurrencyService } from "../../services/currency.service";
 
 @Component({
   selector: 'app-product-receipt',
@@ -30,6 +31,7 @@ export class ProductReceiptComponent {
   private offlineSyncService = inject(OfflineSyncService);
   private authService = inject(AuthService);
   private printerService = inject(PrinterService);
+  public currencyService = inject(CurrencyService);
 
   ticketNo = computed(() => 'T-' + Date.now().toString(36).toUpperCase());
 
@@ -37,8 +39,7 @@ export class ProductReceiptComponent {
   subtotal = computed(() =>
     this.cart.items().reduce((sum, i) => sum + i.price * i.qty, 0)
   );
-  tax = computed(() => this.subtotal() * 0.18); // 18% TVA
-  total = computed(() => this.subtotal() + this.tax());
+  total = computed(() => this.subtotal()); // Pas de taxe
 
   // États
   loading = signal(false);
@@ -52,6 +53,14 @@ export class ProductReceiptComponent {
   customerName = signal('');
   customerPhone = signal('');
   notes = signal('');
+  amountReceived = signal<number>(0); // Montant reçu du client
+
+  // Calculer la monnaie à rendre
+  change = computed(() => {
+    const received = this.amountReceived();
+    const totalAmount = this.total();
+    return received >= totalAmount ? received - totalAmount : 0;
+  });
 
   // Dernière vente pour réimpression
   lastReceiptData = signal<PrintReceiptData | null>(null);
@@ -63,6 +72,29 @@ export class ProductReceiptComponent {
     this.offlineSyncService.getOnlineStatus().subscribe(status => {
       this.isOnline.set(status);
     });
+  }
+
+  /** Obtenir la date actuelle formatée */
+  currentDate(): string {
+    const now = new Date();
+    const options: Intl.DateTimeFormatOptions = { 
+      weekday: 'short', 
+      day: '2-digit', 
+      month: 'short', 
+      year: 'numeric' 
+    };
+    return now.toLocaleDateString('fr-FR', options);
+  }
+
+  /** Obtenir l'heure actuelle formatée */
+  currentTime(): string {
+    const now = new Date();
+    const options: Intl.DateTimeFormatOptions = { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: true 
+    };
+    return now.toLocaleTimeString('en-US', options);
   }
 
   /** Suppression d'un article */
@@ -89,6 +121,31 @@ export class ProductReceiptComponent {
     this.customerName.set('');
     this.customerPhone.set('');
     this.notes.set('');
+    this.amountReceived.set(0);
+  }
+
+  /** Ajouter un chiffre au montant reçu */
+  addDigit(digit: string) {
+    const current = this.amountReceived().toString();
+    const newValue = current === '0' ? digit : current + digit;
+    this.amountReceived.set(parseFloat(newValue));
+  }
+
+  /** Effacer le dernier chiffre */
+  backspace() {
+    const current = this.amountReceived().toString();
+    const newValue = current.length > 1 ? current.slice(0, -1) : '0';
+    this.amountReceived.set(parseFloat(newValue));
+  }
+
+  /** Définir un montant rapide */
+  setQuickAmount(amount: number) {
+    this.amountReceived.set(amount);
+  }
+
+  /** Réinitialiser le montant reçu */
+  clearAmount() {
+    this.amountReceived.set(0);
   }
 
   /** Confirmer et enregistrer la vente */
@@ -109,7 +166,7 @@ export class ProductReceiptComponent {
         discount: 0
       })),
       discount: 0,
-      tax: this.tax(),
+      tax: 0, // Pas de taxe
       paymentMethod: this.paymentMethod(),
       customerName: this.customerName() || undefined,
       customerPhone: this.customerPhone() || undefined,
@@ -123,7 +180,7 @@ export class ProductReceiptComponent {
       ticketNo: this.ticketNo(),
       items: [...this.cart.items()],
       subtotal: this.subtotal(),
-      tax: this.tax(),
+      tax: 0, // Pas de taxe
       total: this.total(),
       paymentMethod: this.paymentMethod(),
       customerName: this.customerName() || undefined,
@@ -224,7 +281,7 @@ export class ProductReceiptComponent {
         discount: 0
       })),
       discount: 0,
-      tax: this.tax(),
+      tax: 0, // Pas de taxe
       paymentMethod: this.paymentMethod(),
       customerName: this.customerName() || undefined,
       customerPhone: this.customerPhone() || undefined,

@@ -43,7 +43,7 @@
         <!-- Nom et infos (hauteur fixe) -->
         <div class="mb-3">
           <p class="font-semibold line-clamp-2 min-h-[2.5rem] dark:text-black">{{ p.name }}</p>
-          <p class="text-sm text-slate-600">${{ p.price.toFixed(2) }}</p>
+          <p class="text-sm text-slate-600">{{ formatCurrency(p.price) }}</p>
           <p class="text-sm text-slate-600">Stocks: {{ p.stock }}</p>
         </div>
 

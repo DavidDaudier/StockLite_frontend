@@ -13,6 +13,8 @@ import {
   hugeShoppingCart01
 } from '@ng-icons/huge-icons';
 
+import { CurrencyService } from '../../../services/currency.service';
+
 @Component({
   selector: 'app-seller-reports',
   standalone: true,
@@ -65,7 +67,10 @@ export class SellerReportsComponent implements OnInit, OnDestroy {
   // Liste des années
   years: number[] = [];
 
-  constructor(private dashboardService: DashboardService) {
+  constructor(
+    private dashboardService: DashboardService,
+    private currencyService: CurrencyService
+  ) {
     // Générer les 5 dernières années
     const currentYear = new Date().getFullYear();
     for (let i = 0; i < 5; i++) {
@@ -165,11 +170,7 @@ export class SellerReportsComponent implements OnInit, OnDestroy {
   }
 
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'HTG',
-      minimumFractionDigits: 0
-    }).format(amount).replace('HTG', 'Gdes');
+    return this.currencyService.formatAmount(amount);
   }
 
   formatDate(dateString: string): string {

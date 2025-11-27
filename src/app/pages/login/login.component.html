@@ -3,15 +3,16 @@
     <!-- Logo et titre -->
     <div class="">
       <div class="flex items-center justify-center gap-4">
-        <div class="h-14 w-14 bg-teal-500 rounded-lg flex items-center justify-center overflow-hidden">
+        <div class="h-14 w-14 rounded-lg flex items-center justify-center overflow-hidden" 
+             [ngStyle]="{'background-color': appInfoService.appInfo().logo_bg_color || '#0d9488'}">
           <img *ngIf="appInfoService.appInfo().logo_app" [src]="appInfoService.appInfo().logo_app" alt="Logo" class="w-full h-full object-cover">
           <svg *ngIf="!appInfoService.appInfo().logo_app" class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
           </svg>
         </div>
         <div class="flex flex-col">
-          <h2 class="text-2xl font-extrabold text-gray-900">{{ appInfoService.appInfo().nom_app }}</h2>
-          <p class="text-sm text-gray-500">POS System</p>
+          <h2 class="text-2xl font-extrabold" [ngStyle]="{'color': appInfoService.appInfo().color_nom_app || '#000000'}">{{ appInfoService.appInfo().nom_app }}</h2>
+          <p class="text-sm" [ngStyle]="{'color': appInfoService.appInfo().color_sous_titre_app || '#6B7280'}">{{ appInfoService.appInfo().sous_titre_app || 'POS System' }}</p>
         </div>
       </div>
       <p class="text-center mt-4 text-sm text-gray-600">Connectez-vous à votre compte</p>

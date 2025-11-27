@@ -9,6 +9,7 @@ import { hugePlusSign, hugeMinusSign, hugeSearch01, hugeArrowRight01, hugeNotebo
 import { CategoriesService } from '../../core/services/categories.service';
 import { Category } from '../../core/models/category.model';
 import { SidebarService } from '../../core/services/sidebar.service';
+import { CurrencyService } from '../../services/currency.service';
 
 @Component({
   selector: 'app-product-list',
@@ -38,6 +39,7 @@ export class ProductListComponent implements OnInit {
   readonly cartProduct = inject(ProductService);
   private categoriesService = inject(CategoriesService);
   private sidebarService = inject(SidebarService);
+  private currencyService = inject(CurrencyService);
 
   // Filtres
   searchTerm = signal('');
@@ -216,6 +218,10 @@ export class ProductListComponent implements OnInit {
   /** Restauration du stock **/
   restoreStock(productId: string, qty: number) {
     this.cartProduct.restoreStock(productId, qty);
+  }
+
+  formatCurrency(amount: number): string {
+    return this.currencyService.formatAmount(amount);
   }
   
 }

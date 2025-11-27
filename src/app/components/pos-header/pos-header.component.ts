@@ -15,7 +15,7 @@ import { SessionsService } from '../../core/services/sessions.service';
 import { UsersService } from '../../core/services/users.service';
 import { User } from '../../core/models/user.model';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { hugeSearch01, hugeNotification02, hugeMailAtSign01, hugeCalendar03, hugeClock01, hugeMenu01, hugeSidebarLeft01, hugeSidebarRight01, hugeClock05, hugeRefresh, hugeMoon02, hugeSun03 } from '@ng-icons/huge-icons';
+import { hugeSearch01, hugeNotification02, hugeMailAtSign01, hugeCalendar03, hugeClock01, hugeMenu01, hugeSidebarLeft01, hugeSidebarRight01, hugeClock05, hugeRefresh, hugeMoon02, hugeSun03, hugeCloudSavingDone01, hugeLaptopCloud } from '@ng-icons/huge-icons';
 
 @Component({
   selector: 'app-pos-header',
@@ -34,7 +34,9 @@ import { hugeSearch01, hugeNotification02, hugeMailAtSign01, hugeCalendar03, hug
       hugeClock05,
       hugeRefresh,
       hugeMoon02,
-      hugeSun03
+      hugeSun03,
+      hugeCloudSavingDone01,
+      hugeLaptopCloud
     })
   ],
   templateUrl: './pos-header.component.html',
@@ -306,9 +308,31 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
     }
     const count = this.unsyncedCount();
     if (count > 0) {
-      return `${count} élément(s) à synchroniser`;
+      return `${count} élément(s) à synchroniser. Connectez-vous à Internet et cliquez pour synchroniser.`;
     }
-    return 'Forcer la synchronisation';
+    return 'Toutes les données sont synchronisées';
+  });
+
+  // Computed pour l'état visuel du bouton sync
+  syncButtonState = computed(() => {
+    const hasUnsynced = this.unsyncedCount() > 0;
+    const isOnline = this.networkStatus();
+    
+    if (hasUnsynced) {
+      return {
+        icon: 'hugeLaptopCloud',
+        bgClass: 'bg-red-500 animate-pulse-slow',
+        textClass: 'text-white',
+        message: 'Données non synchronisées'
+      };
+    } else {
+      return {
+        icon: 'hugeCloudSavingDone01',
+        bgClass: 'bg-green-500',
+        textClass: 'text-white',
+        message: 'Données synchronisées'
+      };
+    }
   });
 
   toggleAutoRefresh(): void {

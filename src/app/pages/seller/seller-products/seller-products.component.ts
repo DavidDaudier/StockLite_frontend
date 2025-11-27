@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../../../layouts/sidebar/sidebar.component';
 import { PosHeaderComponent } from '../../../components/pos-header/pos-header.component';
 import { ProductService } from '../../../services/product/product.service';
+import { CurrencyService } from '../../../services/currency.service';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   hugePackageOpen,
@@ -27,6 +28,7 @@ import {
 })
 export class SellerProductsComponent implements OnInit {
   private productService = inject(ProductService);
+  private currencyService = inject(CurrencyService);
 
   products = signal<any[]>([]);
   filteredProducts = signal<any[]>([]);
@@ -70,11 +72,7 @@ export class SellerProductsComponent implements OnInit {
   }
 
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-HT', {
-      style: 'currency',
-      currency: 'HTG',
-      minimumFractionDigits: 2
-    }).format(amount).replace('HTG', 'Gdes');
+    return this.currencyService.formatAmount(amount);
   }
 
   getStockStatus(quantity: number, minStock: number): string {

@@ -14,6 +14,8 @@ import {
   hugeCalendar03
 } from '@ng-icons/huge-icons';
 
+import { CurrencyService } from '../../../services/currency.service';
+
 @Component({
   selector: 'app-draft-list',
   standalone: true,
@@ -33,6 +35,7 @@ import {
 export class DraftListComponent implements OnInit, OnDestroy {
   private draftService = inject(DraftService);
   private router = inject(Router);
+  private currencyService = inject(CurrencyService);
   private destroy$ = new Subject<void>();
 
   drafts = signal<Draft[]>([]);
@@ -114,11 +117,7 @@ export class DraftListComponent implements OnInit, OnDestroy {
   }
 
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-HT', {
-      style: 'currency',
-      currency: 'HTG',
-      minimumFractionDigits: 2
-    }).format(amount).replace('HTG', 'Gdes');
+    return this.currencyService.formatAmount(amount);
   }
 
   formatDate(date: string): string {

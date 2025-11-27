@@ -31,6 +31,7 @@ import { PosHeaderComponent } from '../../components/pos-header/pos-header.compo
 import { ProductsService } from '../../core/services/products.service';
 import { CategoriesService } from '../../core/services/categories.service';
 import { AppInfoService } from '../../services/app-info.service';
+import { CurrencyService } from '../../services/currency.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Product, UpdateProductDto } from '../../core/models/product.model';
 import { Category } from '../../core/models/category.model';
@@ -141,7 +142,8 @@ export class StocksComponent implements OnInit, OnDestroy {
     private categoriesService: CategoriesService,
     private appInfoService: AppInfoService,
     private fb: FormBuilder,
-    public authService: AuthService
+    public authService: AuthService,
+    private currencyService: CurrencyService
   ) {
     this.adjustForm = this.fb.group({
       adjustment: [0, [Validators.required]],
@@ -861,11 +863,7 @@ export class StocksComponent implements OnInit, OnDestroy {
   }
 
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-HT', {
-      style: 'currency',
-      currency: 'HTG',
-      minimumFractionDigits: 2
-    }).format(amount).replace('HTG', 'Gdes');
+    return this.currencyService.formatAmount(amount);
   }
 
   getStockStatus(quantity: number, minStock: number): string {

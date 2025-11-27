@@ -48,6 +48,8 @@ interface SalesByHour {
   amount: number;
 }
 
+import { CurrencyService } from '../../../services/currency.service';
+
 @Component({
   selector: 'app-seller-dashboard',
   standalone: true,
@@ -72,13 +74,16 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
   @ViewChild('paymentMethodChart') paymentMethodChartRef!: ElementRef<HTMLCanvasElement>;
   private paymentMethodChart?: Chart;
 
-  constructor(private dashboardService: DashboardService) {}
+  constructor(
+    private dashboardService: DashboardService,
+    private currencyService: CurrencyService
+  ) {}
 
   // Statistiques du jour
   dailyStats: DailyStat[] = [
     {
       label: 'Chiffre d\'affaires',
-      value: '0 Gdes',
+      value: '0',
       icon: 'hugeDollarCircle',
       color: 'text-green-600',
       bgColor: 'bg-green-50',
@@ -105,7 +110,7 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
     },
     {
       label: 'Panier moyen',
-      value: '0 Gdes',
+      value: '0',
       icon: 'hugeTradeUp',
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
@@ -242,11 +247,7 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'HTG',
-      minimumFractionDigits: 0
-    }).format(amount).replace('HTG', 'Gdes');
+    return this.currencyService.formatAmount(amount);
   }
 
   getMaxSales(): number {
