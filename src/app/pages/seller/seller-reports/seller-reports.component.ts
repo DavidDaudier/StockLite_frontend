@@ -15,10 +15,12 @@ import {
 
 import { CurrencyService } from '../../../services/currency.service';
 
+import { GdesCurrencyPipe } from '../../../pipes/currency/currency.pipe';
+
 @Component({
   selector: 'app-seller-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, PosHeaderComponent, NgIcon],
+  imports: [CommonModule, FormsModule, SidebarComponent, PosHeaderComponent, NgIcon, GdesCurrencyPipe],
   viewProviders: [
     provideIcons({
       hugeCalendar03,

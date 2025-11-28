@@ -7,6 +7,7 @@ import { SidebarComponent } from '../../../layouts/sidebar/sidebar.component';
 import { SalesService } from '../../../core/services/sales.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Sale } from '../../../core/models/sale.model';
+import { GdesCurrencyPipe } from '../../../pipes/currency/currency.pipe';
 
 interface DateFilter {
   label: string;
@@ -16,7 +17,7 @@ interface DateFilter {
 
 @Component({
   selector: 'app-activities',
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, GdesCurrencyPipe],
   templateUrl: './activities.component.html',
   styleUrl: './activities.component.css'
 })

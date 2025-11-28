@@ -12,10 +12,12 @@ import {
   hugeFilter
 } from '@ng-icons/huge-icons';
 
+import { GdesCurrencyPipe } from '../../../pipes/currency/currency.pipe';
+
 @Component({
   selector: 'app-seller-products',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgIcon, SidebarComponent, PosHeaderComponent],
+  imports: [CommonModule, FormsModule, NgIcon, SidebarComponent, PosHeaderComponent, GdesCurrencyPipe],
   viewProviders: [
     provideIcons({
       hugePackageOpen,

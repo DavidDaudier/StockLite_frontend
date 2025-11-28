@@ -166,17 +166,17 @@
               <div *ngFor="let item of cart.items()" class="flex justify-between text-xs text-gray-600">
                 <span class="flex-1 truncate">{{ item.name }}</span>
                 <span class="mx-2">{{ item.qty }}x</span>
-                <span class="font-medium">{{ currencyService.getCurrencySymbol() }}{{ (item.price * item.qty).toFixed(2) }}</span>
+                <span class="font-medium">{{ (item.price * item.qty).toFixed(2) }} {{ currencyService.getCurrencySymbol() }}</span>
               </div>
             </div>
             <div class="mt-2 pt-2 border-t border-gray-200 space-y-1">
               <div class="flex justify-between text-xs text-gray-600">
                 <span>Articles ({{ cart.items().length }})</span>
-                <span>{{ currencyService.getCurrencySymbol() }}{{ subtotal().toFixed(2) }}</span>
+                <span>{{ subtotal().toFixed(2) }} {{ currencyService.getCurrencySymbol() }}</span>
               </div>
               <div class="flex justify-between text-base font-bold text-gray-900 pt-1">
                 <span>Total</span>
-                <span>{{ currencyService.getCurrencySymbol() }}{{ total().toFixed(2) }}</span>
+                <span>{{ total().toFixed(2) }} {{ currencyService.getCurrencySymbol() }}</span>
               </div>
             </div>
           </div>
@@ -187,11 +187,11 @@
           <!-- Amount Display -->
           <div class="bg-linear-to-br from-teal-50 to-teal-100 rounded-lg p-4 text-center">
             <p class="text-sm text-gray-600 mb-1">Montant reçu</p>
-            <p class="text-4xl font-bold text-teal-600">{{ currencyService.getCurrencySymbol() }}{{ amountReceived().toFixed(0) }}</p>
+            <p class="text-4xl font-bold text-teal-600">{{ amountReceived().toFixed(0) }} <span class="text-base align-baseline ml-1">{{ currencyService.getCurrencySymbol() }}</span></p>
             @if (change() > 0) {
               <div class="mt-2 pt-2 border-t border-teal-200">
                 <p class="text-xs text-gray-600">Monnaie</p>
-                <p class="text-2xl font-bold text-green-600">{{ currencyService.getCurrencySymbol() }}{{ change().toFixed(2) }}</p>
+                <p class="text-2xl font-bold text-green-600">{{ change().toFixed(2) }} <span class="text-sm align-baseline ml-1">{{ currencyService.getCurrencySymbol() }}</span></p>
               </div>
             }
           </div>

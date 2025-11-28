@@ -42,7 +42,7 @@
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-green-600 font-medium">Chiffre d'affaires</p>
-              <p class="text-2xl font-bold text-green-900 mt-1">{{ dailyStats[0].value }}</p>
+              <p class="text-2xl font-bold text-green-900 mt-1" [innerHTML]="dailyStats[0].value | gdesCurrency"></p>
               <div class="flex items-center gap-1 mt-1">
                 <span class="text-xs text-green-600 font-medium">{{ dailyStats[0].change }}</span>
                 <span class="text-xs text-gray-500">vs hier</span>
@@ -93,7 +93,7 @@
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-orange-600 font-medium">Panier moyen</p>
-              <p class="text-2xl font-bold text-orange-900 mt-1">{{ dailyStats[3].value }}</p>
+              <p class="text-2xl font-bold text-orange-900 mt-1" [innerHTML]="dailyStats[3].value | gdesCurrency"></p>
               <div class="flex items-center gap-1 mt-1">
                 <span class="text-xs text-orange-600 font-medium">{{ dailyStats[3].change }}</span>
                 <span class="text-xs text-gray-500">vs hier</span>
@@ -114,22 +114,21 @@
         <!-- Charts and Tables Row -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Sales Chart -->
-          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="flex items-center justify-between mb-6">
               <div>
-                <h2 class="text-lg font-bold text-gray-900">Ventes par heure</h2>
-                <p class="text-sm text-gray-500">Performance du jour</p>
+                <h2 class="text-lg font-bold text-gray-900">Évolution des ventes</h2>
+                <p class="text-sm text-gray-500">Aujourd'hui</p>
               </div>
               <div class="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-sm font-medium">
-                Aujourd'hui
+                Tendance
               </div>
             </div>
 
             <!-- Bar Chart -->
             <div class="h-64 flex items-end justify-between gap-2">
               <div *ngFor="let sale of salesByHour" class="flex-1 flex flex-col items-center gap-2">
-                <div class="text-xs font-medium text-gray-900">
-                  {{ formatCurrency(sale.amount) }}
+                <div class="text-xs font-medium text-gray-900" [innerHTML]="sale.amount | gdesCurrency">
                 </div>
                 <div class="w-full bg-gradient-to-t from-teal-500 to-teal-400 rounded-t-lg transition-all hover:from-teal-600 hover:to-teal-500"
                      [style.height.%]="getBarHeight(sale.amount)">
@@ -178,7 +177,7 @@
                   <p class="text-sm text-gray-500">{{ product.category }}</p>
                 </div>
                 <div class="text-right">
-                  <p class="font-bold text-gray-900">{{ formatCurrency(product.revenue) }}</p>
+                  <p class="font-bold text-gray-900" [innerHTML]="product.revenue | gdesCurrency"></p>
                   <p class="text-sm text-gray-500">{{ product.quantity }} vendus</p>
                 </div>
               </div>

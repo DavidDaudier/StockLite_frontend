@@ -84,9 +84,7 @@
                   {{ getTotalItems(draft) }} article(s)
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-lg font-bold text-blue-600">
-                    {{ formatCurrency(draft.total) }}
-                  </span>
+                  <span class="text-lg font-bold text-blue-600" [innerHTML]="draft.total | gdesCurrency"></span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div class="flex items-center gap-1">
@@ -194,9 +192,9 @@
                         <div class="text-xs text-gray-500">SKU: {{ item.productSku }}</div>
                       </td>
                       <td class="px-4 py-2 text-right">{{ item.quantity }}</td>
-                      <td class="px-4 py-2 text-right">{{ formatCurrency(item.unitPrice) }}</td>
-                      <td class="px-4 py-2 text-right">{{ formatCurrency(item.discount) }}</td>
-                      <td class="px-4 py-2 text-right font-medium">{{ formatCurrency(item.subtotal) }}</td>
+                      <td class="px-4 py-2 text-right" [innerHTML]="item.unitPrice | gdesCurrency"></td>
+                      <td class="px-4 py-2 text-right" [innerHTML]="item.discount | gdesCurrency"></td>
+                      <td class="px-4 py-2 text-right font-medium" [innerHTML]="item.subtotal | gdesCurrency"></td>
                     </tr>
                   }
                 </tbody>
@@ -210,23 +208,25 @@
               <div class="w-64 space-y-2">
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-600">Sous-total:</span>
-                  <span class="font-medium">{{ formatCurrency(selectedDraft()!.subtotal) }}</span>
+                  <span class="font-medium" [innerHTML]="selectedDraft()!.subtotal | gdesCurrency"></span>
                 </div>
                 @if (selectedDraft()!.discount > 0) {
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-600">Remise:</span>
-                    <span class="font-medium text-red-600">-{{ formatCurrency(selectedDraft()!.discount) }}</span>
+                    <span class="font-medium text-red-600 flex items-center justify-end">
+                      - <span [innerHTML]="selectedDraft()!.discount | gdesCurrency"></span>
+                    </span>
                   </div>
                 }
                 @if (selectedDraft()!.tax > 0) {
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-600">Taxe:</span>
-                    <span class="font-medium">{{ formatCurrency(selectedDraft()!.tax) }}</span>
+                    <span class="font-medium" [innerHTML]="selectedDraft()!.tax | gdesCurrency"></span>
                   </div>
                 }
                 <div class="flex justify-between text-lg font-bold border-t pt-2">
                   <span>Total:</span>
-                  <span class="text-blue-600">{{ formatCurrency(selectedDraft()!.total) }}</span>
+                  <span class="text-blue-600" [innerHTML]="selectedDraft()!.total | gdesCurrency"></span>
                 </div>
               </div>
             </div>

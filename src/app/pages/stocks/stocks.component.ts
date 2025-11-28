@@ -47,10 +47,12 @@ interface StockStats {
   totalValue: number;
 }
 
+import { GdesCurrencyPipe } from '../../pipes/currency/currency.pipe';
+
 @Component({
   selector: 'app-stocks',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgIcon, SidebarComponent, PosHeaderComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgIcon, SidebarComponent, PosHeaderComponent, GdesCurrencyPipe],
   viewProviders: [
     provideIcons({
       hugeAppleStocks,

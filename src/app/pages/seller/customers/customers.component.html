@@ -127,9 +127,7 @@
                       </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="text-sm font-bold text-blue-600">
-                        {{ formatCurrency(customer.totalPurchases) }}
-                      </span>
+                      <span class="text-sm font-bold text-blue-600" [innerHTML]="customer.totalPurchases | gdesCurrency"></span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       @if (customer.lastPurchase) {

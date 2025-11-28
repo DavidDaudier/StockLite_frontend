@@ -152,7 +152,7 @@ export class SalesHistoryComponent implements OnInit, OnDestroy {
 
   // Computed : Statistics for display
   totalRevenue = computed(() => {
-    return this.filteredSales().reduce((sum, sale) => sum + (sale.total || 0), 0);
+    return this.filteredSales().reduce((sum, sale) => sum + (Number(sale.total) || 0), 0);
   });
 
   totalSalesCount = computed(() => {

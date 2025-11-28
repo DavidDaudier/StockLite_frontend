@@ -16,10 +16,12 @@ import {
 
 import { CurrencyService } from '../../../services/currency.service';
 
+import { GdesCurrencyPipe } from '../../../pipes/currency/currency.pipe';
+
 @Component({
   selector: 'app-draft-list',
   standalone: true,
-  imports: [CommonModule, NgIcon, SidebarComponent, PosHeaderComponent],
+  imports: [CommonModule, NgIcon, SidebarComponent, PosHeaderComponent, GdesCurrencyPipe],
   viewProviders: [
     provideIcons({
       hugeFileDownload,

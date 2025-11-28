@@ -216,7 +216,7 @@
                             <div class="space-y-2 mb-3">
                                 <div class="flex justify-between items-center">
                                     <span class="text-xs text-gray-600">Prix:</span>
-                                    <span class="font-bold text-teal-600">{{ formatCurrency(product.price) }}</span>
+                                    <span class="font-bold text-teal-600" [innerHTML]="product.price | gdesCurrency"></span>
                                 </div>
 
                                 <div class="flex justify-between items-center">
@@ -700,13 +700,13 @@
 
             <div>
               <label class="text-sm text-gray-500 font-medium">Prix de vente</label>
-              <p class="text-2xl font-bold text-teal-600">{{ formatCurrency(selectedProductDetails()!.price) }}</p>
+              <p class="text-2xl font-bold text-teal-600" [innerHTML]="selectedProductDetails()!.price | gdesCurrency"></p>
             </div>
 
             <div>
               <label class="text-sm text-gray-500 font-medium">Prix de revient</label>
               <p class="text-lg font-semibold text-gray-700">
-                {{ selectedProductDetails()!.costPrice != null ? formatCurrency(selectedProductDetails()!.costPrice) : 'Non défini' }}
+                <span [innerHTML]="selectedProductDetails()!.costPrice != null ? (selectedProductDetails()!.costPrice | gdesCurrency) : 'Non défini'"></span>
               </p>
             </div>
 
@@ -714,7 +714,7 @@
               <label class="text-sm text-gray-500 font-medium">Marge bénéficiaire</label>
               <p class="text-lg font-semibold text-green-600">
                 @if (selectedProductDetails()!.costPrice != null) {
-                  {{ formatCurrency(selectedProductDetails()!.price - selectedProductDetails()!.costPrice) }}
+                  <span [innerHTML]="(selectedProductDetails()!.price - selectedProductDetails()!.costPrice) | gdesCurrency"></span>
                   ({{ ((selectedProductDetails()!.price - selectedProductDetails()!.costPrice) / selectedProductDetails()!.price * 100).toFixed(1) }}%)
                 } @else {
                   <span class="text-gray-400">Non calculable</span>

@@ -21,7 +21,7 @@ Chart.register(...registerables);
 
 interface DailyStat {
   label: string;
-  value: string;
+  value: number;
   icon: string;
   color: string;
   bgColor: string;
@@ -50,10 +50,12 @@ interface SalesByHour {
 
 import { CurrencyService } from '../../../services/currency.service';
 
+import { GdesCurrencyPipe } from '../../../pipes/currency/currency.pipe';
+
 @Component({
   selector: 'app-seller-dashboard',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, PosHeaderComponent, NgIcon],
+  imports: [CommonModule, SidebarComponent, PosHeaderComponent, NgIcon, GdesCurrencyPipe],
   viewProviders: [
     provideIcons({
       hugeDollarCircle,
@@ -83,7 +85,7 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
   dailyStats: DailyStat[] = [
     {
       label: 'Chiffre d\'affaires',
-      value: '0',
+      value: 0,
       icon: 'hugeDollarCircle',
       color: 'text-green-600',
       bgColor: 'bg-green-50',
@@ -92,7 +94,7 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
     },
     {
       label: 'Transactions',
-      value: '0',
+      value: 0,
       icon: 'hugeShoppingCart01',
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
@@ -101,7 +103,7 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
     },
     {
       label: 'Produits vendus',
-      value: '0',
+      value: 0,
       icon: 'hugePackageDelivered',
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
@@ -110,7 +112,7 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
     },
     {
       label: 'Panier moyen',
-      value: '0',
+      value: 0,
       icon: 'hugeTradeUp',
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
@@ -159,15 +161,15 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
       .subscribe({
         next: ({ dailyReport, inventoryReport }) => {
           // Mettre à jour les statistiques du jour
-          this.dailyStats[0].value = this.formatCurrency(dailyReport.totalRevenue);
-          this.dailyStats[1].value = dailyReport.totalSales.toString();
+          this.dailyStats[0].value = dailyReport.totalRevenue;
+          this.dailyStats[1].value = dailyReport.totalSales;
 
           // Calculer le nombre total de produits vendus
           const totalItemsSold = dailyReport.sales.reduce((total, sale: any) => {
             return total + (sale.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0);
           }, 0);
-          this.dailyStats[2].value = totalItemsSold.toString();
-          this.dailyStats[3].value = this.formatCurrency(dailyReport.averageSaleValue);
+          this.dailyStats[2].value = totalItemsSold;
+          this.dailyStats[3].value = dailyReport.averageSaleValue;
 
           // Extraire les top produits des ventes
           this.extractTopProducts(dailyReport.sales);
@@ -224,9 +226,9 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   generateSalesByHour(sales: any[]): void {
-    // Initialiser les heures de 8h à 17h
+    // Initialiser les heures de 0h à 23h
     const hourMap = new Map<number, number>();
-    for (let hour = 8; hour <= 17; hour++) {
+    for (let hour = 0; hour <= 23; hour++) {
       hourMap.set(hour, 0);
     }
 
@@ -234,12 +236,12 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
     sales.forEach(sale => {
       const saleDate = new Date(sale.createdAt);
       const hour = saleDate.getHours();
-      if (hour >= 8 && hour <= 17) {
-        hourMap.set(hour, (hourMap.get(hour) || 0) + sale.total);
-      }
+      hourMap.set(hour, (hourMap.get(hour) || 0) + sale.total);
     });
 
     // Convertir en tableau pour l'affichage
+    // Filtrer pour n'afficher que les heures avec des ventes ou une plage raisonnable (ex: 8h-20h) si vide
+    // Pour l'instant on affiche tout pour le debug
     this.salesByHour = Array.from(hourMap.entries()).map(([hour, amount]) => ({
       hour: `${hour.toString().padStart(2, '0')}h`,
       amount: amount

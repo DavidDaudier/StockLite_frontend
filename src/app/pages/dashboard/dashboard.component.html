@@ -145,9 +145,16 @@
                                     Tendance
                                 </div>
                             </div>
-                            <!-- Line Chart -->
-                            <div class="h-64">
-                                <canvas #salesTrendChart></canvas>
+                            <!-- Bar Chart -->
+                            <div class="h-64 flex items-end justify-between gap-2">
+                                <div *ngFor="let data of salesChartData" class="flex-1 flex flex-col items-center gap-2">
+                                    <div class="text-xs font-medium text-gray-900" [innerHTML]="data.amount | gdesCurrency">
+                                    </div>
+                                    <div class="w-full bg-gradient-to-t from-teal-500 to-teal-400 rounded-t-lg transition-all hover:from-teal-600 hover:to-teal-500"
+                                         [style.height.%]="getBarHeight(data.amount)">
+                                    </div>
+                                    <div class="text-xs text-gray-600 font-medium">{{ data.label }}</div>
+                                </div>
                             </div>
                         </div>
 
@@ -167,7 +174,7 @@
                     </div>
 
                     <!-- Content Grid -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                         <!-- Top Products Chart -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                             <div class="flex items-center justify-between mb-6">
@@ -183,7 +190,7 @@
                         </div>
 
                         <!-- Recent Sales - Polar Area Chart -->
-                        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h2 class="text-lg font-bold text-gray-900">Ventes Récentes</h2>
@@ -220,7 +227,7 @@
                                         Gérer →
                                     </button>
                                 </div>
-                                <div class="p-6">
+                                <div class="p-3">
                                     <div *ngIf="lowStockProducts.length === 0" class="text-center py-8 text-green-600">
                                         <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />

@@ -35,10 +35,12 @@ import { Category } from '../../core/models/category.model';
 import { AppInfo } from '../../models/app-info.model';
 import { DEFAULT_APP_INFO } from '../../constants/app-defaults';
 
+import { GdesCurrencyPipe } from '../../pipes/currency/currency.pipe';
+
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgIcon, SidebarComponent, PosHeaderComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgIcon, SidebarComponent, PosHeaderComponent, GdesCurrencyPipe],
   viewProviders: [
     provideIcons({
       hugePackageSent,

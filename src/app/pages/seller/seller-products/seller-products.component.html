@@ -85,7 +85,7 @@
                 <div class="space-y-2">
                   <div class="flex justify-between items-center">
                     <span class="text-xs text-gray-600">Prix:</span>
-                    <span class="font-bold text-blue-600">{{ formatCurrency(product.sellingPrice) }}</span>
+                    <span class="font-bold text-blue-600" [innerHTML]="product.sellingPrice | gdesCurrency"></span>
                   </div>
 
                   <div class="flex justify-between items-center">

@@ -278,8 +278,7 @@
                       </span>
                     </td>
                     <td class="px-3 md:px-6 py-3 whitespace-nowrap text-center hidden xl:table-cell">
-                      <div class="text-sm font-medium text-gray-900">
-                        {{ formatCurrency(product.price * product.quantity) }}
+                      <div class="text-sm font-medium text-gray-900" [innerHTML]="(product.price * product.quantity) | gdesCurrency">
                       </div>
                     </td>
                     <td class="px-3 md:px-6 py-3 whitespace-nowrap text-center">
@@ -374,7 +373,7 @@
             <!-- Valeur totale du stock -->
             <div class="text-sm text-gray-900 flex items-center gap-1">
               <span>Valeur totale du stock : </span>
-              <strong class="text-teal-600 text-base">{{ formatCurrency(stats().totalValue) }}</strong>
+              <strong class="text-teal-600 text-base" [innerHTML]="stats().totalValue | gdesCurrency"></strong>
             </div>
           </div>
         }

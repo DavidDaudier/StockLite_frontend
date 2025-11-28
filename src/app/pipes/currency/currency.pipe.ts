@@ -13,14 +13,17 @@ export class GdesCurrencyPipe implements PipeTransform {
   ) {}
 
   transform(value: number): SafeHtml {
+    // Handle NaN, null, undefined, or invalid numbers
+    const numValue = (value == null || isNaN(value)) ? 0 : value;
+    
     const symbol = this.currencyService.getCurrencySymbol();
     const formatted = new Intl.NumberFormat('fr-FR', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(value);
+    }).format(numValue);
 
     return this.sanitizer.bypassSecurityTrustHtml(
-      `${formatted} <span class="text-xs">${symbol}</span>`
+      `${formatted} <span class="text-[0.6em] align-baseline ml-0.5">${symbol}</span>`
     );
   }
 }

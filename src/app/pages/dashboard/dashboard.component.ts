@@ -397,13 +397,18 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  // Sales Chart Data for HTML Bar Chart
+  salesChartData: { label: string, amount: number }[] = [];
+
+  getBarHeight(amount: number): number {
+    if (!this.salesChartData.length) return 0;
+    const maxAmount = Math.max(...this.salesChartData.map(d => d.amount));
+    return maxAmount > 0 ? (amount / maxAmount) * 100 : 0;
+  }
+
   initializeSalesTrendChart(): void {
-    if (!this.salesTrendChartRef) return;
-
     const { startDate, endDate } = this.getDateRange();
-    const days: string[] = [];
-    const revenues: number[] = [];
-
+    
     // Calculer le nombre de jours dans la période
     const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     const numPoints = Math.min(daysDiff, 30); // Maximum 30 points sur le graphique
@@ -418,65 +423,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       salesByDay.set(dateKey, (salesByDay.get(dateKey) || 0) + saleTotal);
     });
 
-    // Générer les labels et données pour le graphique
+    // Générer les données pour le graphique HTML
+    this.salesChartData = [];
     for (let i = numPoints - 1; i >= 0; i--) {
       const date = new Date(endDate);
       date.setDate(date.getDate() - i);
       const dateKey = this.getLocalDateKey(date);
-
-      days.push(date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }));
-      revenues.push(salesByDay.get(dateKey) || 0);
-    }
-
-    const ctx = this.salesTrendChartRef.nativeElement.getContext('2d');
-    if (ctx) {
-      if (this.salesTrendChart) {
-        this.salesTrendChart.destroy();
-      }
-
-      this.salesTrendChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: days,
-          datasets: [{
-            label: 'Chiffre d\'affaires',
-            data: revenues,
-            borderColor: '#14B8A6',
-            backgroundColor: 'rgba(20, 184, 166, 0.1)',
-            tension: 0.4,
-            fill: true,
-            pointRadius: 4,
-            pointHoverRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              callbacks: {
-                label: (context) => {
-                  const value = context.parsed.y ?? 0;
-                  return `CA: ${this.formatCurrency(value)}`;
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              min: 0, // Force l'axe Y à commencer à 0
-              ticks: {
-                callback: (value) => {
-                  return this.formatCurrency(Number(value));
-                }
-              }
-            }
-          }
-        }
+      
+      this.salesChartData.push({
+        label: date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }),
+        amount: salesByDay.get(dateKey) || 0
       });
     }
   }

@@ -217,7 +217,7 @@
                       <!-- Revenu -->
                       <div class="text-center">
                         <p class="text-xs text-gray-600">Revenu</p>
-                        <p class="font-semibold text-emerald-600 text-sm">{{ formatCurrency(activity.totalRevenue) }}</p>
+                        <p class="font-semibold text-emerald-600 text-sm" [innerHTML]="activity.totalRevenue | gdesCurrency"></p>
                       </div>
 
                       <!-- Productivité -->
@@ -290,7 +290,7 @@
                                         <div class="flex items-center gap-2">
                                           <span class="text-indigo-600 font-medium">{{ item.quantity }}x</span>
                                           <span>{{ item.productName }}</span>
-                                          <span class="text-gray-500 text-xs">({{ formatCurrency(item.unitPrice) }})</span>
+                                          <span class="text-gray-500 text-xs" [innerHTML]="'(' + (item.unitPrice | gdesCurrency) + ')'"></span>
                                         </div>
                                       }
                                     </div>
@@ -310,7 +310,7 @@
 
                                 <!-- Montant -->
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-emerald-600">
-                                  {{ formatCurrency(sale.total) }}
+                                  <span [innerHTML]="sale.total | gdesCurrency"></span>
                                 </td>
 
                                 <!-- Méthode de paiement -->

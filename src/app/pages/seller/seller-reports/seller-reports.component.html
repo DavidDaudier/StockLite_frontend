@@ -89,7 +89,7 @@
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-green-600 font-medium">Chiffre d'affaires</p>
-                  <p class="text-2xl font-bold text-green-900 mt-1">{{ formatCurrency(dailyReport.totalRevenue) }}</p>
+                  <p class="text-2xl font-bold text-green-900 mt-1" [innerHTML]="dailyReport.totalRevenue | gdesCurrency"></p>
                 </div>
                 <div class="p-3 bg-green-500 rounded-lg text-white">
                   <ng-icon name="hugeDollarCircle" size="24" class="text-white"></ng-icon>
@@ -115,7 +115,7 @@
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-orange-600 font-medium">Panier moyen</p>
-                  <p class="text-2xl font-bold text-orange-900 mt-1">{{ formatCurrency(dailyReport.averageSaleValue) }}</p>
+                  <p class="text-2xl font-bold text-orange-900 mt-1" [innerHTML]="dailyReport.averageSaleValue | gdesCurrency"></p>
                 </div>
                 <div class="p-3 bg-orange-500 rounded-lg text-white">
                   <ng-icon name="hugeChartMedium" size="24" class="text-white"></ng-icon>
@@ -128,7 +128,7 @@
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-purple-600 font-medium">Remises</p>
-                  <p class="text-2xl font-bold text-purple-900 mt-1">{{ formatCurrency(dailyReport.totalDiscount) }}</p>
+                  <p class="text-2xl font-bold text-purple-900 mt-1" [innerHTML]="dailyReport.totalDiscount | gdesCurrency"></p>
                 </div>
                 <div class="p-3 bg-purple-500 rounded-lg text-white">
                   <ng-icon name="hugeDiscount" size="24" class="text-white"></ng-icon>
@@ -143,7 +143,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div *ngFor="let pm of getPaymentMethodsArray()" class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <p class="text-sm text-gray-600 capitalize font-medium">{{ pm.method }}</p>
-                <p class="text-xl font-bold text-gray-900 mt-1">{{ formatCurrency(pm.total) }}</p>
+                <p class="text-xl font-bold text-gray-900 mt-1" [innerHTML]="pm.total | gdesCurrency"></p>
                 <p class="text-sm text-gray-500">{{ pm.count }} transaction(s)</p>
               </div>
             </div>
@@ -158,7 +158,7 @@
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-green-600 font-medium">CA Hebdomadaire</p>
-                  <p class="text-2xl font-bold text-green-900 mt-1">{{ formatCurrency(weeklyReport.totalRevenue) }}</p>
+                  <p class="text-2xl font-bold text-green-900 mt-1" [innerHTML]="weeklyReport.totalRevenue | gdesCurrency"></p>
                 </div>
                 <div class="p-3 bg-green-500 rounded-lg text-white">
                   <ng-icon name="hugeMoneyBag02" size="24" class="text-white"></ng-icon>
@@ -182,7 +182,7 @@
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-blue-600 font-medium">Moyenne quotidienne</p>
-                  <p class="text-2xl font-bold text-blue-900 mt-1">{{ formatCurrency(weeklyReport.averageDailyRevenue) }}</p>
+                  <p class="text-2xl font-bold text-blue-900 mt-1" [innerHTML]="weeklyReport.averageDailyRevenue | gdesCurrency"></p>
                 </div>
                 <div class="p-3 bg-blue-500 rounded-lg text-white">
                   <ng-icon name="hugeChartAverage" size="24" class="text-white"></ng-icon>
@@ -196,7 +196,7 @@
             <h3 class="text-lg font-bold text-gray-900 mb-4">Ventes par jour</h3>
             <div class="h-64 flex items-end justify-between gap-2">
               <div *ngFor="let day of weeklyReport.dailyBreakdown" class="flex-1 flex flex-col items-center gap-2">
-                <div class="text-xs font-medium text-gray-900">{{ formatCurrency(day.revenue) }}</div>
+                <div class="text-xs font-medium text-gray-900" [innerHTML]="day.revenue | gdesCurrency"></div>
                 <div class="w-full bg-gradient-to-t from-teal-500 to-teal-400 rounded-t-lg transition-all hover:from-teal-600 hover:to-teal-500"
                      [style.height.%]="getBarHeight(day.revenue)"></div>
                 <div class="text-xs text-gray-600">{{ day.date.substring(5) }}</div>
@@ -236,7 +236,7 @@
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-green-600 font-medium">Chiffre d'affaires</p>
-                  <p class="text-2xl font-bold text-green-900 mt-1">{{ formatCurrency(monthlyReport.totalRevenue) }}</p>
+                  <p class="text-2xl font-bold text-green-900 mt-1" [innerHTML]="monthlyReport.totalRevenue | gdesCurrency"></p>
                 </div>
                 <div class="p-3 bg-green-500 rounded-lg text-white">
                   <ng-icon name="hugeMoneyBag02" size="24" class="text-white"></ng-icon>
@@ -260,7 +260,7 @@
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-orange-600 font-medium">Panier moyen</p>
-                  <p class="text-2xl font-bold text-orange-900 mt-1">{{ formatCurrency(monthlyReport.averageSaleValue) }}</p>
+                  <p class="text-2xl font-bold text-orange-900 mt-1" [innerHTML]="monthlyReport.averageSaleValue | gdesCurrency"></p>
                 </div>
                 <div class="p-3 bg-orange-500 rounded-lg text-white">
                   <ng-icon name="hugeChartMedium" size="24" class="text-white"></ng-icon>
@@ -272,7 +272,7 @@
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-red-600 font-medium">Remises totales</p>
-                  <p class="text-2xl font-bold text-red-900 mt-1">{{ formatCurrency(monthlyReport.totalDiscount) }}</p>
+                  <p class="text-2xl font-bold text-red-900 mt-1" [innerHTML]="monthlyReport.totalDiscount | gdesCurrency"></p>
                 </div>
                 <div class="p-3 bg-red-500 rounded-lg text-white">
                   <ng-icon name="hugeDiscount" size="24" class="text-white"></ng-icon>
@@ -304,7 +304,7 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ product.productName }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ product.totalQuantity }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{{ formatCurrency(product.totalRevenue) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900" [innerHTML]="product.totalRevenue | gdesCurrency"></td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ product.salesCount }}</td>
                   </tr>
                 </tbody>
@@ -318,7 +318,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div *ngFor="let seller of monthlyReport.topSellers" class="bg-gradient-to-br from-teal-50 to-teal-100 p-4 rounded-xl border border-teal-200 shadow-sm">
                 <p class="text-sm text-teal-700 font-medium">{{ seller.sellerName }}</p>
-                <p class="text-xl font-bold text-teal-900 mt-1">{{ formatCurrency(seller.totalRevenue) }}</p>
+                <p class="text-xl font-bold text-teal-900 mt-1" [innerHTML]="seller.totalRevenue | gdesCurrency"></p>
                 <p class="text-sm text-teal-600">{{ seller.totalSales }} vente(s)</p>
               </div>
             </div>
