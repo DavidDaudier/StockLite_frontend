@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -139,14 +139,14 @@ export class StocksComponent implements OnInit, OnDestroy {
   appInfo = signal<AppInfo | null>(DEFAULT_APP_INFO);
   updatingProductIds = signal<Set<string>>(new Set());
 
-  constructor(
-    private productsService: ProductsService,
-    private categoriesService: CategoriesService,
-    private appInfoService: AppInfoService,
-    private fb: FormBuilder,
-    public authService: AuthService,
-    private currencyService: CurrencyService
-  ) {
+  private productsService = inject(ProductsService);
+  private categoriesService = inject(CategoriesService);
+  private appInfoService = inject(AppInfoService);
+  private fb = inject(FormBuilder);
+  public authService = inject(AuthService);
+  public currencyService: CurrencyService = inject(CurrencyService);
+
+  constructor() {
     this.adjustForm = this.fb.group({
       adjustment: [0, [Validators.required]],
       reason: ['', Validators.required]

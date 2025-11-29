@@ -31,9 +31,11 @@ export class ProductReceiptComponent {
   private offlineSyncService = inject(OfflineSyncService);
   private authService = inject(AuthService);
   private printerService = inject(PrinterService);
-  public currencyService = inject(CurrencyService);
+  public currencyService: CurrencyService = inject(CurrencyService);
 
   ticketNo = computed(() => 'T-' + Date.now().toString(36).toUpperCase());
+  
+  currencySymbol = computed(() => this.currencyService.getCurrencySymbol());
 
   /** Montant total */
   subtotal = computed(() =>

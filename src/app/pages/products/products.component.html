@@ -115,7 +115,7 @@
                     </div>
 
                     <!-- Filtre par catégorie -->
-                    <div class="flex-shrink-0 w-64">
+                    <div class="shrink-0 w-64">
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                 <ng-icon name="hugeFilter" class="text-gray-400 text-lg" />
@@ -205,7 +205,7 @@
                                 </div>
                             }
                             <div class="flex items-start justify-between mb-2">
-                                <h3 class="font-semibold text-gray-900 text-sm line-clamp-2 min-h-[2.5rem]">{{ product.name }}</h3>
+                                <h3 class="font-semibold text-gray-900 text-sm line-clamp-2 min-h-10">{{ product.name }}</h3>
                                 <span [class]="'px-2 py-1 text-xs rounded-full font-medium ml-2 whitespace-nowrap ' + getStockClass(product.quantity, product.minStock)">
                                     {{ getStockStatus(product.quantity, product.minStock) }}
                                 </span>
@@ -572,7 +572,7 @@
     <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
       <div class="p-6">
         <div class="flex items-center gap-4 mb-4">
-          <div class="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+          <div class="shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
             <ng-icon name="hugeAlert01" size="24" class="text-red-600"></ng-icon>
           </div>
           <div>
@@ -611,7 +611,7 @@
     <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
       <div class="p-6">
         <div class="flex items-center gap-4 mb-4">
-          <div class="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+          <div class="shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
             <ng-icon name="hugeAlert01" size="24" class="text-red-600"></ng-icon>
           </div>
           <div>
@@ -972,7 +972,7 @@
     <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
       <div class="p-6">
         <div class="flex items-center gap-4 mb-4">
-          <div class="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+          <div class="shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
             <ng-icon name="hugeAlert01" size="24" class="text-red-600"></ng-icon>
           </div>
           <div>

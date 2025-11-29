@@ -23,7 +23,7 @@ export class GdesCurrencyPipe implements PipeTransform {
     }).format(numValue);
 
     return this.sanitizer.bypassSecurityTrustHtml(
-      `${formatted} <span class="text-[0.6em] align-baseline ml-0.5">${symbol}</span>`
+      `${formatted} <span class="text-sm align-baseline ml-0.5 font-medium text-gray-500">${symbol}</span>`
     );
   }
 }

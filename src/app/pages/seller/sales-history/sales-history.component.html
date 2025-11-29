@@ -84,7 +84,7 @@
           @if (showStats()) {
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <!-- Chiffre d'affaires -->
-            <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
+            <div class="bg-linear-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-green-600 font-medium">Chiffre d'affaires</p>
@@ -97,7 +97,7 @@
             </div>
 
             <!-- Nombre de ventes -->
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
+            <div class="bg-linear-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-blue-600 font-medium">Nombre de ventes</p>
@@ -110,7 +110,7 @@
             </div>
 
             <!-- Produits vendus -->
-            <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200 shadow-sm">
+            <div class="bg-linear-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200 shadow-sm">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-purple-600 font-medium">Produits vendus</p>
@@ -123,7 +123,7 @@
             </div>
 
             <!-- Panier moyen -->
-            <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200 shadow-sm">
+            <div class="bg-linear-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200 shadow-sm">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm text-orange-600 font-medium">Panier moyen</p>
@@ -282,7 +282,7 @@
                 </p>
               </div>
             } @else {
-              <div class="table-container-fixed">
+              <div class="table-container-fixed overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 table-fixed">
                   <thead class="bg-teal-600 text-white sticky top-0 z-10">
                     <tr>
@@ -404,13 +404,13 @@
                         <tr>
                           <td [attr.colspan]="isAdmin ? ((selectionMode() ? 1 : 0) + 9) : 9" class="px-0 py-0 bg-gray-50">
                             <div class="px-6 py-4 flex justify-center">
-                              <table class="w-11/12 bg-white border border-gray-200 overflow-hidden rounded-lg shadow-sm">
-                                <thead class="bg-teal-300">
+                              <table class="w-11/12 bg-white border border-gray-200 overflow-hidden shadow-sm">
+                                <thead class="bg-teal-300/50 text-white">
                                   <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Nom Produit</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">Prix</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Quantité</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">Total</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Nom Produit</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider">Prix</th>
+                                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Quantité</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider">Total</th>
                                   </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">

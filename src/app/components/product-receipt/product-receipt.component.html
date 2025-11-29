@@ -48,11 +48,11 @@
 
         <!-- Prix détaillé -->
         <div class="flex items-center gap-2 text-sm">
-          <span class="text-orange-500 font-medium">{{ currencyService.getCurrencySymbol() }}{{ item.price.toFixed(2) }}</span>
+          <span class="text-orange-500 font-medium">{{ currencySymbol() }}{{ item.price.toFixed(2) }}</span>
           <span class="text-gray-400">x</span>
           <span class="text-orange-500 font-medium">{{ item.qty }}</span>
           <span class="text-gray-400">=</span>
-          <span class="text-orange-500 font-semibold">{{ currencyService.getCurrencySymbol() }}{{ (item.price * item.qty).toFixed(2) }}</span>
+          <span class="text-orange-500 font-semibold">{{ currencySymbol() }}{{ (item.price * item.qty).toFixed(2) }}</span>
         </div>
 
         <!-- Add Notes -->
@@ -69,11 +69,11 @@
     <div class="space-y-1.5 text-sm">
       <div class="flex justify-between text-gray-600">
         <span>Subtotal</span>
-        <span>{{ currencyService.getCurrencySymbol() }}{{ subtotal().toFixed(2) }}</span>
+        <span>{{ currencySymbol() }}{{ subtotal().toFixed(2) }}</span>
       </div>
       <div class="flex justify-between font-bold text-base text-gray-900 pt-2 mt-2 border-t border-dashed border-gray-200">
         <span>Total</span>
-        <span>{{ currencyService.getCurrencySymbol() }}{{ total().toFixed(2) }}</span>
+        <span>{{ currencySymbol() }}{{ total().toFixed(2) }}</span>
       </div>
     </div>
   </div>
@@ -166,17 +166,17 @@
               <div *ngFor="let item of cart.items()" class="flex justify-between text-xs text-gray-600">
                 <span class="flex-1 truncate">{{ item.name }}</span>
                 <span class="mx-2">{{ item.qty }}x</span>
-                <span class="font-medium">{{ (item.price * item.qty).toFixed(2) }} {{ currencyService.getCurrencySymbol() }}</span>
+                <span class="font-medium">{{ (item.price * item.qty).toFixed(2) }} {{ currencySymbol() }}</span>
               </div>
             </div>
             <div class="mt-2 pt-2 border-t border-gray-200 space-y-1">
               <div class="flex justify-between text-xs text-gray-600">
                 <span>Articles ({{ cart.items().length }})</span>
-                <span>{{ subtotal().toFixed(2) }} {{ currencyService.getCurrencySymbol() }}</span>
+                <span>{{ subtotal().toFixed(2) }} {{ currencySymbol() }}</span>
               </div>
               <div class="flex justify-between text-base font-bold text-gray-900 pt-1">
                 <span>Total</span>
-                <span>{{ total().toFixed(2) }} {{ currencyService.getCurrencySymbol() }}</span>
+                <span>{{ total().toFixed(2) }} {{ currencySymbol() }}</span>
               </div>
             </div>
           </div>
@@ -187,11 +187,11 @@
           <!-- Amount Display -->
           <div class="bg-linear-to-br from-teal-50 to-teal-100 rounded-lg p-4 text-center">
             <p class="text-sm text-gray-600 mb-1">Montant reçu</p>
-            <p class="text-4xl font-bold text-teal-600">{{ amountReceived().toFixed(0) }} <span class="text-base align-baseline ml-1">{{ currencyService.getCurrencySymbol() }}</span></p>
+            <p class="text-4xl font-bold text-teal-600">{{ amountReceived().toFixed(0) }} <span class="text-sm align-baseline ml-1">{{ currencySymbol() }}</span></p>
             @if (change() > 0) {
               <div class="mt-2 pt-2 border-t border-teal-200">
                 <p class="text-xs text-gray-600">Monnaie</p>
-                <p class="text-2xl font-bold text-green-600">{{ change().toFixed(2) }} <span class="text-sm align-baseline ml-1">{{ currencyService.getCurrencySymbol() }}</span></p>
+                <p class="text-2xl font-bold text-green-600">{{ change().toFixed(2) }} <span class="text-sm align-baseline ml-1">{{ currencySymbol() }}</span></p>
               </div>
             }
           </div>

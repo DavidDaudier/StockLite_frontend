@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -69,10 +69,10 @@ export class SellerReportsComponent implements OnInit, OnDestroy {
   // Liste des années
   years: number[] = [];
 
-  constructor(
-    private dashboardService: DashboardService,
-    private currencyService: CurrencyService
-  ) {
+  private dashboardService = inject(DashboardService);
+  public currencyService: CurrencyService = inject(CurrencyService);
+
+  constructor() {
     // Générer les 5 dernières années
     const currentYear = new Date().getFullYear();
     for (let i = 0; i < 5; i++) {

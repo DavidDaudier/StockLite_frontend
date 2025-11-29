@@ -107,7 +107,7 @@
     <div class="px-6 pb-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <!-- Total utilisateurs -->
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
+        <div class="bg-linear-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-blue-600 font-medium">Total Utilisateurs</p>
@@ -120,7 +120,7 @@
         </div>
 
         <!-- Administrateurs -->
-        <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200 shadow-sm">
+        <div class="bg-linear-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-purple-600 font-medium">Administrateurs</p>
@@ -133,7 +133,7 @@
         </div>
 
         <!-- Vendeurs -->
-        <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200 shadow-sm">
+        <div class="bg-linear-to-br from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-yellow-600 font-medium">Vendeurs</p>
@@ -146,7 +146,7 @@
         </div>
 
         <!-- Utilisateurs actifs -->
-        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
+        <div class="bg-linear-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-green-600 font-medium">Utilisateurs Actifs</p>
@@ -159,7 +159,7 @@
         </div>
 
         <!-- Utilisateurs inactifs -->
-        <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200 shadow-sm">
+        <div class="bg-linear-to-br from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-gray-600 font-medium">Utilisateurs Inactifs</p>
@@ -241,7 +241,7 @@
 
         <!-- Tableau des utilisateurs -->
         @else {
-          <div [class]="showStats() ? 'table-container-fixed' : 'table-container-fixed-expanded'">
+          <div [class]="(showStats() ? 'table-container-fixed' : 'table-container-fixed-expanded') + ' overflow-x-auto'">
             <table class="min-w-full divide-y divide-gray-200 table-fixed">
               <thead class="bg-teal-600 text-white sticky top-0 z-10">
                 <tr>
@@ -290,7 +290,7 @@
                     }
                     <td class="px-3 md:px-6 py-3 whitespace-nowrap">
                       <div class="flex items-center">
-                        <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <div class="shrink-0 h-10 w-10 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                           <span class="text-white font-semibold text-sm">{{ getUserInitials(user.fullName) }}</span>
                         </div>
                         <div class="ml-4">
@@ -308,7 +308,7 @@
                     </td>
                     <td class="px-3 md:px-6 py-3 whitespace-nowrap text-left">
                       @if (user.isSuperAdmin) {
-                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-linear-to-r from-yellow-400 to-orange-500 text-white">
                           ⭐ Super Admin
                         </span>
                       } @else {
@@ -789,7 +789,7 @@
     <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
       <div class="p-6">
         <div class="flex items-center gap-4 mb-4">
-          <div class="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+          <div class="shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
             <ng-icon name="hugeAlert01" size="24" class="text-red-600"></ng-icon>
           </div>
           <div>
@@ -828,7 +828,7 @@
     <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
       <div class="p-6">
         <div class="flex items-center gap-4 mb-4">
-          <div class="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+          <div class="shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
             <ng-icon name="hugeAlert01" size="24" class="text-red-600"></ng-icon>
           </div>
           <div>

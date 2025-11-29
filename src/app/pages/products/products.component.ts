@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -111,14 +111,14 @@ export class ProductsComponent implements OnInit, OnDestroy {
   successMessage = signal<string>('');
   appInfo = signal<AppInfo | null>(DEFAULT_APP_INFO);
 
-  constructor(
-    private productsService: ProductsService,
-    private categoriesService: CategoriesService,
-    private appInfoService: AppInfoService,
-    private fb: FormBuilder,
-    public authService: AuthService,
-    private currencyService: CurrencyService
-  ) {
+  private productsService = inject(ProductsService);
+  private categoriesService = inject(CategoriesService);
+  private appInfoService = inject(AppInfoService);
+  private fb = inject(FormBuilder);
+  public authService = inject(AuthService);
+  public currencyService: CurrencyService = inject(CurrencyService);
+
+  constructor() {
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       sku: ['', Validators.required],

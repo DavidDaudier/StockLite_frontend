@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -8,6 +8,7 @@ import { SalesService } from '../../../core/services/sales.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Sale } from '../../../core/models/sale.model';
 import { GdesCurrencyPipe } from '../../../pipes/currency/currency.pipe';
+import { CurrencyService } from '../../../services/currency.service';
 
 interface DateFilter {
   label: string;
@@ -59,10 +60,9 @@ export class ActivitiesComponent implements OnInit, OnDestroy {
   loading = true;
   expandedSaleId: string | null = null;
 
-  constructor(
-    private salesService: SalesService,
-    private authService: AuthService
-  ) {}
+  private salesService = inject(SalesService);
+  private authService = inject(AuthService);
+  public currencyService: CurrencyService = inject(CurrencyService);
 
   ngOnInit(): void {
     this.loadSales();
@@ -194,7 +194,7 @@ export class ActivitiesComponent implements OnInit, OnDestroy {
       filtered = filtered.filter(sale =>
         sale.customerName?.toLowerCase().includes(query) ||
         sale.customerPhone?.toLowerCase().includes(query) ||
-        this.formatCurrency(sale.total).toLowerCase().includes(query)
+        this.currencyService.formatAmount(sale.total).toLowerCase().includes(query)
       );
     }
 
@@ -208,14 +208,6 @@ export class ActivitiesComponent implements OnInit, OnDestroy {
 
   toggleSaleDetails(saleId: string): void {
     this.expandedSaleId = this.expandedSaleId === saleId ? null : saleId;
-  }
-
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'XOF',
-      minimumFractionDigits: 0
-    }).format(amount);
   }
 
   formatDate(date: string | Date): string {

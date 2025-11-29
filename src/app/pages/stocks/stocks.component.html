@@ -70,7 +70,7 @@
     <div class="px-6 pb-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <!-- Total produits -->
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
+        <div class="bg-linear-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-blue-600 font-medium">Total Produits</p>
@@ -83,7 +83,7 @@
         </div>
 
         <!-- Stock disponible -->
-        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
+        <div class="bg-linear-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-green-600 font-medium">Stock Disponible</p>
@@ -96,7 +96,7 @@
         </div>
 
         <!-- Stock faible -->
-        <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200 shadow-sm">
+        <div class="bg-linear-to-br from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-yellow-600 font-medium">Stock Faible</p>
@@ -109,7 +109,7 @@
         </div>
 
         <!-- Rupture de stock -->
-        <div class="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-xl border border-red-200 shadow-sm">
+        <div class="bg-linear-to-br from-red-50 to-red-100 p-4 rounded-xl border border-red-200 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-red-600 font-medium">Rupture de Stock</p>
@@ -122,7 +122,7 @@
         </div>
 
         <!-- Produits inactifs -->
-        <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200 shadow-sm">
+        <div class="bg-linear-to-br from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-gray-600 font-medium">Produits Inactifs</p>
@@ -216,7 +216,7 @@
 
         <!-- Tableau des produits -->
         @else {
-          <div [class]="showStats() ? 'table-container-fixed' : 'table-container-fixed-expanded'">
+          <div [class]="(showStats() ? 'table-container-fixed' : 'table-container-fixed-expanded') + ' overflow-x-auto'">
             <table class="min-w-full divide-y divide-gray-200 table-fixed">
               <thead class="bg-teal-600 text-white sticky top-0 z-10">
                 <tr>

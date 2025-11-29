@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { SidebarComponent } from '../../../layouts/sidebar/sidebar.component';
@@ -76,10 +76,11 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
   @ViewChild('paymentMethodChart') paymentMethodChartRef!: ElementRef<HTMLCanvasElement>;
   private paymentMethodChart?: Chart;
 
-  constructor(
-    private dashboardService: DashboardService,
-    private currencyService: CurrencyService
-  ) {}
+  @ViewChild('salesChart') salesChartRef!: ElementRef<HTMLCanvasElement>;
+  private salesChart?: Chart;
+
+  private dashboardService = inject(DashboardService);
+  public currencyService: CurrencyService = inject(CurrencyService);
 
   // Statistiques du jour
   dailyStats: DailyStat[] = [
@@ -145,6 +146,9 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
     if (this.paymentMethodChart) {
       this.paymentMethodChart.destroy();
     }
+    if (this.salesChart) {
+      this.salesChart.destroy();
+    }
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -188,7 +192,10 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
           this.loading = false;
 
           // Initialiser les graphiques après le chargement des données
-          setTimeout(() => this.initializePaymentMethodChart(dailyReport.sales), 100);
+          setTimeout(() => {
+            this.initializePaymentMethodChart(dailyReport.sales);
+            this.initializeSalesChart();
+          }, 100);
         },
         error: (error) => {
           console.error('Erreur lors du chargement des données:', error);
@@ -339,6 +346,122 @@ export class SellerDashboardComponent implements OnInit, OnDestroy, AfterViewIni
                 }
               }
             }
+          }
+        }
+      });
+    }
+  }
+
+  initializeSalesChart(): void {
+    if (!this.salesChartRef) return;
+
+    const ctx = this.salesChartRef.nativeElement.getContext('2d');
+    if (ctx) {
+      if (this.salesChart) {
+        this.salesChart.destroy();
+      }
+
+      // Préparer les données
+      const labels = this.salesByHour.map(s => s.hour);
+      const data = this.salesByHour.map(s => s.amount);
+
+      // Créer un dégradé pour les barres
+      const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+      gradient.addColorStop(0, 'rgba(20, 184, 166, 0.8)');   // teal-500
+      gradient.addColorStop(1, 'rgba(20, 184, 166, 0.2)');
+
+      this.salesChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Ventes',
+            data: data,
+            backgroundColor: gradient,
+            borderColor: '#14B8A6',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 14,
+                weight: 'bold'
+              },
+              bodyFont: {
+                size: 13
+              },
+              callbacks: {
+                label: (context) => {
+                  const value = context.parsed.y;
+                  if (value !== null && value !== undefined) {
+                    return `Montant: ${this.formatCurrency(value)}`;
+                  }
+                  return 'Montant: 0';
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              },
+              ticks: {
+                font: {
+                  size: 11
+                },
+                callback: (value) => {
+                  if (typeof value === 'number') {
+                    return this.currencyService.getCurrencySymbol() + ' ' + value;
+                  }
+                  return value;
+                }
+              },
+              title: {
+                display: true,
+                text: 'Montant des ventes',
+                font: {
+                  size: 12,
+                  weight: 'bold'
+                },
+                color: '#6B7280'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                font: {
+                  size: 11
+                },
+                maxRotation: 45,
+                minRotation: 0
+              },
+              title: {
+                display: true,
+                text: 'Heures de la journée',
+                font: {
+                  size: 12,
+                  weight: 'bold'
+                },
+                color: '#6B7280'
+              }
+            }
+          },
+          interaction: {
+            intersect: false,
+            mode: 'index'
           }
         }
       });

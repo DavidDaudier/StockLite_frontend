@@ -38,7 +38,7 @@
     <div *ngIf="!loading && showStats" class="px-6 pb-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Chiffre d'affaires -->
-        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
+        <div class="bg-linear-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-green-600 font-medium">Chiffre d'affaires</p>
@@ -55,7 +55,7 @@
         </div>
 
         <!-- Transactions -->
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
+        <div class="bg-linear-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-blue-600 font-medium">Transactions</p>
@@ -72,7 +72,7 @@
         </div>
 
         <!-- Produits vendus -->
-        <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200 shadow-sm">
+        <div class="bg-linear-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-purple-600 font-medium">Produits vendus</p>
@@ -89,7 +89,7 @@
         </div>
 
         <!-- Panier moyen -->
-        <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200 shadow-sm">
+        <div class="bg-linear-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200 shadow-sm">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-orange-600 font-medium">Panier moyen</p>
@@ -125,16 +125,9 @@
               </div>
             </div>
 
-            <!-- Bar Chart -->
-            <div class="h-64 flex items-end justify-between gap-2">
-              <div *ngFor="let sale of salesByHour" class="flex-1 flex flex-col items-center gap-2">
-                <div class="text-xs font-medium text-gray-900" [innerHTML]="sale.amount | gdesCurrency">
-                </div>
-                <div class="w-full bg-gradient-to-t from-teal-500 to-teal-400 rounded-t-lg transition-all hover:from-teal-600 hover:to-teal-500"
-                     [style.height.%]="getBarHeight(sale.amount)">
-                </div>
-                <div class="text-xs text-gray-600 font-medium">{{ sale.hour }}</div>
-              </div>
+            <!-- Bar Chart avec Chart.js -->
+            <div class="h-80">
+              <canvas #salesChart></canvas>
             </div>
           </div>
 

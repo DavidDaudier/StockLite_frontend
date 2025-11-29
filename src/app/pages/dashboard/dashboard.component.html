@@ -35,12 +35,12 @@
                 <div class="flex items-center gap-2">
                     <label class="text-sm text-gray-600 font-medium">De:</label>
                     <input type="date" [(ngModel)]="customDateRange.startDate"
-                           class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                        class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
                 </div>
                 <div class="flex items-center gap-2">
                     <label class="text-sm text-gray-600 font-medium">À:</label>
                     <input type="date" [(ngModel)]="customDateRange.endDate"
-                           class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                        class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
                 </div>
                 <button (click)="onCustomDateApply()"
                         class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
@@ -59,11 +59,11 @@
 
         <!-- Bouton flottant Toggle Stats -->
         <button
-          (click)="showStats = !showStats"
-          class="fixed -right-2 z-50 p-3 bg-blue-600/70 text-white rounded-l-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 cursor-pointer"
-          [style.top]="showStats ? '175px' : '45px'"
-          [title]="showStats ? 'Masquer les statistiques' : 'Afficher les statistiques'">
-          <ng-icon [name]="showStats ? 'hugeViewOff' : 'hugeEye'" size="20" strokeWidth="2"></ng-icon>
+            (click)="showStats = !showStats"
+            class="fixed -right-2 z-50 p-3 bg-blue-600/70 text-white rounded-l-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 cursor-pointer"
+            [style.top]="showStats ? '175px' : '45px'"
+            [title]="showStats ? 'Masquer les statistiques' : 'Afficher les statistiques'">
+            <ng-icon [name]="showStats ? 'hugeViewOff' : 'hugeEye'" size="20" strokeWidth="2"></ng-icon>
         </button>
 
         <!-- Statistiques (FIXES hors scroll) -->
@@ -145,16 +145,9 @@
                                     Tendance
                                 </div>
                             </div>
-                            <!-- Bar Chart -->
-                            <div class="h-64 flex items-end justify-between gap-2">
-                                <div *ngFor="let data of salesChartData" class="flex-1 flex flex-col items-center gap-2">
-                                    <div class="text-xs font-medium text-gray-900" [innerHTML]="data.amount | gdesCurrency">
-                                    </div>
-                                    <div class="w-full bg-gradient-to-t from-teal-500 to-teal-400 rounded-t-lg transition-all hover:from-teal-600 hover:to-teal-500"
-                                         [style.height.%]="getBarHeight(data.amount)">
-                                    </div>
-                                    <div class="text-xs text-gray-600 font-medium">{{ data.label }}</div>
-                                </div>
+                            <!-- Bar Chart with Y-axis -->
+                            <div class="h-64 flex items-center justify-center">
+                                <canvas #salesTrendChart></canvas>
                             </div>
                         </div>
 
