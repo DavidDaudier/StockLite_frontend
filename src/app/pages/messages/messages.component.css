@@ -1,0 +1,13 @@
+/* Modal animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fixed {
+  animation: fadeIn 0.2s ease-out;
+}

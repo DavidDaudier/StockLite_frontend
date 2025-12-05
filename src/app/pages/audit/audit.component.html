@@ -1,0 +1,507 @@
+<div class="flex h-screen bg-white">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <main class="relative flex-1 flex flex-col overflow-hidden bg-white">
+    <!-- Header -->
+    <app-pos-header></app-pos-header>
+
+    <!-- Titre de la page -->
+    <div class="px-6 pt-4 pb-3 bg-white">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+            Audit Logs
+          </h1>
+          <p class="text-sm text-gray-500 mt-1">Dashboard > Audit</p>
+        </div>
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2">
+          <button
+            (click)="exportToPDF()"
+            class="px-4 py-2.5 bg-amber-400 text-white text-sm font-medium rounded-lg hover:bg-amber-600 transition-colors flex items-center gap-2 cursor-pointer">
+            <ng-icon name="hugePdf01" size="18" />
+            <span class="hidden sm:inline">Export Log</span>
+          </button>
+          <button
+            (click)="loadLogs()"
+            class="px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2 cursor-pointer">
+            <ng-icon name="hugeRefresh" size="18" />
+            <span class="hidden sm:inline">Actualiser</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bouton flottant Toggle Stats -->
+    <button
+      (click)="showStats.set(!showStats())"
+      class="fixed -right-2 z-50 p-3 bg-blue-600/70 text-white rounded-l-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 cursor-pointer"
+      [style.top]="showStats() ? '175px' : '45px'"
+      [title]="showStats() ? 'Masquer les statistiques' : 'Afficher les statistiques'">
+      <ng-icon [name]="showStats() ? 'hugeViewOff' : 'hugeEye'" size="20" strokeWidth="2"></ng-icon>
+    </button>
+
+    <!-- Statistiques -->
+    @if (showStats()) {
+      <div class="px-6 pb-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Total Logs -->
+          <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-green-600 font-medium">Total Logs</p>
+                <p class="text-2xl font-bold text-green-900 mt-1">{{ stats().totalLogs }}</p>
+              </div>
+              <div class="p-3 bg-green-500 rounded-lg text-white">
+                <ng-icon name="hugeFileDownload" size="24" class="text-white"></ng-icon>
+              </div>
+            </div>
+          </div>
+
+          <!-- Utilisateurs Uniques -->
+          <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-blue-600 font-medium">Utilisateurs Uniques</p>
+                <p class="text-2xl font-bold text-blue-900 mt-1">{{ stats().uniqueUsers }}</p>
+              </div>
+              <div class="p-3 bg-blue-500 rounded-lg text-white">
+                <ng-icon name="hugeUserMultiple" size="24" class="text-white"></ng-icon>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions Aujourd'hui -->
+          <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-purple-600 font-medium">Actions Aujourd'hui</p>
+                <p class="text-2xl font-bold text-purple-900 mt-1">{{ stats().actionsToday }}</p>
+              </div>
+              <div class="p-3 bg-purple-500 rounded-lg text-white">
+                <ng-icon name="hugeCalendar03" size="24" class="text-white"></ng-icon>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions Critiques -->
+          <div class="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-xl border border-red-200 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-red-600 font-medium">Actions Critiques</p>
+                <p class="text-2xl font-bold text-red-900 mt-1">{{ stats().criticalActions }}</p>
+              </div>
+              <div class="p-3 bg-red-500 rounded-lg text-white">
+                <ng-icon name="hugeAlert01" size="24" class="text-white"></ng-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Contenu principal -->
+    <div class="flex-1 overflow-y-auto px-6 pb-6 bg-white">
+      <div class="bg-gray-100 rounded-[15px] p-4 border border-gray-300">
+
+        <!-- Tableau des logs -->
+        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden mb-15">
+          <!-- Header with Filters -->
+          <div class="p-4 border-b border-gray-200 bg-gray-50">
+            <div class="flex flex-col gap-4">
+              <!-- Top Row: Title and Count -->
+              <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h3 class="text-base font-semibold text-gray-900">Historique des Actions</h3>
+                  <p class="text-xs text-gray-500 mt-1">{{ filteredLogs().length }} log(s) trouvé(s)</p>
+                </div>
+                
+                <!-- Right Side: Date Filter + Items per page -->
+                <div class="flex flex-wrap items-center gap-3">
+                  <!-- Single Date Filter -->
+                  <div class="flex items-center gap-2 bg-white px-3 py-2 border border-gray-300 rounded-lg">
+                    <ng-icon name="hugeCalendar03" size="16" class="text-gray-500"></ng-icon>
+                    <input 
+                      type="date" 
+                      [ngModel]="filterDate()" 
+                      (ngModelChange)="filterDate.set($event)" 
+                      class="text-sm border-none focus:ring-0 p-0 text-gray-700 w-36" 
+                      placeholder="Filtrer par date"
+                    />
+                    @if (filterDate()) {
+                      <button (click)="filterDate.set('')" class="text-gray-400 hover:text-gray-600" title="Effacer">
+                        <ng-icon name="hugeViewOff" size="14"></ng-icon>
+                      </button>
+                    }
+                  </div>
+
+                  <!-- Items per page selector -->
+                  <select
+                    [ngModel]="itemsPerPage()" (ngModelChange)="itemsPerPage.set($event); currentPage.set(1)"
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white cursor-pointer">
+                    <option [value]="10">📄 10 par page</option>
+                    <option [value]="20">📄 20 par page</option>
+                    <option [value]="50">📄 50 par page</option>
+                    <option [value]="100">📄 100 par page</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Filters Row -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <input type="text" placeholder="Utilisateur" [ngModel]="filterUser()" (ngModelChange)="filterUser.set($event)" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow" />
+                
+                <select [ngModel]="filterRole()" (ngModelChange)="filterRole.set($event)" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow bg-white">
+                  <option value="">Tous les rôles</option>
+                  <option value="seller">Seller</option>
+                  <option value="admin">Admin</option>
+                  <option value="superadmin">Super Admin</option>
+                </select>
+                
+                <select [ngModel]="filterAction()" (ngModelChange)="filterAction.set($event)" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow bg-white">
+                  <option value="">Toutes les actions</option>
+                  <option value="login">Login</option>
+                  <option value="logout">Logout</option>
+                  <option value="add">Add</option>
+                  <option value="update">Update</option>
+                  <option value="delete">Delete</option>
+                  <option value="sale">Sale</option>
+                  <option value="export">Export</option>
+                </select>
+                
+                <select [ngModel]="filterModule()" (ngModelChange)="filterModule.set($event)" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow bg-white">
+                  <option value="">Tous les modules</option>
+                  <option value="Stock">Stock</option>
+                  <option value="Vente">Vente</option>
+                  <option value="Paramètres">Paramètres</option>
+                  <option value="Produits">Produits</option>
+                  <option value="Auth">Auth</option>
+                  <option value="Rapports Financiers">Rapports Financiers</option>
+                  <option value="Historiques">Historiques</option>
+                  <option value="Inventaires">Inventaires</option>
+                  <option value="Zoom">Zoom</option>
+                  <option value="Utilisateurs">Utilisateurs</option>
+                  <option value="Sessions">Sessions</option>
+                  <option value="Profile">Profile</option>
+                  <option value="POS/Printer">POS/Printer</option>
+                  <option value="Audit">Audit</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-teal-600 text-white sticky top-0 z-10">
+                <tr>
+                  <th class="w-12 px-3 py-4 text-center text-xs font-medium uppercase tracking-wider"></th>
+                  <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Utilisateurs</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Action</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Sujets</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Modules</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Navigateurs</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap">Date & Heure</th>
+                  <th class="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                @if (paginatedLogs().length === 0) {
+                  <tr>
+                    <td colspan="8" class="px-6 py-8 text-center text-gray-500">Aucun log trouvé pour les critères sélectionnés.</td>
+                  </tr>
+                }
+                @for (log of paginatedLogs(); track log.id) {
+                  <tr class="table-row-hover transition-colors">
+                    <!-- Expand Icon -->
+                    <td class="px-3 py-4 whitespace-nowrap text-center cursor-pointer" (click)="toggleAccordion(log.id)">
+                      <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                        @if (expandedLogId() === log.id) {
+                          <ng-icon name="hugeArrowDownDouble" size="18" />
+                        } @else {
+                          <ng-icon name="hugeArrowRightDouble" size="18" />
+                        }
+                      </button>
+                    </td>
+                    <!-- User (Name + Role) -->
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                      <div class="flex flex-col">
+                        <span class="text-gray-900 font-medium">{{ log.username }}</span>
+                        <span class="text-xs text-gray-500 capitalize">{{ log.role }}</span>
+                      </div>
+                    </td>
+                    <!-- Action Badge -->
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                      <span [class]="'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ' + actionBadgeClass(log.action)">
+                        {{ log.action | uppercase }}
+                      </span>
+                    </td>
+                    <!-- Subject -->
+                    <td class="px-6 py-4 text-sm text-gray-700">
+                      <span class="line-clamp-2">{{ log.subject || '-' }}</span>
+                    </td>
+                    <!-- Module -->
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ log.module }}</td>
+                    <!-- Browser -->
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <div class="flex items-center gap-1">
+                        <ng-icon name="hugeChrome" size="14" class="text-gray-400"></ng-icon>
+                        <span>{{ log.browser || '-' }}</span>
+                      </div>
+                    </td>
+                    <!-- Date & Time -->
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(log.timestamp) | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <!-- Actions (View + Delete) -->
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                      <div class="flex items-center justify-center gap-2">
+                        <button (click)="openModal(log)" class="text-teal-600 hover:text-teal-800 transition-colors p-1.5 rounded-full hover:bg-teal-50" title="Voir les détails">
+                          <ng-icon name="hugeEye" size="18"></ng-icon>
+                        </button>
+                        <button (click)="deleteLog(log.id)" class="text-red-600 hover:text-red-800 transition-colors p-1.5 rounded-full hover:bg-red-50" title="Supprimer">
+                          <ng-icon name="hugeDelete03" size="18"></ng-icon>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  @if (expandedLogId() === log.id) {
+                    <tr>
+                      <td colspan="8" class="bg-gray-50 px-0 py-0 border-t border-gray-100 shadow-inner">
+                        <div class="p-4 bg-gray-50">
+                          <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Détails de l'action</h4>
+                            
+                            @if (log.details) {
+                              @if (log.details?.before || log.details?.after) {
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <!-- Before -->
+                                  @if (log.details?.before) {
+                                    <div>
+                                      <h5 class="text-xs font-semibold text-gray-600 uppercase mb-2 flex items-center gap-1">
+                                        <ng-icon name="hugeArrowLeft01" size="14"></ng-icon>
+                                        Avant
+                                      </h5>
+                                      <div class="bg-gray-50 rounded p-3 border border-gray-200">
+                                        @for (item of objectEntries(log.details?.before); track item.key) {
+                                          <div class="flex justify-between py-1 text-xs">
+                                            <span class="text-gray-600 font-medium">{{ item.key }}:</span>
+                                            <span class="text-gray-900">{{ formatValue(item.value) }}</span>
+                                          </div>
+                                        }
+                                      </div>
+                                    </div>
+                                  }
+                                  <!-- After -->
+                                  @if (log.details?.after) {
+                                    <div>
+                                      <h5 class="text-xs font-semibold text-gray-600 uppercase mb-2 flex items-center gap-1">
+                                        <ng-icon name="hugeArrowRight01" size="14"></ng-icon>
+                                        Après
+                                      </h5>
+                                      <div class="bg-gray-50 rounded p-3 border border-gray-200">
+                                        @for (item of objectEntries(log.details?.after); track item.key) {
+                                          <div class="flex justify-between py-1 text-xs">
+                                            <span class="text-gray-600 font-medium">{{ item.key }}:</span>
+                                            <span class="text-gray-900">{{ formatValue(item.value) }}</span>
+                                          </div>
+                                        }
+                                      </div>
+                                    </div>
+                                  }
+                                </div>
+                              } @else {
+                                <!-- Generic details display -->
+                                <div class="bg-gray-50 rounded p-3 border border-gray-200">
+                                  @for (item of objectEntries(log.details); track item.key) {
+                                    <div class="flex justify-between py-1 text-xs">
+                                      <span class="text-gray-600 font-medium">{{ item.key }}:</span>
+                                      <span class="text-gray-900">{{ formatValue(item.value) }}</span>
+                                    </div>
+                                  }
+                                </div>
+                              }
+                            } @else {
+                              <p class="text-sm text-gray-500 italic">Aucun détail disponible</p>
+                            }
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Controls -->
+          <div class="mt-0 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50 px-4 py-3 border-t border-gray-200">
+            <!-- Info Section -->
+            <div class="text-sm text-gray-900">
+              Affichage de <span class="font-medium">{{ (currentPage() - 1) * itemsPerPage() + 1 }}</span> à <span class="font-medium">{{ Math.min(currentPage() * itemsPerPage(), filteredLogs().length) }}</span> sur <span class="font-medium">{{ filteredLogs().length }}</span> résultats
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex items-center gap-1">
+              <button (click)="changePage(currentPage() - 1)" [disabled]="currentPage() === 1" class="px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm">
+                Précédent
+              </button>
+              
+              <div class="hidden sm:flex gap-1">
+                @for (p of [].constructor(totalPages()); track $index; let i = $index) {
+                  <button 
+                    (click)="changePage(i + 1)"
+                    [class]="(i + 1) === currentPage() ? 'px-3 py-1.5 text-sm bg-teal-600 text-white rounded-md shadow-sm' : 'px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-md transition-colors shadow-sm'"
+                    [hidden]="totalPages() > 7 && (i + 1) !== 1 && (i + 1) !== totalPages() && Math.abs((i + 1) - currentPage()) > 2">
+                    {{ i + 1 }}
+                    @if (totalPages() > 7 && (i + 1) === 2 && currentPage() > 4) { <span class="mx-1">...</span> }
+                  </button>
+                }
+              </div>
+
+              <button (click)="changePage(currentPage() + 1)" [disabled]="currentPage() === totalPages() || totalPages() === 0" class="px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm">
+                Suivant
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for full details -->
+    @if (modalLog()) {
+      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden transform transition-all scale-100">
+          <!-- Modal Header -->
+          <div class="flex justify-between items-center p-5 border-b border-gray-200 bg-gray-50">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-teal-100 rounded-lg">
+                <ng-icon name="hugeFileDownload" class="text-teal-600 text-xl"></ng-icon>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold text-gray-900">Détails du Log #{{ modalLog()?.id }}</h2>
+                <p class="text-sm text-gray-500">{{ formatDate(modalLog()!.timestamp) | date: 'fullDate' }} à {{ formatDate(modalLog()!.timestamp) | date: 'mediumTime' }}</p>
+              </div>
+            </div>
+            <button (click)="closeModal()" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition-colors" title="Fermer">
+              <ng-icon name="hugeViewOff" class="text-xl"></ng-icon>
+            </button>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="p-6 overflow-y-auto bg-white">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+              <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Utilisateur</span>
+                <span class="block text-sm font-bold text-gray-900">{{ modalLog()?.username }}</span>
+              </div>
+              <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Rôle</span>
+                <span class="block text-sm font-bold text-gray-900 capitalize">{{ modalLog()?.role }}</span>
+              </div>
+              <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Action</span>
+                <span [class]="'inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ' + actionBadgeClass(modalLog()!.action)">
+                  {{ modalLog()?.action | uppercase }}
+                </span>
+              </div>
+              <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Module</span>
+                <span class="block text-sm font-bold text-gray-900">{{ modalLog()?.module }}</span>
+              </div>
+              <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Sujet</span>
+                <span class="block text-sm font-bold text-gray-900">{{ modalLog()?.subject || '-' }}</span>
+              </div>
+              <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Navigateur</span>
+                <span class="block text-sm font-bold text-gray-900">{{ modalLog()?.browser || '-' }}</span>
+              </div>
+            </div>
+
+            <!-- Details Section -->
+            @if (modalLog()?.details) {
+              <div class="mb-4">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Détails de l'action</h3>
+                  <button 
+                    (click)="showJsonInModal.set(!showJsonInModal())"
+                    class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
+                    [class]="showJsonInModal() ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'">
+                    {{ showJsonInModal() ? '👁️ Vue Utilisateur' : '🔧 Vue Développeur (JSON)' }}
+                  </button>
+                </div>
+
+                @if (showJsonInModal()) {
+                  <!-- JSON View (for developers) -->
+                  <div class="relative group">
+                    <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg text-xs overflow-x-auto font-mono border border-gray-700 shadow-inner leading-relaxed">{{ modalLog()?.details | json }}</pre>
+                  </div>
+                } @else {
+                  <!-- User-friendly View -->
+                  <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    @if (modalLog()?.details?.before || modalLog()?.details?.after) {
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Before -->
+                        @if (modalLog()?.details?.before) {
+                          <div>
+                            <h4 class="text-xs font-semibold text-gray-600 uppercase mb-2 flex items-center gap-1">
+                              <ng-icon name="hugeArrowLeft01" size="14"></ng-icon>
+                              Avant
+                            </h4>
+                            <div class="bg-white rounded p-3 border border-gray-200">
+                              @for (item of objectEntries(modalLog()?.details?.before); track item.key) {
+                                <div class="flex justify-between py-1 text-sm">
+                                  <span class="text-gray-600 font-medium">{{ item.key }}:</span>
+                                  <span class="text-gray-900">{{ item.value }}</span>
+                                </div>
+                              }
+                            </div>
+                          </div>
+                        }
+                        <!-- After -->
+                        @if (modalLog()?.details?.after) {
+                          <div>
+                            <h4 class="text-xs font-semibold text-gray-600 uppercase mb-2 flex items-center gap-1">
+                              <ng-icon name="hugeArrowRight01" size="14"></ng-icon>
+                              Après
+                            </h4>
+                            <div class="bg-white rounded p-3 border border-gray-200">
+                              @for (item of objectEntries(modalLog()?.details?.after); track item.key) {
+                                <div class="flex justify-between py-1 text-sm">
+                                  <span class="text-gray-600 font-medium">{{ item.key }}:</span>
+                                  <span class="text-gray-900">{{ item.value }}</span>
+                                </div>
+                              }
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    } @else {
+                      <!-- Generic details display -->
+                      <div class="bg-white rounded p-3 border border-gray-200">
+                        @for (item of objectEntries(modalLog()?.details); track item.key) {
+                          <div class="flex justify-between py-1 text-sm">
+                            <span class="text-gray-600 font-medium">{{ item.key }}:</span>
+                            <span class="text-gray-900">{{ formatValue(item.value) }}</span>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="p-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+            <button (click)="closeModal()" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all shadow-sm">
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
+</div>

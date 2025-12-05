@@ -1,0 +1,150 @@
+<div class="flex h-screen bg-white">
+  <app-sidebar />
+
+  <!-- Main Content -->
+  <main class="relative flex-1 flex flex-col overflow-hidden bg-white">
+    <app-pos-header />
+
+    <!-- Titre de la page -->
+    <div class="px-6 pt-4 pb-3 bg-white">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+            Notifications
+          </h1>
+          <p class="text-sm text-gray-500 mt-1">Dashboard > Notifications</p>
+        </div>
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2">
+          <!-- Mute/Unmute Sound Button -->
+          <button
+            (click)="toggleMuteSound()"
+            [title]="isSoundMuted() ? 'Activer le son' : 'Désactiver le son'"
+            class="px-4 py-2.5 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+            [class]="isSoundMuted() ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'">
+            <ng-icon [name]="isSoundMuted() ? 'hugeVolumeOff' : 'hugeVolumeHigh'" size="18" />
+            <span class="hidden sm:inline">{{ isSoundMuted() ? 'Son désactivé' : 'Son activé' }}</span>
+          </button>
+
+          <button
+            *ngIf="unreadCount > 0"
+            (click)="markAllAsRead()"
+            class="px-4 py-2.5 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-2 cursor-pointer">
+            <ng-icon name="hugeCheckmarkCircle04" size="18" />
+            <span class="hidden sm:inline">Tout marquer comme lu</span>
+          </button>
+
+          <button
+            *ngIf="notifications().length > 0"
+            (click)="deleteAllNotifications()"
+            class="px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer">
+            <ng-icon name="hugeDelete02" size="18" />
+            <span class="hidden sm:inline">Tout supprimer</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenu principal (scrollable) -->
+    <div class="flex-1 overflow-y-auto px-6 pb-6 bg-white">
+      <div class="bg-gray-100 rounded-[15px] p-4 border border-gray-300">
+
+      <!-- Filtres : Tout | Lues | Non Lue -->
+      <div class="mb-6">
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+          <div class="flex items-center gap-3">
+            <span class="text-sm font-medium text-gray-700">Filtrer:</span>
+            <button
+              (click)="filterNotifications('all')"
+              [class]="selectedFilter === 'all' ? 'px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium transition-colors' : 'px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors'">
+              Tout ({{ notifications().length }})
+            </button>
+            <button
+              (click)="filterNotifications('unread')"
+              [class]="selectedFilter === 'unread' ? 'px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium transition-colors' : 'px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors'">
+              Non Lues ({{ unreadCount }})
+            </button>
+            <button
+              (click)="filterNotifications('read')"
+              [class]="selectedFilter === 'read' ? 'px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium transition-colors' : 'px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors'">
+              Lues ({{ notifications().length - unreadCount }})
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications List -->
+      <div class="space-y-4">
+        <div *ngIf="loading()" class="bg-white rounded-lg shadow-sm p-8 text-center">
+          <p class="text-gray-500">Chargement...</p>
+        </div>
+
+        <div *ngIf="!loading() && filteredNotifications().length === 0" class="bg-white rounded-lg shadow-sm p-8 text-center">
+          <ng-icon name="hugeNotification02" class="text-6xl text-gray-300 mb-4"></ng-icon>
+          <p class="text-gray-500">Aucune notification pour ce filtre</p>
+        </div>
+
+        <div
+          *ngFor="let notification of filteredNotifications()"
+          class="bg-white rounded-lg shadow-sm overflow-hidden border-l-4 transition-all hover:shadow-md"
+          [ngClass]="{
+            'border-l-gray-400 opacity-60': notification.read,
+            'border-l-blue-500': !notification.read && notification.type === 'info',
+            'border-l-yellow-500': !notification.read && notification.type === 'warning',
+            'border-l-green-500': !notification.read && notification.type === 'success'
+          }"
+        >
+          <div class="p-6">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start gap-4 flex-1">
+                <div class="shrink-0 mt-1">
+                  <ng-icon
+                    [name]="getNotificationIcon(notification.type)"
+                    class="text-2xl"
+                    [ngClass]="getIconClass(notification.type)"
+                  ></ng-icon>
+                </div>
+
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-900">{{ notification.title }}</h3>
+                    <span
+                      *ngIf="!notification.read"
+                      class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded"
+                    >
+                      Non lu
+                    </span>
+                  </div>
+
+                  <p class="text-gray-700 mb-3">{{ notification.message }}</p>
+
+                  <p class="text-sm text-gray-500">{{ formatDate(notification.createdAt) }}</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 ml-4">
+                <button
+                  *ngIf="!notification.read"
+                  (click)="markAsRead(notification)"
+                  class="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                  title="Marquer comme lu"
+                >
+                  <ng-icon name="hugeCheckmarkCircle02" class="text-xl"></ng-icon>
+                </button>
+
+                <button
+                  (click)="deleteNotification(notification)"
+                  class="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                  title="Supprimer"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div> <!-- Fermeture grey-container -->
+    </div> <!-- Fermeture contenu scrollable -->
+  </main>
+</div>

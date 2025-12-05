@@ -83,17 +83,20 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
     };
   });
 
-  // Computed pour le badge de notifications
+  // Computed pour le badge de notifications (utilise le signal pour mise à jour automatique)
   notificationBadge = computed(() => {
-    const notifications = this.notificationService.getUnreadNotifications();
+    const count = this.notificationService.unreadCount();
     return {
-      count: notifications.length,
-      hasUnread: notifications.length > 0
+      count: count,
+      hasUnread: count > 0
     };
   });
 
-  // Tooltip pour les notifications
+  // Tooltip pour les notifications (utilise lastUpdate pour déclencher les recalculs)
   notificationTooltip = computed(() => {
+    // Dépendre du signal lastUpdate pour déclencher les recalculs
+    this.notificationService.lastUpdate();
+
     const unreadNotifications = this.notificationService.getUnreadNotifications();
     if (unreadNotifications.length === 0) {
       return 'Aucune notification';
@@ -102,26 +105,29 @@ export class PosHeaderComponent implements OnInit, OnDestroy {
     return latestNotification.title + ': ' + latestNotification.message;
   });
 
-  // Computed pour le badge de messages (demandes en attente)
+  // Computed pour le badge de messages (demandes en attente - utilise le signal pour mise à jour automatique)
   messagesBadge = computed(() => {
-    const pendingRequests = this.deletionRequestService.getPendingRequests();
+    const count = this.deletionRequestService.pendingCount();
     return {
-      count: pendingRequests.length,
-      hasPending: pendingRequests.length > 0
+      count: count,
+      hasPending: count > 0
     };
   });
 
-  // Tooltip pour les messages
+  // Tooltip pour les messages (utilise le signal pour mise à jour automatique)
   messagesTooltip = computed(() => {
-    const pendingRequests = this.deletionRequestService.getPendingRequests();
-    if (pendingRequests.length === 0) {
+    const count = this.deletionRequestService.pendingCount();
+    if (count === 0) {
       return 'Aucune demande en attente';
     }
-    return `${pendingRequests.length} demande(s) de suppression en attente`;
+    return `${count} demande(s) de suppression en attente`;
   });
 
-  // Computed pour le badge de mes messages (pour les sellers)
+  // Computed pour le badge de mes messages (pour les sellers - utilise lastUpdate pour déclencher les recalculs)
   myMessagesBadge = computed(() => {
+    // Dépendre du signal lastUpdate pour déclencher les recalculs
+    this.deletionRequestService.lastUpdate();
+
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) {
       return { count: 0, hasPending: false };

@@ -1,0 +1,149 @@
+<div class="flex h-screen bg-white">
+  <app-sidebar />
+
+  <!-- Main Content -->
+  <main class="relative flex-1 flex flex-col overflow-hidden bg-white">
+    <app-pos-header />
+
+    <!-- Titre de la page -->
+    <div class="px-6 pt-4 pb-3 bg-white">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+            Gestion des Sessions
+          </h1>
+          <p class="text-sm text-gray-500 mt-1">Dashboard > Sessions</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenu principal (scrollable) -->
+    <div class="flex-1 overflow-y-auto px-6 pb-6 bg-white">
+      <div class="bg-gray-100 rounded-[15px] p-4 border border-gray-300">
+
+      <!-- Filtres -->
+      <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+          <!-- Filtre par statut -->
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium text-gray-700 whitespace-nowrap">Statut:</span>
+            <div class="flex items-center gap-2">
+              <button
+                (click)="filterByStatus('active')"
+                [class]="selectedFilter === 'active' ? 'px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium transition-colors' : 'px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors'">
+                Active ({{ activeSessions.length }})
+              </button>
+              <button
+                (click)="filterByStatus('inactive')"
+                [class]="selectedFilter === 'inactive' ? 'px-4 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors' : 'px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors'">
+                Inactive/Expirées ({{ inactiveSessions.length }})
+              </button>
+            </div>
+          </div>
+
+          <!-- Filtre par utilisateur -->
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium text-gray-700 whitespace-nowrap">Utilisateur:</span>
+            <select
+              [(ngModel)]="selectedUserId"
+              (change)="onUserFilterChange()"
+              class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm">
+              <option value="all">Tous les utilisateurs</option>
+              @for (user of uniqueUsers; track user.id) {
+                <option [value]="user.id">{{ user.fullName }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Sélecteur de date -->
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium text-gray-700 whitespace-nowrap">Date:</span>
+            <button
+              (click)="setToday()"
+              [class]="isToday() ? 'px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium transition-colors' : 'px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors'">
+              Aujourd'hui
+            </button>
+            <input
+              type="date"
+              [(ngModel)]="selectedDate"
+              (change)="onDateChange()"
+              class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm">
+          </div>
+        </div>
+      </div>
+
+      <!-- Sessions List -->
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">
+          {{ selectedFilter === 'active' ? 'Sessions Actives' : 'Sessions Inactives/Expirées' }}
+        </h2>
+
+        <div *ngIf="loading()" class="bg-white rounded-lg shadow-sm p-8 text-center">
+          <p class="text-gray-500">Chargement...</p>
+        </div>
+
+        <div *ngIf="!loading() && filteredSessions.length === 0" class="bg-white rounded-lg shadow-sm p-8 text-center">
+          <p class="text-gray-500">Aucune session {{ selectedFilter === 'active' ? 'active' : 'inactive/expirée' }}</p>
+        </div>
+
+        <div *ngIf="!loading() && filteredSessions.length > 0" class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="divide-y divide-gray-200">
+            <div *ngFor="let session of filteredSessions" class="p-6 hover:bg-gray-50 transition-colors">
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-3">
+                    <ng-icon name="hugeUserCircle" class="text-2xl text-teal-600"></ng-icon>
+                    <div>
+                      <h3 class="text-lg font-semibold text-gray-900">{{ session.userFullName }}</h3>
+                      <p class="text-sm text-gray-600">{{ '@' + session.username }} • {{ session.userRole }}</p>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
+                    <div class="flex items-center gap-2">
+                      <ng-icon name="hugeCalendar03" class="text-base"></ng-icon>
+                      <span>Connexion: {{ formatDate(session.createdAt) }}</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                      <ng-icon name="hugeClock01" class="text-base"></ng-icon>
+                      <span>Dernière activité: {{ formatDate(session.lastActivity) }}</span>
+                    </div>
+
+                    <div *ngIf="session.ipAddress" class="flex items-center gap-2">
+                      <span class="font-medium">IP:</span>
+                      <span>{{ session.ipAddress }}</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                      <span class="font-medium">Expire:</span>
+                      <span>{{ formatDate(session.expiresAt) }}</span>
+                    </div>
+                  </div>
+
+                  <div *ngIf="session.userAgent" class="mt-2 text-xs text-gray-500 truncate">
+                    {{ session.userAgent }}
+                  </div>
+                </div>
+
+                <button
+                  *ngIf="session.isActive"
+                  (click)="revokeSession(session)"
+                  class="ml-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                >
+                  Clôturer
+                </button>
+                <span
+                  *ngIf="!session.isActive"
+                  class="ml-4 px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-sm font-medium">
+                  {{ isExpired(session.expiresAt) ? 'Expirée' : 'Inactive' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div> <!-- Fermeture grey-container -->
+    </div> <!-- Fermeture contenu scrollable -->
+  </main>
+</div>

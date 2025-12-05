@@ -98,8 +98,8 @@
                           
                           <!-- Currency Info -->
                           <div>
-                            <div class="font-semibold text-gray-900">{{ currency.name }}</div>
-                            <div class="text-sm text-gray-600">Code: {{ currency.code }} • Symbole: {{ currency.symbol }}</div>
+                            <div class="font-semibold" [class]="selectedCurrency() === currency.code ? 'currency-name-selected' : 'text-gray-900'">{{ currency.name }}</div>
+                            <div class="text-sm" [class]="selectedCurrency() === currency.code ? 'currency-info-selected' : 'text-gray-600'">Code: {{ currency.code }} • Symbole: {{ currency.symbol }}</div>
                           </div>
                         </div>
 

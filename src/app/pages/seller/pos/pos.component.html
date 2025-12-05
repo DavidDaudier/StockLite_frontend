@@ -18,18 +18,23 @@
                     </div>
 
                     <!-- Boutons d'action -->
-                    <div class="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+                    <div class="flex items-center gap-3 w-full sm:w-auto overflow-x-auto overflow-y-visible pt-2 pb-1 sm:pb-0">
                         <!-- <button type="button" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors cursor-pointer">
                             <ng-icon name="hugePlusSign" class="text-base" />
                             New
                         </button> -->
-                        <a [routerLink]="draftsRoute" class="px-4 py-2 bg-lime-400 hover:bg-lime-500 text-white rounded-lg font-medium text-sm flex items-center gap-2 border transition-colors cursor-pointer whitespace-nowrap" style="pointer-events: auto;">
+                        <a [routerLink]="draftsRoute" class="relative px-4 py-2 bg-lime-400 hover:bg-lime-500 text-white rounded-lg font-medium text-sm flex items-center gap-2 border transition-colors cursor-pointer whitespace-nowrap" style="pointer-events: auto;">
                             <ng-icon name="hugeNotebook01" class="text-base" style="pointer-events: none;" />
-                            Draft List
+                            Liste provisoire
+                            @if (draftsCount() > 0) {
+                                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-5 flex items-center justify-center px-1">
+                                    {{ draftsCount() }}
+                                </span>
+                            }
                         </a>
                         <a [routerLink]="salesHistoryRoute" class="px-4 py-2 bg-emerald-400 hover:bg-emerald-500 text-white rounded-lg font-medium text-sm flex items-center gap-2 border transition-colors cursor-pointer whitespace-nowrap" style="pointer-events: auto;">
                             <ng-icon name="hugeTimeSchedule" class="text-base" style="pointer-events: none;" />
-                            Sales History
+                            Historique des ventes
                         </a>
                     </div>
                 </div>

@@ -63,6 +63,14 @@ export class InventoriesComponent implements OnInit, OnDestroy {
   searchTerm = signal<string>('');
   filterStatus = signal<string>('all'); // all, pending, counted, discrepancy
 
+  // Pagination - Inventory Items
+  itemsPerPage = signal<number>(10);
+  currentPage = signal<number>(1);
+
+  // Pagination - History
+  historyItemsPerPage = signal<number>(10);
+  historyCurrentPage = signal<number>(1);
+
   // UI State
   loading = signal<boolean>(false);
   editingItemId = signal<string | null>(null);
@@ -120,6 +128,58 @@ export class InventoriesComponent implements OnInit, OnDestroy {
     }
 
     return items;
+  });
+
+  // Paginated items for inventory table
+  paginatedItems = computed(() => {
+    const items = this.filteredItems();
+    const start = (this.currentPage() - 1) * this.itemsPerPage();
+    const end = start + this.itemsPerPage();
+    return items.slice(start, end);
+  });
+
+  // Pagination info for inventory items
+  paginationInfo = computed(() => {
+    const total = this.filteredItems().length;
+    const perPage = this.itemsPerPage();
+    const current = this.currentPage();
+    const totalPages = Math.ceil(total / perPage) || 1;
+    const startIndex = total === 0 ? 0 : (current - 1) * perPage + 1;
+    const endIndex = Math.min(current * perPage, total);
+
+    return {
+      total,
+      totalPages,
+      currentPage: current,
+      startIndex,
+      endIndex
+    };
+  });
+
+  // Paginated inventories for history table
+  paginatedInventories = computed(() => {
+    const items = this.inventories();
+    const start = (this.historyCurrentPage() - 1) * this.historyItemsPerPage();
+    const end = start + this.historyItemsPerPage();
+    return items.slice(start, end);
+  });
+
+  // Pagination info for history
+  historyPaginationInfo = computed(() => {
+    const total = this.inventories().length;
+    const perPage = this.historyItemsPerPage();
+    const current = this.historyCurrentPage();
+    const totalPages = Math.ceil(total / perPage) || 1;
+    const startIndex = total === 0 ? 0 : (current - 1) * perPage + 1;
+    const endIndex = Math.min(current * perPage, total);
+
+    return {
+      total,
+      totalPages,
+      currentPage: current,
+      startIndex,
+      endIndex
+    };
   });
 
   constructor(
@@ -442,5 +502,71 @@ export class InventoriesComponent implements OnInit, OnDestroy {
     } else if (action === 'cancel') {
       this.executeCancelInventory();
     }
+  }
+
+  // Pagination methods for inventory items
+  onItemsPerPageChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.itemsPerPage.set(Number(value));
+    this.currentPage.set(1);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.paginationInfo().totalPages) {
+      this.currentPage.set(page);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const totalPages = this.paginationInfo().totalPages;
+    const current = this.currentPage();
+    const pages: number[] = [];
+    const maxVisible = 5;
+
+    let start = Math.max(1, current - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  }
+
+  // Pagination methods for history
+  onHistoryItemsPerPageChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.historyItemsPerPage.set(Number(value));
+    this.historyCurrentPage.set(1);
+  }
+
+  goToHistoryPage(page: number): void {
+    if (page >= 1 && page <= this.historyPaginationInfo().totalPages) {
+      this.historyCurrentPage.set(page);
+    }
+  }
+
+  getHistoryPageNumbers(): number[] {
+    const totalPages = this.historyPaginationInfo().totalPages;
+    const current = this.historyCurrentPage();
+    const pages: number[] = [];
+    const maxVisible = 5;
+
+    let start = Math.max(1, current - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
   }
 }

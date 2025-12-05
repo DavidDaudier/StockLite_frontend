@@ -20,7 +20,7 @@
   <div class="p-4 border-b border-gray-200 flex justify-between items-center">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
-           [ngStyle]="{'background-color': appInfoService.appInfo().logo_bg_color || '#0d9488'}">
+          [ngStyle]="{'background-color': appInfoService.appInfo().logo_bg_color || '#0d9488'}">
         <img *ngIf="appInfoService.appInfo().logo_app" [src]="appInfoService.appInfo().logo_app" alt="Logo" class="w-full h-full object-cover">
         <svg *ngIf="!appInfoService.appInfo().logo_app" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -50,7 +50,7 @@
       [routerLinkActiveOptions]="{exact: true}"
       [ngClass]="(collapsed() && !mobileOpen()) ? 'justify-center px-2' : 'px-4'"
       [title]="(collapsed() && !mobileOpen()) ? item.label : ''"
-      class="flex items-center gap-3 py-3 rounded-r-lg transition-colors hover:bg-gray-100 border border-transparent group">
+      class="flex items-center gap-3 py-3 rounded-lg transition-colors hover:bg-gray-100 border border-transparent group">
       <ng-icon [name]="item.icon"  class="text-xl flex-shrink-0 font-bold" />
       <span *ngIf="!collapsed() || mobileOpen()" class="font-medium overflow-hidden">{{ item.label }}</span>
     </a>

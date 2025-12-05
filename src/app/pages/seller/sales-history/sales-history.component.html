@@ -69,8 +69,8 @@
     </button>
 
     <!-- Contenu principal -->
-    <div class="flex-1 overflow-y-auto px-6 pb-4">
-      <div class="bg-gray-100 rounded-[15px] p-4 border border-gray-300">
+    <div class="flex-1 overflow-y-auto px-6 pb-4 bg-white">
+      <div class="grey-container">
         <!-- Loading State -->
         @if (loading()) {
           <div class="flex items-center justify-center py-12">
@@ -136,8 +136,8 @@
             </div>
           </div>
           }
-          <div class="bg-white rounded-lg border border-gray-200 overflow-x-auto mb-15">
-            <div class="p-4 border-b border-gray-200 bg-gray-50">
+          <div class="table-container">
+            <div class="table-header">
               <!-- Version simplifiée pour sellers ou complète pour admin -->
               @if (!isAdmin) {
                 <!-- SELLER: Version simplifiée -->
@@ -165,22 +165,22 @@
                   <!-- Filtres rapides de période -->
                   <button
                     (click)="setQuickRange('daily')"
-                    [class]="'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ' + (reportType() === 'daily' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
+                    [class]="'period-filter-btn ' + (reportType() === 'daily' ? 'period-filter-btn-active' : 'period-filter-btn-inactive')">
                     Aujourd'hui
                   </button>
                   <button
                     (click)="setQuickRange('weekly')"
-                    [class]="'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ' + (reportType() === 'weekly' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
+                    [class]="'period-filter-btn ' + (reportType() === 'weekly' ? 'period-filter-btn-active' : 'period-filter-btn-inactive')">
                     Semaine
                   </button>
                   <button
                     (click)="setQuickRange('monthly')"
-                    [class]="'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ' + (reportType() === 'monthly' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
+                    [class]="'period-filter-btn ' + (reportType() === 'monthly' ? 'period-filter-btn-active' : 'period-filter-btn-inactive')">
                     Mois
                   </button>
                   <button
                     (click)="setQuickRange('yearly')"
-                    [class]="'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ' + (reportType() === 'yearly' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
+                    [class]="'period-filter-btn ' + (reportType() === 'yearly' ? 'period-filter-btn-active' : 'period-filter-btn-inactive')">
                     Année
                   </button>
 
@@ -194,14 +194,14 @@
                       type="date"
                       [(ngModel)]="startDate"
                       (change)="onDateRangeChange()"
-                      class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900">
                     <span class="text-xs text-gray-500">à</span>
                     <input
                       type="date"
                       [(ngModel)]="endDate"
                       [min]="startDate()"
                       (change)="onDateRangeChange()"
-                      class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900">
                   </div>
 
                   <!-- Séparateur vertical -->
@@ -222,7 +222,7 @@
                     <select
                       [(ngModel)]="selectedUserId"
                       (change)="loadSales()"
-                      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900">
                       <option value="all">Tous les vendeurs</option>
                       @for (user of users(); track user.id) {
                         <option [value]="user.id">{{ user.fullName }} ({{ '@' + user.username }})</option>
@@ -235,7 +235,7 @@
                     <select
                       (change)="onItemsPerPageChange($event)"
                       [value]="itemsPerPage()"
-                      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white cursor-pointer">
+                      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900 cursor-pointer">
                       <option value="10">📄 10 par page</option>
                       <option value="20">📄 20 par page</option>
                       <option value="30">📄 30 par page</option>
@@ -284,7 +284,7 @@
             } @else {
               <div class="table-container-fixed overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 table-fixed">
-                  <thead class="bg-teal-600 text-white sticky top-0 z-10">
+                  <thead class="table-thead-primary">
                     <tr>
                       @if (isAdmin && selectionMode()) {
                         <th class="w-12 px-3 py-4 text-center">
@@ -311,12 +311,11 @@
                   <tbody class="bg-white divide-y divide-gray-200">
                     @for (sale of paginatedSales(); track sale.id) {
                       <!-- Main sale row -->
-                      <tr [class]="'transition-colors ' +
+                      <tr [class]="'table-row-hover transition-colors ' +
                         (isSaleSelected(sale.id) ? 'bg-red-100 border-l-4 border-l-red-600' :
                         (salesWithPendingRequests().has(sale.id) ?
                           (isAdmin ? 'bg-orange-50 border-l-4 border-l-orange-500 hover:bg-orange-100' :
-                          'bg-yellow-100 border-l-4 border-l-yellow-500 hover:bg-yellow-200') :
-                        'hover:bg-gray-50 odd:bg-white even:bg-gray-50'))"
+                          'bg-yellow-100 border-l-4 border-l-yellow-500 hover:bg-yellow-200') : ''))"
                         [style.cursor]="(isAdmin && selectionMode()) ? 'pointer' : 'default'"
                         (click)="(isAdmin && selectionMode()) ? toggleSaleSelection(sale.id) : toggleSaleDetails(sale.id)">
                         @if (isAdmin && selectionMode()) {
@@ -402,9 +401,9 @@
                       <!-- Expanded details row -->
                       @if (expandedSaleId() === sale.id) {
                         <tr>
-                          <td [attr.colspan]="isAdmin ? ((selectionMode() ? 1 : 0) + 9) : 9" class="px-0 py-0 bg-gray-50">
+                          <td [attr.colspan]="isAdmin ? ((selectionMode() ? 1 : 0) + 9) : 9" class="px-0 py-0 table-details-row bg-gray-50">
                             <div class="px-6 py-4 flex justify-center">
-                              <table class="w-11/12 bg-white border border-gray-200 overflow-hidden shadow-sm">
+                              <table class="inner-table w-11/12 bg-white border border-gray-200 overflow-hidden shadow-sm">
                                 <thead class="bg-teal-300/50 text-white">
                                   <tr>
                                     <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Nom Produit</th>
@@ -440,9 +439,9 @@
               </div>
 
               <!-- Pagination Controls -->
-              <div class="mt-0 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-200 px-4 py-3 rounded-b-lg">
+              <div class="pagination-container">
                 <!-- Info Section -->
-                <div class="text-sm text-gray-900">
+                <div class="pagination-info">
                   Affichage des résultats {{ paginationInfo().startIndex }} à {{ paginationInfo().endIndex }} sur {{ paginationInfo().total }}
                 </div>
 
@@ -452,7 +451,7 @@
                   <button
                     (click)="goToPage(1)"
                     [disabled]="currentPage() === 1"
-                    class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                    class="pagination-btn">
                     «
                   </button>
 
@@ -460,7 +459,7 @@
                   <button
                     (click)="goToPage(currentPage() - 1)"
                     [disabled]="currentPage() === 1"
-                    class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                    class="pagination-btn">
                     ‹
                   </button>
 
@@ -469,8 +468,8 @@
                     <button
                       (click)="goToPage(page)"
                       [class]="page === currentPage()
-                        ? 'px-3 py-1.5 text-sm bg-gray-700 text-white rounded cursor-pointer'
-                        : 'px-3 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded cursor-pointer transition-colors'">
+                        ? 'pagination-btn pagination-btn-active'
+                        : 'pagination-btn pagination-btn-inactive'">
                       {{ page }}
                     </button>
                   }
@@ -479,7 +478,7 @@
                   <button
                     (click)="goToPage(currentPage() + 1)"
                     [disabled]="currentPage() === totalPages"
-                    class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                    class="pagination-btn">
                     ›
                   </button>
 
@@ -487,15 +486,15 @@
                   <button
                     (click)="goToPage(totalPages)"
                     [disabled]="currentPage() === totalPages"
-                    class="px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                    class="pagination-btn">
                     »
                   </button>
                 </div>
 
                 <!-- Summary Info -->
-                <div class="text-sm text-gray-900 flex items-center gap-1">
+                <div class="pagination-info flex items-center gap-1">
                   <span>Total ventes : </span>
-                  <strong class="text-teal-600 text-base">{{ paginationInfo().total }}</strong>
+                  <strong class="pagination-total text-base">{{ paginationInfo().total }}</strong>
                 </div>
               </div>
             }

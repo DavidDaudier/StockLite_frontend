@@ -249,6 +249,85 @@ html.dark .table-row-hover:hover {
   cursor: not-allowed;
 }
 
+/* Boutons Produit - Card Actions */
+.btn-product-edit {
+  color: #115e59 !important; /* teal-800 */
+}
+
+.btn-product-delete {
+  color: #991b1b !important; /* red-800 */
+}
+
+html.dark .btn-product-edit {
+  color: #115e59 !important; /* Keep dark text on light bg */
+}
+
+html.dark .btn-product-delete {
+  color: #991b1b !important; /* Keep dark text on light bg */
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🛒 POS - Product List Cards
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Boutons - et + dans les cards POS */
+.pos-btn-minus {
+  color: #991b1b !important; /* red-800 */
+}
+
+.pos-btn-plus {
+  color: #115e59 !important; /* teal-800 */
+}
+
+html.dark .pos-btn-minus {
+  color: #991b1b !important; /* Keep dark on light bg */
+}
+
+html.dark .pos-btn-plus {
+  color: #115e59 !important; /* Keep dark on light bg */
+}
+
+/* POS Cards - Texte en dark mode */
+/* Les cards ont des fonds clairs, donc garder texte foncé comme en light mode */
+.pos-card-text {
+  color: #1f2937; /* gray-800 - dark text on light bg */
+}
+
+html.dark .pos-card-text {
+  color: #1f2937 !important; /* Keep dark text on light card bg */
+}
+
+/* État sélectionné : texte blanc */
+html.dark .pos-product-selected {
+  color: #ffffff !important; /* white text */
+}
+
+/* Bouton Vider le panier - texte noir */
+.btn-clear-cart {
+  color: #374151; /* gray-700 */
+}
+
+html.dark .btn-clear-cart {
+  color: #1f2937 !important; /* gray-800 - black text on light bg */
+}
+
+/* Settings - Currency selection */
+.currency-name-selected {
+  color: #0d9488; /* teal-600 */
+}
+
+.currency-info-selected {
+  color: #4b5563; /* gray-600 */
+}
+
+html.dark .currency-name-selected {
+  color: #14b8a6 !important; /* teal-500 - green in dark mode */
+}
+
+html.dark .currency-info-selected {
+  color: #374151 !important; /* gray-700 - darker gray in dark mode */
+}
+
 /* ═══════════════════════════════════════════════════════════════
    🏷️ BADGES / PILLS
    ═══════════════════════════════════════════════════════════════ */
@@ -301,6 +380,10 @@ html.dark .table-row-hover:hover {
   border-radius: 0 0 0.5rem 0.5rem;
 }
 
+html.dark .pagination-container {
+  background-color: #374151; /* gray-700 */
+}
+
 @media (min-width: 640px) {
   .pagination-container {
     flex-direction: row;
@@ -312,6 +395,10 @@ html.dark .table-row-hover:hover {
   color: #111827;
 }
 
+html.dark .pagination-info {
+  color: #f3f4f6; /* gray-100 */
+}
+
 .pagination-btn {
   padding: 0.375rem 0.75rem;
   font-size: 0.875rem;
@@ -321,8 +408,16 @@ html.dark .table-row-hover:hover {
   transition: background-color 0.15s ease-in-out;
 }
 
+html.dark .pagination-btn {
+  color: #f3f4f6; /* gray-100 */
+}
+
 .pagination-btn:hover {
-  background-color: #374151;
+  background-color: #d1d5db;
+}
+
+html.dark .pagination-btn:hover {
+  background-color: #4b5563; /* gray-600 */
 }
 
 .pagination-btn:disabled {
@@ -333,7 +428,7 @@ html.dark .table-row-hover:hover {
 .pagination-btn-active {
   padding: 0.375rem 0.75rem;
   font-size: 0.875rem;
-  background-color: #374151;
+  background-color: #0d9488; /* teal-600 */
   color: white;
   border-radius: 0.25rem;
   cursor: pointer;
@@ -342,14 +437,30 @@ html.dark .table-row-hover:hover {
 .pagination-btn-inactive {
   padding: 0.375rem 0.75rem;
   font-size: 0.875rem;
-  color: #d1d5db;
+  color: #374151;
   border-radius: 0.25rem;
   cursor: pointer;
   transition: background-color 0.15s ease-in-out;
 }
 
+html.dark .pagination-btn-inactive {
+  color: #d1d5db; /* gray-300 */
+}
+
 .pagination-btn-inactive:hover {
-  background-color: #374151;
+  background-color: #d1d5db;
+}
+
+html.dark .pagination-btn-inactive:hover {
+  background-color: #4b5563; /* gray-600 */
+}
+
+.pagination-total {
+  color: #0d9488; /* teal-600 */
+}
+
+html.dark .pagination-total {
+  color: #2dd4bf; /* teal-400 */
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -385,6 +496,100 @@ html.dark .period-filter-btn-inactive {
 
 html.dark .period-filter-btn-inactive:hover {
   background-color: #4b5563; /* gray-600 */
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🌙 DARK MODE - ÉLÉMENTS SUPPLÉMENTAIRES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Background principal */
+html.dark .bg-gray-200 {
+  background-color: #374151; /* gray-700 */
+}
+
+/* Inputs et Selects */
+html.dark input[type="date"],
+html.dark select {
+  background-color: #374151; /* gray-700 */
+  border-color: #4b5563; /* gray-600 */
+  color: #f3f4f6; /* gray-100 */
+}
+
+/* Divider/Separateurs */
+html.dark .divide-gray-200 > * + * {
+  border-color: #374151; /* gray-700 */
+}
+
+/* Tables tbody */
+html.dark tbody {
+  background-color: #1f2937; /* gray-800 */
+}
+
+html.dark tbody tr:nth-child(even) {
+  background-color: rgba(55, 65, 81, 0.5); /* gray-700/50 */
+}
+
+/* Table cells text */
+html.dark td {
+  color: #f3f4f6; /* gray-100 */
+}
+
+/* Table expanded details */
+html.dark .table-details-row {
+  background-color: #374151; /* gray-700 */
+}
+
+/* Inner tables in expanded rows */
+html.dark .inner-table {
+  background-color: #1f2937; /* gray-800 */
+  border-color: #4b5563; /* gray-600 */
+}
+
+html.dark .inner-table thead {
+  background-color: rgba(13, 148, 136, 0.5); /* teal-600/50 */
+}
+
+/* Badges en dark mode */
+html.dark .badge-success {
+  background-color: rgba(22, 101, 52, 0.3);
+  color: #86efac;
+}
+
+html.dark .badge-warning {
+  background-color: rgba(133, 77, 14, 0.3);
+  color: #fde047;
+}
+
+html.dark .badge-danger {
+  background-color: rgba(153, 27, 27, 0.3);
+  color: #fca5a5;
+}
+
+html.dark .badge-info {
+  background-color: rgba(30, 64, 175, 0.3);
+  color: #93c5fd;
+}
+
+/* Stats card - Marge Bénéficiaire */
+html.dark .stats-card-white {
+  background-color: #1f2937; /* gray-800 */
+  border-color: #374151; /* gray-700 */
+}
+
+html.dark .stats-card-white .stats-label {
+  color: #9ca3af; /* gray-400 */
+}
+
+html.dark .stats-card-white .stats-value {
+  color: #34d399; /* green-400 */
+}
+
+html.dark .stats-card-white .stats-icon-bg {
+  background-color: rgba(22, 101, 52, 0.3); /* green-900/30 */
+}
+
+html.dark .stats-card-white .stats-icon {
+  color: #34d399; /* green-400 */
 }
 
 /* ═══════════════════════════════════════════════════════════════

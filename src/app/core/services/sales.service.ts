@@ -1,14 +1,16 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Sale, CreateSaleDto, SalesStats } from '../models/sale.model';
+import { DraftService } from './draft.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SalesService {
   private apiUrl = `${environment.apiUrl}/sales`;
+  private draftService = inject(DraftService);
 
   constructor(private http: HttpClient) {}
 
@@ -56,14 +58,20 @@ export class SalesService {
   }
 
   createDraft(sale: CreateSaleDto): Observable<Sale> {
-    return this.http.post<Sale>(`${this.apiUrl}/draft`, sale);
+    return this.http.post<Sale>(`${this.apiUrl}/draft`, sale).pipe(
+      tap(() => this.draftService.refreshDraftsCount())
+    );
   }
 
   completeDraft(id: string): Observable<Sale> {
-    return this.http.patch<Sale>(`${this.apiUrl}/${id}/complete`, {});
+    return this.http.patch<Sale>(`${this.apiUrl}/${id}/complete`, {}).pipe(
+      tap(() => this.draftService.refreshDraftsCount())
+    );
   }
 
   deleteDraft(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/draft/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/draft/${id}`).pipe(
+      tap(() => this.draftService.refreshDraftsCount())
+    );
   }
 }

@@ -240,7 +240,7 @@
                                     @if (authService.canUpdate('products')) {
                                     <button
                                         (click)="$event.stopPropagation(); openEditModal(product)"
-                                        class="flex-1 bg-teal-200 rounded-lg px-2 py-1.5 flex items-center justify-center gap-1 cursor-pointer inset-shadow-sm inset-shadow-gray-400 hover:inset-shadow-none transition text-xs font-medium">
+                                        class="btn-product-edit flex-1 bg-teal-200 rounded-lg px-2 py-1.5 flex items-center justify-center gap-1 cursor-pointer inset-shadow-sm inset-shadow-gray-400 hover:inset-shadow-none transition text-xs font-medium text-teal-800">
                                         <ng-icon name="hugeEdit01" size="14" />
                                         Modifier
                                     </button>
@@ -248,7 +248,7 @@
                                     @if (authService.canDelete('products')) {
                                     <button
                                         (click)="$event.stopPropagation(); openDeleteModal(product)"
-                                        class="flex-1 bg-red-200 rounded-lg px-2 py-1.5 flex items-center justify-center gap-1 cursor-pointer inset-shadow-sm inset-shadow-gray-400 hover:inset-shadow-none transition text-xs font-medium">
+                                        class="btn-product-delete flex-1 bg-red-200 rounded-lg px-2 py-1.5 flex items-center justify-center gap-1 cursor-pointer inset-shadow-sm inset-shadow-gray-400 hover:inset-shadow-none transition text-xs font-medium text-red-800">
                                         <ng-icon name="hugeDelete02" size="14" />
                                         Supprimer
                                     </button>

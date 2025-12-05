@@ -1,0 +1,81 @@
+<!-- Bar Chart with Y-axis -->
+<div class="relative h-64 flex gap-4">
+    <!-- Axe Y (Montant des ventes) -->
+    <div class="flex flex-col justify-between items-end pr-2 text-xs text-gray-500 w-20">
+        <span [innerHTML]="getMaxAmount() | gdesCurrency"></span>
+        <span [innerHTML]="(getMaxAmount() * 0.9) | gdesCurrency"></span>
+        <span [innerHTML]="(getMaxAmount() * 0.8) | gdesCurrency"></span>
+        <span [innerHTML]="(getMaxAmount() * 0.7) | gdesCurrency"></span>
+        <span [innerHTML]="(getMaxAmount() * 0.6) | gdesCurrency"></span>
+        <span [innerHTML]="(getMaxAmount() * 0.5) | gdesCurrency"></span>
+        <span [innerHTML]="(getMaxAmount() * 0.4) | gdesCurrency"></span>
+        <span [innerHTML]="(getMaxAmount() * 0.3) | gdesCurrency"></span>
+        <span [innerHTML]="(getMaxAmount() * 0.2) | gdesCurrency"></span>
+        <span [innerHTML]="(getMaxAmount() * 0.1) | gdesCurrency"></span>
+        <span>0</span>
+    </div>
+
+    <!-- Zone du graphique avec grille -->
+    <div class="flex-1 flex flex-col">
+        <!-- Grille horizontale et barres -->
+        <div class="flex-1 relative border-l-2 border-b-2 border-gray-300">
+            <!-- Lignes de grille horizontales -->
+            <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                <div class="border-t border-gray-200"></div>
+                <div class="border-t border-gray-200"></div>
+                <div class="border-t border-gray-200"></div>
+                <div class="border-t border-gray-200"></div>
+                <div class="border-t border-gray-200"></div>
+                <div class="border-t border-gray-200"></div>
+                <div class="border-t border-gray-200"></div>
+                <div class="border-t border-gray-200"></div>
+                <div class="border-t border-gray-200"></div>
+                <div class="border-t border-gray-200"></div>
+            </div>
+
+            <!-- Barres de données -->
+            <div class="absolute inset-0 flex items-end justify-between px-2 gap-1">
+                <div *ngFor="let data of salesChartData; let i = index"
+                     class="flex-1 flex flex-col items-center group relative">
+                    <!-- Tooltip au survol -->
+                    <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
+                         [innerHTML]="data.amount | gdesCurrency">
+                    </div>
+                    <!-- Barre colorée -->
+                    <div class="w-full rounded-t-md transition-all duration-300 hover:opacity-80 cursor-pointer"
+                        [style.height.%]="getBarHeight(data.amount)"
+                        [ngClass]="{
+                            'bg-gradient-to-t from-teal-500 to-teal-400': i % 7 === 0,
+                            'bg-gradient-to-t from-blue-500 to-blue-400': i % 7 === 1,
+                            'bg-gradient-to-t from-purple-500 to-purple-400': i % 7 === 2,
+                            'bg-gradient-to-t from-pink-500 to-pink-400': i % 7 === 3,
+                            'bg-gradient-to-t from-orange-500 to-orange-400': i % 7 === 4,
+                            'bg-gradient-to-t from-yellow-500 to-yellow-400': i % 7 === 5,
+                            'bg-gradient-to-t from-green-500 to-green-400': i % 7 === 6
+                        }">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Axe X (Labels des périodes) -->
+        <div class="flex items-center justify-between px-2 pt-2">
+            <span *ngFor="let data of salesChartData" class="flex-1 text-center text-xs text-gray-600 font-medium">
+                {{ data.label }}
+            </span>
+        </div>
+
+        <!-- Label de l'axe X -->
+        <div class="text-center text-sm text-gray-600 font-semibold mt-2">
+            <span *ngIf="selectedPeriod === 'today'">Heures de la journée</span>
+            <span *ngIf="selectedPeriod === 'week'">Jours de la semaine</span>
+            <span *ngIf="selectedPeriod === 'month' || selectedPeriod === 'custom'">Semaines</span>
+        </div>
+    </div>
+
+    <!-- Label de l'axe Y (vertical) -->
+    <div class="absolute left-0 top-1/2 transform -translate-y-1/2 -rotate-90 text-sm text-gray-600 font-semibold whitespace-nowrap"
+         style="transform-origin: center; margin-left: -50px;">
+        Montant des ventes
+    </div>
+</div>

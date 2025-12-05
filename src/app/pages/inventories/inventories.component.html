@@ -69,34 +69,54 @@
 
         <!-- History view -->
         @if (showHistory()) {
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-xl font-bold text-gray-900">Historique des inventaires</h2>
-              <button
-                (click)="toggleHistory()"
-                class="text-gray-600 hover:text-gray-900">
-                <ng-icon name="hugeCancel01" size="24"></ng-icon>
-              </button>
+          <div class="table-container">
+            <div class="table-header">
+              <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div>
+                  <h3 class="text-base font-semibold text-gray-900">Historique des inventaires</h3>
+                  <p class="text-xs text-gray-500 mt-1">{{ inventories().length }} inventaire(s) trouvé(s)</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <select
+                    (change)="onHistoryItemsPerPageChange($event)"
+                    [value]="historyItemsPerPage()"
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900 cursor-pointer">
+                    <option value="10">10 par page</option>
+                    <option value="20">20 par page</option>
+                    <option value="30">30 par page</option>
+                    <option value="50">50 par page</option>
+                  </select>
+                  <button
+                    (click)="toggleHistory()"
+                    class="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 cursor-pointer">
+                    <ng-icon name="hugeCancel01" size="18"></ng-icon>
+                    Fermer
+                  </button>
+                </div>
+              </div>
             </div>
 
             @if (inventories().length === 0) {
-              <p class="text-center text-gray-500 py-12">Aucun inventaire trouvé</p>
+              <div class="bg-white rounded-lg p-12 text-center">
+                <ng-icon name="hugeInvestigation" size="64" class="text-gray-400 mx-auto mb-4"></ng-icon>
+                <p class="text-gray-500">Aucun inventaire trouvé</p>
+              </div>
             } @else {
               <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                  <thead class="bg-gray-50">
+                  <thead class="bg-teal-600 text-white">
                     <tr>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Numéro</th>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Date</th>
-                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">Articles</th>
-                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">Comptés</th>
-                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">Écarts</th>
-                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">Statut</th>
-                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">Actions</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Numéro</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
+                      <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider">Articles</th>
+                      <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider">Comptés</th>
+                      <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider">Écarts</th>
+                      <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider">Statut</th>
+                      <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
-                    @for (inventory of inventories(); track inventory.id) {
+                    @for (inventory of paginatedInventories(); track inventory.id) {
                       <tr class="table-row-hover">
                         <td class="px-6 py-4">
                           <span class="font-medium text-gray-900">{{ inventory.inventoryNumber }}</span>
@@ -104,9 +124,9 @@
                         <td class="px-6 py-4 text-sm text-gray-600">
                           {{ formatDate(inventory.createdAt) }}
                         </td>
-                        <td class="px-6 py-4 text-center text-sm">{{ inventory.totalItems }}</td>
-                        <td class="px-6 py-4 text-center text-sm">{{ inventory.countedItems }}</td>
-                        <td class="px-6 py-4 text-center text-sm">{{ inventory.itemsWithDiscrepancy }}</td>
+                        <td class="px-6 py-4 text-center text-sm text-gray-900">{{ inventory.totalItems }}</td>
+                        <td class="px-6 py-4 text-center text-sm text-gray-900">{{ inventory.countedItems }}</td>
+                        <td class="px-6 py-4 text-center text-sm text-gray-900">{{ inventory.itemsWithDiscrepancy }}</td>
                         <td class="px-6 py-4 text-center">
                           <span [class]="'px-3 py-1 text-xs font-medium rounded-full ' + getInventoryStatusColor(inventory.status)">
                             {{ getInventoryStatusLabel(inventory.status) }}
@@ -137,6 +157,56 @@
                   </tbody>
                 </table>
               </div>
+
+              <!-- Pagination Controls -->
+              <div class="pagination-container">
+                <div class="pagination-info">
+                  Affichage des résultats {{ historyPaginationInfo().startIndex }} à {{ historyPaginationInfo().endIndex }} sur {{ historyPaginationInfo().total }}
+                </div>
+
+                <div class="flex items-center gap-1">
+                  <button
+                    (click)="goToHistoryPage(1)"
+                    [disabled]="historyCurrentPage() === 1"
+                    class="pagination-btn">
+                    «
+                  </button>
+                  <button
+                    (click)="goToHistoryPage(historyCurrentPage() - 1)"
+                    [disabled]="historyCurrentPage() === 1"
+                    class="pagination-btn">
+                    ‹
+                  </button>
+
+                  @for (page of getHistoryPageNumbers(); track page) {
+                    <button
+                      (click)="goToHistoryPage(page)"
+                      [class]="page === historyCurrentPage()
+                        ? 'pagination-btn pagination-btn-active'
+                        : 'pagination-btn pagination-btn-inactive'">
+                      {{ page }}
+                    </button>
+                  }
+
+                  <button
+                    (click)="goToHistoryPage(historyCurrentPage() + 1)"
+                    [disabled]="historyCurrentPage() === historyPaginationInfo().totalPages"
+                    class="pagination-btn">
+                    ›
+                  </button>
+                  <button
+                    (click)="goToHistoryPage(historyPaginationInfo().totalPages)"
+                    [disabled]="historyCurrentPage() === historyPaginationInfo().totalPages"
+                    class="pagination-btn">
+                    »
+                  </button>
+                </div>
+
+                <div class="pagination-info flex items-center gap-1">
+                  <span>Total : </span>
+                  <strong class="pagination-total text-base">{{ historyPaginationInfo().total }}</strong>
+                </div>
+              </div>
             }
           </div>
         }
@@ -153,7 +223,7 @@
             <button
               (click)="startInventory()"
               [disabled]="products().length === 0"
-              class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium inline-flex items-center gap-2">
+              class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium inline-flex items-center gap-2 cursor-pointer">
               <ng-icon name="hugeAdd01" size="20"></ng-icon>
               Démarrer un inventaire
             </button>
@@ -161,6 +231,247 @@
             @if (products().length === 0) {
               <p class="text-red-500 mt-4 text-sm">Vous devez avoir des produits pour démarrer un inventaire</p>
             }
+          </div>
+        }
+
+        <!-- Current inventory in progress -->
+        @if (currentInventory() && !showHistory()) {
+          <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <!-- Header avec stats -->
+            @if (showStats()) {
+              <div class="p-4 border-b border-gray-200 bg-gray-50">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                  <div>
+                    <h3 class="text-base font-semibold text-gray-900">
+                      Inventaire {{ currentInventory()!.inventoryNumber }}
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-1">
+                      Créé le {{ formatDate(currentInventory()!.createdAt) }}
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    @if (authService.canUpdate('inventories')) {
+                      <button
+                        (click)="completeInventory()"
+                        [disabled]="loading()"
+                        class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 disabled:opacity-50 cursor-pointer">
+                        <ng-icon name="hugeCheckmarkBadge04" size="18"></ng-icon>
+                        Finaliser
+                      </button>
+                      <button
+                        (click)="cancelInventory()"
+                        [disabled]="loading()"
+                        class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50 cursor-pointer">
+                        <ng-icon name="hugeCancel01" size="18"></ng-icon>
+                        Annuler
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <!-- Stats cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div class="bg-white p-3 rounded-lg border border-gray-200">
+                    <p class="text-xs text-gray-500">Total articles</p>
+                    <p class="text-xl font-bold text-gray-900">{{ stats().total }}</p>
+                  </div>
+                  <div class="bg-white p-3 rounded-lg border border-gray-200">
+                    <p class="text-xs text-gray-500">Comptés</p>
+                    <p class="text-xl font-bold text-green-600">{{ stats().counted }}</p>
+                  </div>
+                  <div class="bg-white p-3 rounded-lg border border-gray-200">
+                    <p class="text-xs text-gray-500">En attente</p>
+                    <p class="text-xl font-bold text-orange-600">{{ stats().pending }}</p>
+                  </div>
+                  <div class="bg-white p-3 rounded-lg border border-gray-200">
+                    <p class="text-xs text-gray-500">Écarts</p>
+                    <p class="text-xl font-bold text-red-600">{{ stats().discrepancy }}</p>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- Filters -->
+            <div class="table-header">
+              <div class="flex flex-wrap items-center gap-3">
+                <div class="flex-1 min-w-[200px]">
+                  <div class="relative">
+                    <ng-icon name="hugeSearch01" size="18" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></ng-icon>
+                    <input
+                      type="text"
+                      placeholder="Rechercher un produit..."
+                      [ngModel]="searchTerm()"
+                      (ngModelChange)="searchTerm.set($event)"
+                      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm bg-white text-gray-900">
+                  </div>
+                </div>
+                <select
+                  [ngModel]="filterStatus()"
+                  (ngModelChange)="filterStatus.set($event)"
+                  class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm bg-white text-gray-900 cursor-pointer">
+                  <option value="all">Tous les statuts</option>
+                  <option value="pending">En attente</option>
+                  <option value="counted">Comptés</option>
+                  <option value="discrepancy">Avec écart</option>
+                </select>
+                <select
+                  (change)="onItemsPerPageChange($event)"
+                  [value]="itemsPerPage()"
+                  class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900 cursor-pointer">
+                  <option value="10">10 par page</option>
+                  <option value="20">20 par page</option>
+                  <option value="30">30 par page</option>
+                  <option value="50">50 par page</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Items table -->
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-teal-600 text-white">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Produit</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Qté Théorique</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Qté Physique</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Écart</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Statut</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  @for (item of paginatedItems(); track item.id) {
+                    <tr class="table-row-hover">
+                      <td class="px-4 py-3">
+                        <div class="font-medium text-gray-900">{{ item.product?.name || 'Produit inconnu' }}</div>
+                        @if (item.product?.sku) {
+                          <div class="text-xs text-teal-600 mt-0.5">SKU: {{ item.product?.sku }}</div>
+                        }
+                      </td>
+                      <td class="px-4 py-3 text-center text-sm font-medium text-gray-900">
+                        {{ item.theoreticalQuantity }}
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        @if (isEditing(item.id)) {
+                          <input
+                            type="number"
+                            [ngModel]="tempPhysicalQuantity()"
+                            (ngModelChange)="tempPhysicalQuantity.set($event)"
+                            min="0"
+                            class="w-20 px-2 py-1 border border-purple-300 rounded text-center focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                            autofocus>
+                        } @else {
+                          <span class="text-sm font-medium" [class.text-gray-400]="item.physicalQuantity === null" [class.text-gray-900]="item.physicalQuantity !== null">
+                            {{ item.physicalQuantity !== null ? item.physicalQuantity : '-' }}
+                          </span>
+                        }
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        @if (item.physicalQuantity !== null && item.physicalQuantity !== undefined && item.theoreticalQuantity !== undefined) {
+                          @let diff = item.physicalQuantity - item.theoreticalQuantity;
+                          <span
+                            class="text-sm font-medium"
+                            [class.text-green-600]="diff === 0"
+                            [class.text-red-600]="diff !== 0">
+                            {{ diff > 0 ? '+' : '' }}{{ diff }}
+                          </span>
+                        } @else {
+                          <span class="text-gray-400">-</span>
+                        }
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getStatusColor(item.status ?? 'pending')">
+                          {{ getStatusLabel(item.status ?? 'pending') }}
+                        </span>
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        @if (authService.canUpdate('inventories')) {
+                          @if (isEditing(item.id)) {
+                            <div class="flex items-center justify-center gap-2">
+                              <button
+                                (click)="saveItem(item.id)"
+                                class="text-green-600 hover:text-green-800 cursor-pointer"
+                                title="Enregistrer">
+                                <ng-icon name="hugeCheckmarkCircle04" size="20"></ng-icon>
+                              </button>
+                              <button
+                                (click)="cancelEdit()"
+                                class="text-red-600 hover:text-red-800 cursor-pointer"
+                                title="Annuler">
+                                <ng-icon name="hugeCancel01" size="20"></ng-icon>
+                              </button>
+                            </div>
+                          } @else {
+                            <button
+                              (click)="editItem(item.id, item.physicalQuantity)"
+                              class="text-purple-600 hover:text-purple-800 cursor-pointer"
+                              title="Modifier">
+                              <ng-icon name="hugeEdit02" size="18"></ng-icon>
+                            </button>
+                          }
+                        }
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+                        Aucun produit trouvé
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="pagination-container">
+              <div class="pagination-info">
+                Affichage des résultats {{ paginationInfo().startIndex }} à {{ paginationInfo().endIndex }} sur {{ paginationInfo().total }}
+              </div>
+
+              <div class="flex items-center gap-1">
+                <button
+                  (click)="goToPage(1)"
+                  [disabled]="currentPage() === 1"
+                  class="pagination-btn">
+                  «
+                </button>
+                <button
+                  (click)="goToPage(currentPage() - 1)"
+                  [disabled]="currentPage() === 1"
+                  class="pagination-btn">
+                  ‹
+                </button>
+
+                @for (page of getPageNumbers(); track page) {
+                  <button
+                    (click)="goToPage(page)"
+                    [class]="page === currentPage()
+                      ? 'pagination-btn pagination-btn-active'
+                      : 'pagination-btn pagination-btn-inactive'">
+                    {{ page }}
+                  </button>
+                }
+
+                <button
+                  (click)="goToPage(currentPage() + 1)"
+                  [disabled]="currentPage() === paginationInfo().totalPages"
+                  class="pagination-btn">
+                  ›
+                </button>
+                <button
+                  (click)="goToPage(paginationInfo().totalPages)"
+                  [disabled]="currentPage() === paginationInfo().totalPages"
+                  class="pagination-btn">
+                  »
+                </button>
+              </div>
+
+              <div class="pagination-info flex items-center gap-1">
+                <span>Progression : </span>
+                <strong class="pagination-total text-base">{{ stats().counted }} / {{ stats().total }}</strong>
+              </div>
+            </div>
           </div>
         }
 
